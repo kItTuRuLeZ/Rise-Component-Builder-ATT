@@ -36,6 +36,23 @@ export function countBlanks(sentence) {
 }
 
 /**
+ * The clues for an item, as { blank, text } entries. A sentence with several blanks and a clue field
+ * of several lines gives each blank its own clue (line 1 -> blank 1, and so on; an empty line means
+ * no clue for that blank). Anything else - one blank, or a single-line clue - is one clue for the
+ * whole sentence, as before.
+ */
+export function getBlankClues(item) {
+  const raw = String((item && item.hint) || '').trim();
+  if (!raw) return [];
+  const total = countBlanks(item && item.title);
+  const lines = raw.split(/\r?\n/).map(line => line.trim());
+  if (total <= 1 || lines.length <= 1) {
+    return [{ blank: null, text: raw.replace(/\s*\r?\n\s*/g, ' ') }];
+  }
+  return lines.slice(0, total).map((text, blank) => ({ blank, text })).filter(clue => clue.text);
+}
+
+/**
  * The accepted-answer text for each blank in an item, in order. A sentence with one blank uses the
  * whole answer field (commas, pipes or semicolons separate synonyms, as before). A sentence with
  * several blanks takes one line per blank, with synonyms separated by commas on each line.
@@ -73,12 +90,18 @@ export function generateHTML(config, instanceId) {
                 <span id="${instanceId}-blank-status-${idx}" class="blank-status-badge" role="status" aria-live="polite"></span>
               </div>
             </div>
-            ${item.hint ? `
-              <div class="blank-hint-row">
-                <button type="button" class="blank-hint-btn" data-hint-idx="${idx}" id="${instanceId}-hint-btn-${idx}" aria-expanded="false" aria-controls="${instanceId}-hint-box-${idx}">${HINT_ICON} Need a clue?</button>
-                <div class="blank-hint-box" id="${instanceId}-hint-box-${idx}" hidden><strong>Clue:</strong> ${escapeHTML(item.hint)}</div>
-              </div>
-            ` : ''}
+            ${(() => {
+              const clues = getBlankClues(item);
+              if (!clues.length) return '';
+              return `<div class="blank-hint-rows">${clues.map(clue => {
+                const key = clue.blank === null ? `${idx}` : `${idx}-${clue.blank}`;
+                const label = clue.blank === null ? 'Need a clue?' : `Clue for blank ${clue.blank + 1}`;
+                return `<div class="blank-hint-row">
+                <button type="button" class="blank-hint-btn" data-hint-idx="${key}" id="${instanceId}-hint-btn-${key}" aria-expanded="false" aria-controls="${instanceId}-hint-box-${key}">${HINT_ICON} ${label}</button>
+                <div class="blank-hint-box" id="${instanceId}-hint-box-${key}" hidden><strong>Clue${clue.blank === null ? '' : ` ${clue.blank + 1}`}:</strong> ${escapeHTML(clue.text)}</div>
+              </div>`;
+              }).join('')}</div>`;
+            })()}
           </div>
         `;
       }).join('')}
@@ -134,6 +157,12 @@ export function generateCSS() {
       line-height: var(--att-lh-body, 1.6);
       max-width: 70ch;
       color: var(--text-main);
+    }
+    .blank-hint-rows {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--pmi-space-2, 8px) var(--pmi-space-3, 12px);
+      align-items: flex-start;
     }
     .blank-input {
       border: 1.5px solid var(--border-color, #DCDFE3);

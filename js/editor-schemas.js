@@ -229,7 +229,8 @@ export const editorSchemas = {
       field('title', 'Sentence with [blank]', 'richtext', { required: true, default: 'Enter a sentence containing [blank].', pattern: '\\[blank\\]', patternMessage: 'Include at least one [blank] token.' }),
       // One blank: the accepted answers, comma-separated for synonyms. Several blanks: one line per blank, in order.
       field('content', 'Accepted Answers (comma-separated for synonyms; one line per blank if the sentence has several)', 'textarea', { required: true, default: 'answer, alternative' }),
-      field('hint', 'Progressive Clue / Hint (Optional)', 'textarea', { required: false, default: '' })
+      // One blank (or one clue for the whole sentence): a single line. Several blanks: one line per blank, in order.
+      field('hint', 'Progressive Clue / Hint (Optional; one line per blank if the sentence has several)', 'textarea', { required: false, default: '' })
     ]
   },
   'vertical-timeline': {

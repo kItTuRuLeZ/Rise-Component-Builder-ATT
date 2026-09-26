@@ -6,7 +6,7 @@ import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/
 /**
  * Horizontal Timeline Component Configuration
  * @typedef {Object} HorizontalTimelineConfig
- * @property {Array<{title: string, content: string, date?: string, year?: string, markerLabel?: string, image?: string, imageAlt?: string}>} items - Array of timeline events
+ * @property {Array<{title: string, content: string, date?: string, year?: string, markerLabel?: string, image?: string, imageAlt?: string, media?: any}>} items - Array of timeline events
  */
 
 export const id = 'horizontal-timeline';

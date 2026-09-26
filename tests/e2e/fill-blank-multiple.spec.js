@@ -56,3 +56,16 @@ test('blanks answered in the wrong order are not accepted', async ({ page }) => 
   await expect(inputs.nth(1)).toHaveClass(/is-incorrect/);
   await expect(inputs.nth(2)).toHaveClass(/is-correct/);
 });
+
+test('each blank can have its own clue, opened independently', async ({ page }) => {
+  const multi = [{ title: 'A [blank] and a [blank].', content: 'scope\ncost', hint: 'What is being delivered?\nWhat is being spent?' }];
+  await page.setContent(compileExportFixture('fill-blank', { configOverrides: { items: multi } }));
+  const buttons = page.locator('.blank-hint-btn');
+  await expect(buttons).toHaveCount(2);
+  await expect(buttons.nth(1)).toContainText('Clue for blank 2');
+  await buttons.nth(1).click();
+  await expect(page.locator('.blank-hint-box').nth(1)).toBeVisible();
+  await expect(page.locator('.blank-hint-box').nth(1)).toContainText('What is being spent?');
+  await expect(page.locator('.blank-hint-box').nth(0)).toBeHidden();
+  await expect(buttons.nth(1)).toHaveAttribute('aria-expanded', 'true');
+});

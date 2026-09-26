@@ -272,6 +272,7 @@ export function validateItemMedia(media, itemIndex = 0) {
  * @param {any} [options.limits] - Custom media size limits
  * @param {any} [options.store] - IndexedDB media store instance
  * @param {string} [options.itemLabel] - Accessible human-readable label of the item
+ * @param {string[]|null} [options.allowedTypes] - Media types offered besides "none" (default: all)
  * @returns {HTMLElement}
  */
 export function createItemMediaControl({ item, index, onChange, limits = MEDIA_LIMITS, store = mediaStore, itemLabel = '', allowedTypes = null }) {

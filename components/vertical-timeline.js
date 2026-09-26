@@ -7,7 +7,7 @@ import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/
 /**
  * Vertical Timeline Component Configuration
  * @typedef {Object} VerticalTimelineConfig
- * @property {Array<{title: string, content: string, category?: string}>} items - Array of timeline steps
+ * @property {Array<{title: string, content: string, category?: string, media?: any}>} items - Array of timeline steps
  * @property {boolean} [timelineCategoriesEnabled] - Shows a category badge per step and a filter chip row
  * @property {boolean} [timelineCompareMode] - Splits steps into two labeled streams by category (requires 2+ distinct categories)
  * @property {boolean} [timelineCollapsibleDetails] - Steps start collapsed; click/Enter expands
