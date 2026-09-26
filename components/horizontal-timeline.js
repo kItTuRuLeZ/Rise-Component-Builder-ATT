@@ -1,6 +1,7 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
 import { escapeHTML, escapeAttribute, sanitizeRichText } from '../js/utilities.js';
 import { combineValidationResults } from '../js/validation-utils.js';
+import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/item-media.js';
 
 /**
  * Horizontal Timeline Component Configuration
@@ -52,7 +53,7 @@ export function generateHTML(config, instanceId) {
               ${imageHtml}
               <div class="timeline-slide-text">
                 <h4>${item.title ? sanitizeRichText(item.title) : 'Phase Header'}</h4>
-                <p>${contentHtml}</p>
+                ${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, idx)}
               </div>
             </div>
           </div>
@@ -372,7 +373,9 @@ export function generateCSS() {
       align-items: center;
       justify-content: center;
       color: var(--text-main);
-    }`;
+    }
+
+    ${getItemMediaCSS()}`;
 }
 
 export function generateJS(config, instanceId) {
@@ -391,6 +394,7 @@ export function generateJS(config, instanceId) {
         n.setAttribute('tabindex', '-1');
       });
       container.querySelectorAll('.timeline-slide').forEach(function(s) {
+        s.querySelectorAll('audio, video').forEach(function(mediaEl) { if (!mediaEl.paused) mediaEl.pause(); });
         s.classList.remove('active');
         s.hidden = true;
       });
@@ -531,6 +535,9 @@ export function validate(config) {
       }
       if (!item.content || !String(item.content).trim()) {
         results.push({ valid: false, error: `Event ${index + 1}: Description is required.` });
+      }
+      if (item.media && item.media.type && item.media.type !== 'none') {
+        validateItemMedia(item.media, index).errors.forEach(err => results.push({ valid: false, error: err }));
       }
     });
   }

@@ -1,5 +1,6 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
 import { escapeHTML, escapeAttribute, sanitizeRichText } from '../js/utilities.js';
+import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/item-media.js';
 
 export const id = 'process-flow';
 export const name = 'Step-by-Step Flow';
@@ -93,7 +94,7 @@ export function generateHTML(config, instanceId) {
           <div class="process-slide ${idx === 0 ? 'active' : ''}" id="${instanceId}-process-slide-${idx}" role="group" aria-roledescription="step" aria-label="Step ${idx + 1} of ${total}" tabindex="-1" ${idx === 0 ? '' : 'hidden'}>
             <h3>${escapeHTML(item.title || 'Step Headline')}</h3>
             ${durationLine}
-            <div class="process-slide-body"><p>${contentHtml}</p></div>
+            <div class="process-slide-body">${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, idx)}</div>
             ${branchControlsHtml}
           </div>
         `;
@@ -436,7 +437,9 @@ export function generateCSS() {
     .process-controls-row .btn:focus-visible {
       outline: 3px solid var(--att-cobalt, var(--primary));
       outline-offset: 2px;
-    }`;
+    }
+
+    ${getItemMediaCSS()}`;
 }
 
 export function generateJS(config, instanceId) {
@@ -456,6 +459,7 @@ export function generateJS(config, instanceId) {
 
       var container = document.getElementById('${instanceId}') || document;
       container.querySelectorAll('.process-slide').forEach(function(s) {
+        s.querySelectorAll('audio, video').forEach(function(mediaEl) { if (!mediaEl.paused) mediaEl.pause(); });
         s.classList.remove('active');
         s.hidden = true;
       });
@@ -594,6 +598,11 @@ export function generateJS(config, instanceId) {
 
 export function validate(config) {
   const errors = Array.isArray(config.items) && config.items.length >= 2 ? [] : ['Add at least two process steps.'];
+  (config.items || []).forEach((item, index) => {
+    if (item && item.media && item.media.type && item.media.type !== 'none') {
+      validateItemMedia(item.media, index).errors.forEach(err => errors.push(err));
+    }
+  });
   return { valid: errors.length === 0, errors };
 }
 

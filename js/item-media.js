@@ -274,7 +274,7 @@ export function validateItemMedia(media, itemIndex = 0) {
  * @param {string} [options.itemLabel] - Accessible human-readable label of the item
  * @returns {HTMLElement}
  */
-export function createItemMediaControl({ item, index, onChange, limits = MEDIA_LIMITS, store = mediaStore, itemLabel = '' }) {
+export function createItemMediaControl({ item, index, onChange, limits = MEDIA_LIMITS, store = mediaStore, itemLabel = '', allowedTypes = null }) {
   const currentType = getItemMediaType(item);
   if (!item.media || typeof item.media !== 'object') {
     item.media = currentType !== 'none' ? { ...createEmptyItemMedia(currentType), type: currentType } : createDefaultItemMedia();
@@ -321,7 +321,7 @@ export function createItemMediaControl({ item, index, onChange, limits = MEDIA_L
     { value: 'image', label: 'Image (JPG, PNG, WebP, SVG, GIF)' },
     { value: 'audio', label: 'Audio (MP3, WAV, OGG, M4A)' },
     { value: 'video', label: 'Video (MP4, WebM)' }
-  ].forEach(opt => {
+  ].filter(opt => !Array.isArray(allowedTypes) || opt.value === 'none' || allowedTypes.includes(opt.value)).forEach(opt => {
     const el = document.createElement('option');
     el.value = opt.value;
     el.textContent = opt.label;

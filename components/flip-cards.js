@@ -1,6 +1,7 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
 import { escapeAttribute, escapeHTML, sanitizeRichText, sanitizeURL } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
+import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia, isItemMediaActive } from '../js/item-media.js';
 
 export const id = 'flip-cards';
 export const name = '3D Flip Cards';
@@ -81,15 +82,16 @@ export function generateHTML(config, instanceId) {
       const frontArtwork = renderCardArtwork(card.front, defaultFrontIcon);
       const backArtwork = renderCardArtwork(card.back);
       const cardCategory = (card.front.category || '').trim();
+      const hasMedia = isItemMediaActive(card.front.media) || isItemMediaActive(card.back.media);
       return `
-      <div class="flip-card" role="button" tabindex="0" aria-expanded="false" aria-controls="${instanceId}-flip-card-back-${index}" aria-label="Reveal ${escapeAttribute(backLabel)} of ${escapeAttribute(card.front.title || 'Flip card')}" data-idx="${index}" ${cardCategory ? `data-category="${escapeAttribute(cardCategory)}"` : ''}>
+      <div class="flip-card${hasMedia ? ' has-media' : ''}" role="button" tabindex="0" aria-expanded="false" aria-controls="${instanceId}-flip-card-back-${index}" aria-label="Reveal ${escapeAttribute(backLabel)} of ${escapeAttribute(card.front.title || 'Flip card')}" data-idx="${index}" ${cardCategory ? `data-category="${escapeAttribute(cardCategory)}"` : ''}>
         <div class="flip-card-inner">
         <div class="flip-card-front" id="${instanceId}-flip-card-front-${index}" aria-hidden="false">
           ${studyMode ? '<span class="flip-status-badge" data-role="status-badge" hidden></span>' : ''}
-          <div class="card-icon-badge">${frontArtwork}</div><h3>${escapeHTML(card.front.title || 'Front Title')}</h3><p>${sanitizeRichText(card.front.content || 'Click to reveal definition.')}</p>
+          <div class="card-icon-badge">${frontArtwork}</div><h3>${escapeHTML(card.front.title || 'Front Title')}</h3>${wrapItemMediaContent(card.front.media, `<p>${sanitizeRichText(card.front.content || 'Click to reveal definition.')}</p>`, instanceId, index * 2)}
         </div>
         <div class="flip-card-back" id="${instanceId}-flip-card-back-${index}" aria-hidden="true">
-          ${backArtwork ? `<div class="card-icon-badge">${backArtwork}</div>` : ''}<h3>${escapeHTML(card.back.title || 'Back Title')}</h3><p>${sanitizeRichText(card.back.content || 'Back description content goes here.')}</p>
+          ${backArtwork ? `<div class="card-icon-badge">${backArtwork}</div>` : ''}<h3>${escapeHTML(card.back.title || 'Back Title')}</h3>${wrapItemMediaContent(card.back.media, `<p>${sanitizeRichText(card.back.content || 'Back description content goes here.')}</p>`, instanceId, index * 2 + 1)}
           ${studyMode ? `
             <div class="flip-classify-row">
               <button type="button" class="flip-classify-btn flip-know-btn" data-classify="know" tabindex="-1" aria-pressed="false">${knowIcon}I know this</button>
@@ -352,7 +354,15 @@ export function generateCSS() {
       .flip-card-front, .flip-card-back { transition: none !important; }
       .flip-card.flipped .flip-card-front { display: none; }
       .flip-card:not(.flipped) .flip-card-back { display: none; }
-    }`;
+    }
+
+    ${getItemMediaCSS()}
+
+    /* A card with media is taller and stacks the picture above the words; a face scrolls if it still overflows. */
+    .flip-card.has-media { height: 380px; }
+    .flip-card.has-media .flip-card-front, .flip-card.has-media .flip-card-back { overflow-y: auto; justify-content: flex-start; }
+    .flip-card .item-content-layout { display: flex; flex-direction: column; gap: 8px; }
+    .flip-card .item-media-slot img { max-height: 170px; width: auto; max-width: 100%; object-fit: contain; }`;
 }
 
 export function generateJS(config, instanceId) {
@@ -538,5 +548,10 @@ export function validate(config) {
   // missing or blank value never produces broken output — including for a project saved
   // before this field existed, which must still export cleanly with no config change.
   const errors = Array.isArray(config.items) && config.items.length ? [] : ['Add at least one card face.'];
+  (config.items || []).forEach((item, index) => {
+    if (item && item.media && item.media.type && item.media.type !== 'none') {
+      validateItemMedia(item.media, index).errors.forEach(err => errors.push(err));
+    }
+  });
   return { valid: errors.length === 0, errors };
 }

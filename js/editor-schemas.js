@@ -50,7 +50,9 @@ export const editorSchemas = {
     // front+back, 2+3 = card 2's, ...) — see components/flip-cards.js#generateHTML.
     // pairLabels makes that pairing visible in the editor's item headings instead of
     // a flat "Card Face 1, 2, 3, 4" that gives no hint two entries make one card.
-    itemLabel: 'Card Face', minItems: 2, pairLabels: ['Front', 'Back'],
+    itemLabel: 'Card Face', minItems: 2, pairLabels: ['Front', 'Back'], supportsItemMedia: true,
+    // Images only: a card is one big button, so audio/video controls inside it would flip the card.
+    itemMediaTypes: ['image'],
     itemFields: [
       field('title', 'Face Title', 'text', { required: true, default: 'Card Face' }),
       field('content', 'Face Content', 'richtext', { required: true, default: 'Add card content.' }),
@@ -224,13 +226,14 @@ export const editorSchemas = {
       field('instantValidation', 'Enable Live Validation as Learner Types', 'checkbox', { default: false })
     ],
     itemFields: [
-      field('title', 'Sentence with [blank]', 'richtext', { required: true, default: 'Enter a sentence containing [blank].', pattern: '\\[blank\\]', patternMessage: 'Include one [blank] token.' }),
-      field('content', 'Accepted Answers (comma-separated for synonyms)', 'text', { required: true, default: 'answer, alternative' }),
+      field('title', 'Sentence with [blank]', 'richtext', { required: true, default: 'Enter a sentence containing [blank].', pattern: '\\[blank\\]', patternMessage: 'Include at least one [blank] token.' }),
+      // One blank: the accepted answers, comma-separated for synonyms. Several blanks: one line per blank, in order.
+      field('content', 'Accepted Answers (comma-separated for synonyms; one line per blank if the sentence has several)', 'textarea', { required: true, default: 'answer, alternative' }),
       field('hint', 'Progressive Clue / Hint (Optional)', 'textarea', { required: false, default: '' })
     ]
   },
   'vertical-timeline': {
-    itemLabel: 'Timeline Event', minItems: 2,
+    itemLabel: 'Timeline Event', minItems: 2, supportsItemMedia: true,
     componentLabel: 'Timeline Layout & Options',
     componentFields: [
       field('timelineCategoriesEnabled', 'Enable Category Badges & Filters', 'checkbox', { default: false }),
@@ -247,7 +250,7 @@ export const editorSchemas = {
     ]
   },
   'horizontal-timeline': {
-    itemLabel: 'Timeline Milestone', minItems: 2,
+    itemLabel: 'Timeline Milestone', minItems: 2, supportsItemMedia: true,
     itemFields: [
       ...contentFields,
       field('markerLabel', 'Marker Number or Label (Optional)', 'text', { required: false, default: '', maxLength: 4 }),
@@ -256,7 +259,7 @@ export const editorSchemas = {
     ]
   },
   'process-flow': {
-    itemLabel: 'Process Step', minItems: 2,
+    itemLabel: 'Process Step', minItems: 2, supportsItemMedia: true,
     componentLabel: 'Workflow Navigation & Rules',
     componentFields: [
       field('processClickableNav', 'Allow Direct Clicking on Steps & Breadcrumbs', 'checkbox', { default: true }),

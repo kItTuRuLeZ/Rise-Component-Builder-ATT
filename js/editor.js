@@ -492,6 +492,7 @@ export function createSchemaItemEditor({ container, onChange, focusFallback }) {
             item,
             index,
             itemLabel: itemTitle,
+            allowedTypes: schema.itemMediaTypes || null,
             limits,
             onChange: () => {
               onChange();

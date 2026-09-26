@@ -30,6 +30,24 @@ export const defaultConfig = {
 };
 export const editorSchema = getEditorSchema(id);
 
+/** How many [blank] tokens a sentence has. */
+export function countBlanks(sentence) {
+  return (String(sentence || '').match(/\[blank\]/gi) || []).length;
+}
+
+/**
+ * The accepted-answer text for each blank in an item, in order. A sentence with one blank uses the
+ * whole answer field (commas, pipes or semicolons separate synonyms, as before). A sentence with
+ * several blanks takes one line per blank, with synonyms separated by commas on each line.
+ */
+export function getBlankAnswers(item) {
+  const total = countBlanks(item && item.title);
+  const raw = String((item && item.content) || '');
+  if (total <= 1) return [raw];
+  const lines = raw.split(/\r?\n/).map(line => line.trim());
+  return Array.from({ length: total }, (_, i) => lines[i] || '');
+}
+
 export function generateHTML(config, instanceId) {
   const instantValidation = config.instantValidation === true;
 
@@ -38,7 +56,14 @@ export function generateHTML(config, instanceId) {
       <p id="${instanceId}-blank-instructions" class="sr-only">Fill in each blank, then check your answers.</p>
       ${config.items.map((item, idx) => {
         const sentence = item.title || '';
-        const blanked = sentence.replace(/\[blank\]/gi, `<input type="text" class="blank-input" data-index="${idx}" id="${instanceId}-input-${idx}" aria-label="Answer for sentence ${idx + 1}" aria-describedby="${instanceId}-blank-status-${idx}" autocomplete="off" spellcheck="false">`);
+        const blankTotal = countBlanks(sentence);
+        let blankNumber = 0;
+        const blanked = sentence.replace(/\[blank\]/gi, () => {
+          const n = blankNumber++;
+          const inputId = n === 0 ? `${instanceId}-input-${idx}` : `${instanceId}-input-${idx}-${n}`;
+          const label = blankTotal > 1 ? `Answer ${n + 1} of ${blankTotal} for sentence ${idx + 1}` : `Answer for sentence ${idx + 1}`;
+          return `<input type="text" class="blank-input" data-index="${idx}" data-blank="${n}" id="${inputId}" aria-label="${label}" aria-describedby="${instanceId}-blank-status-${idx}" autocomplete="off" spellcheck="false">`;
+        });
         return `
           <div class="blank-sentence-card" id="${instanceId}-card-${idx}">
             <div class="blank-sentence-main">
@@ -269,34 +294,57 @@ export function generateJS(config, instanceId) {
       });
     }
 
+    function splitBlankAnswers(item) {
+      var total = ((item.title || '').match(/\\[blank\\]/gi) || []).length;
+      var raw = String(item.content || '');
+      if (total <= 1) return [raw];
+      var lines = raw.split(/\\r?\\n/).map(function(line) { return line.trim(); });
+      var out = [];
+      for (var i = 0; i < total; i++) out.push(lines[i] || '');
+      return out;
+    }
+
     function checkBlanks() {
       var allCorrect = true;
       var anyEmpty = false;
 
       items.forEach(function(item, idx) {
-        var input = document.getElementById('${instanceId}-input-' + idx);
+        var answers = splitBlankAnswers(item);
         var badge = document.getElementById('${instanceId}-blank-status-' + idx);
-        if (!input) return;
+        var correctCount = 0;
+        var filledCount = 0;
 
-        var val = input.value;
-        if (!val.trim()) anyEmpty = true;
+        answers.forEach(function(answer, n) {
+          var input = document.getElementById('${instanceId}-input-' + idx + (n === 0 ? '' : '-' + n));
+          if (!input) return;
+          var val = input.value;
+          if (!val.trim()) anyEmpty = true; else filledCount++;
+          var isCorrect = checkAnswerMatch(val, answer);
 
-        var isCorrect = checkAnswerMatch(val, item.content);
+          input.classList.remove('is-correct', 'is-incorrect');
+          if (isCorrect) {
+            correctCount++;
+            input.classList.add('is-correct');
+            input.setAttribute('aria-invalid', 'false');
+          } else if (val.trim()) {
+            allCorrect = false;
+            input.classList.add('is-incorrect');
+            input.setAttribute('aria-invalid', 'true');
+          } else {
+            allCorrect = false;
+            input.removeAttribute('aria-invalid');
+          }
+        });
 
-        input.classList.remove('is-correct', 'is-incorrect');
-        if (isCorrect) {
-          input.classList.add('is-correct');
-          input.setAttribute('aria-invalid', 'false');
-          if (badge) { badge.innerHTML = fbCheckIcon + ' Correct'; badge.style.color = 'var(--att-cta-bg, #00388F)'; }
-        } else if (val.trim()) {
-          allCorrect = false;
-          input.classList.add('is-incorrect');
-          input.setAttribute('aria-invalid', 'true');
-          if (badge) { badge.innerHTML = fbCrossIcon + ' Incorrect'; badge.style.color = 'var(--att-cta-bg, #00388F)'; }
-        } else {
-          allCorrect = false;
-          input.removeAttribute('aria-invalid');
-          if (badge) badge.textContent = '';
+        if (badge) {
+          badge.style.color = 'var(--att-cta-bg, #00388F)';
+          if (correctCount === answers.length) {
+            badge.innerHTML = fbCheckIcon + ' Correct';
+          } else if (filledCount > 0) {
+            badge.innerHTML = fbCrossIcon + (answers.length > 1 ? ' ' + correctCount + ' of ' + answers.length + ' correct' : ' Incorrect');
+          } else {
+            badge.textContent = '';
+          }
         }
       });
 
@@ -364,6 +412,13 @@ export function validate(config) {
       }
       if (!item.title.includes('[blank]')) {
         results.push({ valid: false, error: `Question ${index + 1}: Sentence must contain [blank] placeholder.` });
+      }
+      const blankTotal = countBlanks(item.title);
+      if (blankTotal > 1) {
+        const missing = getBlankAnswers(item).findIndex(answer => !answer);
+        if (missing !== -1) {
+          results.push({ valid: false, error: `Question ${index + 1}: The sentence has ${blankTotal} blanks, so the answers need one line per blank. Blank ${missing + 1} has no answer.` });
+        }
       }
     });
   }

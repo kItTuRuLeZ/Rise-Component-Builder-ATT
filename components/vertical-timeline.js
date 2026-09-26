@@ -2,6 +2,7 @@ import { getEditorSchema } from '../js/editor-schemas.js';
 import { escapeAttribute, escapeHTML, sanitizeRichText } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 import { combineValidationResults } from '../js/validation-utils.js';
+import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/item-media.js';
 
 /**
  * Vertical Timeline Component Configuration
@@ -61,7 +62,7 @@ function renderStep(item, index, instanceId, opts) {
         <button type="button" class="step-toggle-btn" id="${instanceId}-step-toggle-${index}" aria-expanded="false" aria-controls="${instanceId}-step-body-${index}" ${locked ? `aria-disabled="true" aria-describedby="${instanceId}-step-lock-note-${index}"` : ''}>
           ${lockIconSlot}<h4>${item.title ? sanitizeRichText(item.title) : 'Step Title'}</h4>${categoryBadge}${visitedBadge}
         </button>
-        <div class="step-body" id="${instanceId}-step-body-${index}" hidden><p>${contentHtml}</p></div>
+        <div class="step-body" id="${instanceId}-step-body-${index}" hidden>${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, index)}</div>
         ${lockNote}
       </div>
     </div>`;
@@ -71,7 +72,7 @@ function renderStep(item, index, instanceId, opts) {
     <div class="step-marker" aria-hidden="true"><span class="step-num">${stepNum}</span></div>
     <div class="step-card">
       <h4>${lockIconSlot}${item.title ? sanitizeRichText(item.title) : 'Step Title'}${categoryBadge}${visitedBadge}</h4>
-      <p>${contentHtml}</p>
+      ${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, index)}
       ${lockNote}
     </div>
   </div>`;
@@ -393,7 +394,9 @@ export function generateCSS() {
       .timeline-compare-layout {
         grid-template-columns: 1fr;
       }
-    }`;
+    }
+
+    ${getItemMediaCSS()}`;
 }
 
 export function generateJS(config, instanceId) {
@@ -508,6 +511,7 @@ export function generateJS(config, instanceId) {
               }
               var expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
               toggleBtn.setAttribute('aria-expanded', String(!expanded));
+              if (expanded) body.querySelectorAll('audio, video').forEach(function(mediaEl) { if (!mediaEl.paused) mediaEl.pause(); });
               body.hidden = expanded;
               if (!expanded) markStepViewed(idx);
             });
@@ -570,6 +574,9 @@ export function validate(config) {
       }
       if (!item.content || !String(item.content).trim()) {
         results.push({ valid: false, error: `Step ${index + 1}: Description is required.` });
+      }
+      if (item.media && item.media.type && item.media.type !== 'none') {
+        validateItemMedia(item.media, index).errors.forEach(err => results.push({ valid: false, error: err }));
       }
     });
   }

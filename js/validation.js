@@ -1200,7 +1200,7 @@ function checkFillBlankFuzzyRules(config) {
   const items = Array.isArray(config.items) ? config.items : [];
   const issues = [];
   items.forEach((item, itemIndex) => {
-    const answers = String(item.content ?? '').split(/[,|]/).map(a => a.trim()).filter(Boolean);
+    const answers = String(item.content ?? '').split(/[,|\n]/).map(a => a.trim()).filter(Boolean);
     const tooShortAnswers = answers.filter(a => a.length <= 2);
     if (tooShortAnswers.length > 0) {
       issues.push(issue('fill-blank-fuzzy-no-answers', SEVERITY.WARNING, CATEGORY.KNOWLEDGE,
