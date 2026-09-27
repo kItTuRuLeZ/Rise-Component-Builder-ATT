@@ -112,7 +112,18 @@ export async function detectRisePackage(zipBlob) {
     const manifestEntry = byPath.get('imsmanifest.xml');
     if (manifestEntry) {
       const manifestText = new TextDecoder().decode(manifestEntry.data);
-      const is2004 = manifestText.includes('CAM 1.3') || manifestText.includes('2004') || manifestText.includes('adlcp:scormType');
+      // 27 September 2026 functional audit, section 4: `adlcp:scormtype`/`adlcp:scormType`
+      // marks a resource as a "sco" and is part of the Content Packaging extension BOTH SCORM
+      // versions share — it appears in nearly every valid manifest of either version, so its
+      // mere presence can't tell 1.2 and 2004 apart, and using it here would misclassify most
+      // real SCORM 1.2 packages as 2004. The genuinely 2004-exclusive signals are its Content
+      // Aggregation Model version ("CAM 1.3", vs 1.2's "CAM 1.2") and its Simple Sequencing &
+      // Navigation extensions (adlseq/adlnav/imsss namespaces), which don't exist in 1.2 at all.
+      // Not verified against a real Rise-exported SCORM manifest of either version (see the
+      // file-level comment above — no real Rise export is bundled with this repo).
+      const is2004 = manifestText.includes('CAM 1.3')
+        || manifestText.includes('2004')
+        || /xmlns:adlseq\b|xmlns:adlnav\b|xmlns:imsss\b/i.test(manifestText);
       const packageType = is2004 ? 'scorm2004' : 'scorm12';
       const href = manifestLaunchHref(manifestText);
       let launch = '';

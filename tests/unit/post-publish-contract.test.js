@@ -65,6 +65,40 @@ describe('package input contract', () => {
     expect(bad.valid).toBe(false);
     expect(bad.error).toMatch(/missing\/launch\.html/);
     expect(bad.error).toMatch(/not in the package/i);
+    // adlcp:scormType marks a resource as a "sco" in BOTH SCORM 1.2 and 2004 manifests, so its
+    // mere presence (with no CAM 1.3 / Simple Sequencing markers) must not by itself imply 2004 —
+    // audit 2026-09-27, section 4.
+    expect(good.packageType).toBe('scorm12');
+  });
+
+  // 27 September 2026 functional audit, section 4: "review SCORM 1.2/2004 detection honesty".
+  // The previous heuristic treated `adlcp:scormType`'s mere presence as a 2004 signal, but that
+  // attribute is part of the Content Packaging extension both spec versions share — it appears
+  // in nearly every valid manifest of either version, so it can't tell them apart. This would
+  // have misclassified the plain 1.2 fixture above (and most real SCORM 1.2 packages) as 2004.
+  test('SCORM version is read from genuinely 2004-exclusive markers, not from adlcp:scormType alone', async () => {
+    const v12 = await detectRisePackage(zipOf([
+      { path: 'imsmanifest.xml', data: '<manifest><metadata><schemaversion>1.2</schemaversion></metadata><resources><resource identifier="r1" type="webcontent" adlcp:scormtype="sco" href="index.html"/></resources></manifest>' },
+      { path: 'index.html', data: html('x') }
+    ]));
+    expect(v12.packageType).toBe('scorm12');
+    expect(v12.label).toBe('SCORM 1.2 package');
+
+    // Simple Sequencing & Navigation (adlseq/adlnav/imsss) is a 2004-only extension — it does
+    // not exist in 1.2 at all, so its presence is a genuine, exclusive 2004 signal even without
+    // the literal string "2004" or "CAM 1.3" anywhere in the manifest.
+    const v2004ViaSequencing = await detectRisePackage(zipOf([
+      { path: 'imsmanifest.xml', data: '<manifest xmlns:adlseq="http://www.adlnet.org/xsd/adlseq_v1p3" xmlns:adlnav="http://www.adlnet.org/xsd/adlnav_v1p3"><resources><resource identifier="r1" type="webcontent" adlcp:scormtype="sco" href="index.html"/></resources></manifest>' },
+      { path: 'index.html', data: html('x') }
+    ]));
+    expect(v2004ViaSequencing.packageType).toBe('scorm2004');
+
+    const v2004ViaCam = await detectRisePackage(zipOf([
+      { path: 'imsmanifest.xml', data: '<manifest><metadata><schema>ADL SCORM</schema><schemaversion>CAM 1.3</schemaversion></metadata><resources><resource identifier="r1" type="webcontent" adlcp:scormtype="sco" href="index.html"/></resources></manifest>' },
+      { path: 'index.html', data: html('x') }
+    ]));
+    expect(v2004ViaCam.packageType).toBe('scorm2004');
+    expect(v2004ViaCam.label).toBe('SCORM 2004 package');
   });
 });
 
