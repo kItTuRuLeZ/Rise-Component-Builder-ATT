@@ -671,10 +671,39 @@
   pointer-events: none;
 }
 
+/* AT&T Globe watermark in the hero's corner: faint, decorative, sits behind the glow above.
+   Hidden below 1200px, where it would meet the stats row. */
+.hero-att-globe-pattern {
+  position: absolute;
+  right: -40px;
+  bottom: -60px;
+  width: 280px;
+  height: 280px;
+  opacity: 0.14;
+  pointer-events: none;
+}
+@media (max-width: 1200px) {
+  .hero-att-globe-pattern { display: none; }
+}
+@media (forced-colors: active) {
+  .hero-att-globe-pattern { display: none; }
+}
+
 .dashboard-hero-content {
   position: relative;
   z-index: 2;
   max-width: 860px;
+}
+
+.hero-att-logo {
+  margin: 0 0 20px;
+  line-height: 0;
+}
+
+.hero-att-logo .att-logo {
+  display: block;
+  height: 40px;
+  width: auto;
 }
 
 .dashboard-hero-eyebrow {

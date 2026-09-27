@@ -12,6 +12,7 @@ import {
 } from '../project-schema.js';
 import { showPromptDialog, showConfirmDialog, isolateModal } from './att-modal.js';
 import { showToast } from '../toast.js';
+import { attLogoSvg } from '../att-logos.js';
 
 export class DashboardView {
   constructor({
@@ -168,7 +169,11 @@ export class DashboardView {
 
           <!-- Hero Landing Header -->
           <header class="dashboard-hero-section">
+            <!-- AT&T Globe: faint watermark in the hero's corner, decorative. -->
+            <img class="hero-att-globe-pattern" src="./favicon.svg" alt="" aria-hidden="true">
             <div class="dashboard-hero-content">
+              <!-- AT&T logo: white on the dark hero, 40px tall (min 32px). -->
+              <div class="hero-att-logo">${attLogoSvg({ tone: 'white', height: 40 })}</div>
               <div class="dashboard-hero-eyebrow">
                 <span class="hero-brand-pill">Aptara Learning Interaction Studio · AT&amp;T edition</span>
                 <span class="hero-compliance-pill">
