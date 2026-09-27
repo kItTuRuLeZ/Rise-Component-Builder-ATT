@@ -7,10 +7,31 @@ import {
   buildProjectSchemaV3, validateProjectV3
 } from './project-schema.js';
 import { backupLegacyProjects, migrateProjectToV3 } from './project-migration.js';
+import { EDITION, namespacedKey, ownedByThisEdition } from './client-isolation.js';
 
 export const SCHEMA_VERSION = 3;
 
+// The keys this edition reads and writes going forward — each namespaced by EDITION so the
+// AT&T and PMI editions, which share one browser origin, never collide (client-isolation.js,
+// 27 September 2026 functional audit, section 3).
 export const KEYS = {
+  projects: namespacedKey('rise-builder-projects-v1'),
+  draft: namespacedKey('rise-builder-draft-v1'),
+  favorites: namespacedKey('rise-builder-favorites-v1'),
+  recentlyUsed: namespacedKey('rise-builder-recently-used-v1'),
+  settings: namespacedKey('rise-builder-settings-v1'),
+  uiTheme: namespacedKey('rise-builder-theme'),
+  customThemes: namespacedKey('rise-builder-custom-themes-v1'),
+  defaultTheme: namespacedKey('rise-builder-default-theme-v1'),
+  previewDevice: namespacedKey('rise-builder-preview-device-v1')
+};
+
+// The un-namespaced keys every build used before this edition split — read-only, migration
+// source. Never written to and never deleted: a project or preference this edition doesn't
+// confidently claim (see ownedByThisEdition) stays here, untouched, for the author to import
+// explicitly (getUnclaimedLegacyProjects/importLegacyProjectById below) or for the other
+// edition's own migration to claim.
+const LEGACY_KEYS = {
   projects: 'rise-builder-projects-v1',
   draft: 'rise-builder-draft-v1',
   favorites: 'rise-builder-favorites-v1',
@@ -21,6 +42,7 @@ export const KEYS = {
   defaultTheme: 'rise-builder-default-theme-v1',
   previewDevice: 'rise-builder-preview-device-v1'
 };
+const MIGRATION_MARKER_KEY = namespacedKey('rise-builder-storage-migrated-v1');
 
 const DEFAULT_SETTINGS = {
   defaultFont: 'Lato',
@@ -294,7 +316,94 @@ function upgradeToV3(project) {
   }
 }
 
+/**
+ * One-time, non-destructive claim of pre-split shared data (27 September 2026 functional
+ * audit, section 3). Runs once per browser profile (guarded by MIGRATION_MARKER_KEY) the
+ * first time this module is used. Never writes to, moves, or deletes anything under a
+ * LEGACY_KEYS key — every legacy record this edition doesn't confidently own (see
+ * ownedByThisEdition) is left exactly where it was, for the other edition's own migration,
+ * or for the author to import explicitly via importLegacyProjectById.
+ */
+function migrateLegacyStorage() {
+  try {
+    if (localStorage.getItem(MIGRATION_MARKER_KEY)) return;
+
+    // Projects: claim only those whose clientLabel confidently names this edition. A
+    // project already present under this edition's own key (by id) is left alone, so
+    // re-running this function (or an author's own edits since) is always safe.
+    const legacyProjects = readJson(LEGACY_KEYS.projects, []);
+    if (Array.isArray(legacyProjects) && legacyProjects.length) {
+      const owned = readJson(KEYS.projects, []);
+      const ownedIds = new Set((Array.isArray(owned) ? owned : []).map(p => p?.id).filter(Boolean));
+      const claimed = legacyProjects.filter(p => isObject(p) && !ownedIds.has(p.id) && ownedByThisEdition(p.clientLabel));
+      if (claimed.length) writeJson(KEYS.projects, [...(Array.isArray(owned) ? owned : []), ...claimed]);
+    }
+
+    // Draft: a single in-progress snapshot, not a list — claim it only if this edition has
+    // none of its own yet and the legacy draft's embedded project confidently names this
+    // edition, so an author's actual unsaved work never silently surfaces in the other build.
+    if (localStorage.getItem(KEYS.draft) === null) {
+      const legacyDraft = readJson(LEGACY_KEYS.draft, null);
+      if (isObject(legacyDraft) && ownedByThisEdition(legacyDraft.clientLabel)) {
+        writeJson(KEYS.draft, legacyDraft);
+      }
+    }
+
+    // UI preferences (favorites, recently used, settings, themes, preview device): not
+    // client-owned data, so a plain one-time copy-forward is safe — worst case a preference
+    // is duplicated into both editions, never lost or misattributed.
+    for (const name of ['favorites', 'recentlyUsed', 'settings', 'uiTheme', 'customThemes', 'defaultTheme', 'previewDevice']) {
+      if (localStorage.getItem(KEYS[name]) !== null) continue;
+      const legacyValue = localStorage.getItem(LEGACY_KEYS[name]);
+      if (legacyValue !== null) localStorage.setItem(KEYS[name], legacyValue);
+    }
+
+    localStorage.setItem(MIGRATION_MARKER_KEY, new Date().toISOString());
+  } catch (error) {
+    console.warn('[Storage Migration] Could not migrate pre-edition-split local data:', error);
+  }
+}
+
+/**
+ * Legacy (pre-split) projects this edition has not claimed: either their clientLabel names
+ * the other edition, or it's blank/unrecognised. Nothing here has been touched — each is
+ * exactly as it was under the shared key — so the dashboard can offer them for explicit
+ * import (importLegacyProjectById) without any risk of silently reassigning someone else's
+ * project or double-claiming one already imported.
+ */
+export function getUnclaimedLegacyProjects() {
+  try {
+    const legacyProjects = readJson(LEGACY_KEYS.projects, []);
+    if (!Array.isArray(legacyProjects)) return [];
+    const ownedIds = new Set(loadProjects().map(p => p.id));
+    return legacyProjects
+      .filter(p => isObject(p) && typeof p.id === 'string' && !ownedIds.has(p.id) && !ownedByThisEdition(p.clientLabel))
+      .map(p => ({ id: p.id, name: String(p.name || p.title || 'Untitled project'), clientLabel: p.clientLabel || null, updatedAt: p.updatedAt || p.createdAt || null }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Explicit author action: copies one unclaimed legacy project into this edition (validated
+ * and upgraded exactly like any other saveProject call). The source record in LEGACY_KEYS
+ * is left untouched — this is a copy, not a move, so it stays available to the other
+ * edition too and nothing is lost if the import target was a mistake.
+ */
+export function importLegacyProjectById(id) {
+  migrateLegacyStorage();
+  const legacyProjects = readJson(LEGACY_KEYS.projects, []);
+  const record = Array.isArray(legacyProjects) ? legacyProjects.find(p => isObject(p) && p.id === id) : null;
+  if (!record) throw new Error('That legacy project could not be found.');
+  const result = validateProject(record);
+  if (!result.valid) throw new Error(`That legacy project could not be imported: ${result.error}`);
+  const owned = readJson(KEYS.projects, []);
+  writeJson(KEYS.projects, [...(Array.isArray(owned) ? owned : []), upgradeToV3(result.project)]);
+  return getProject(id);
+}
+
 export function loadProjects() {
+  migrateLegacyStorage();
   const stored = readJson(KEYS.projects, []);
   if (!Array.isArray(stored)) return [];
   // Keep a one-time copy of the original records before any later save rewrites them as v3.
@@ -386,6 +495,7 @@ export function importProjectJson(text) {
 
 export function saveDraft(project) { writeJson(KEYS.draft, project); }
 export function loadDraft() {
+  migrateLegacyStorage();
   const result = validateProject(readJson(KEYS.draft, null));
   return result.valid ? result.project : null;
 }
@@ -427,6 +537,7 @@ export function compareDraftToSaved(draft, savedProjects = loadProjects()) {
 }
 
 export function loadUiTheme() {
+  migrateLegacyStorage();
   try { return localStorage.getItem(KEYS.uiTheme) === 'dark' ? 'dark' : 'light'; }
   catch { return 'light'; }
 }
@@ -440,6 +551,7 @@ export const loadTheme = loadUiTheme;
 export const saveTheme = saveUiTheme;
 
 export function loadCustomThemes() {
+  migrateLegacyStorage();
   const stored = readJson(KEYS.customThemes, []);
   if (!Array.isArray(stored)) return [];
   return stored.map(validateTheme).filter(result => result.valid && !result.theme.isBuiltIn && !result.theme.isLocked)
@@ -469,6 +581,7 @@ export function deleteCustomTheme(id) {
 }
 
 export function loadDefaultThemeId() {
+  migrateLegacyStorage();
   try {
     const id = localStorage.getItem(KEYS.defaultTheme);
     const exists = id && [...BUILT_IN_THEMES, ...loadCustomThemes()].some(theme => theme.id === id);
@@ -485,6 +598,7 @@ export function saveDefaultThemeId(id) {
 }
 
 export function loadFavorites() {
+  migrateLegacyStorage();
   const value = readJson(KEYS.favorites, []);
   return Array.isArray(value) ? value.filter(item => typeof item === 'string') : [];
 }
@@ -498,6 +612,7 @@ export function saveFavorites(favorites) { writeJson(KEYS.favorites, [...favorit
 export const RECENTLY_USED_LIMIT = 8;
 
 export function loadRecentlyUsed() {
+  migrateLegacyStorage();
   const value = readJson(KEYS.recentlyUsed, []);
   return Array.isArray(value) ? value.filter(item => typeof item === 'string').slice(0, RECENTLY_USED_LIMIT) : [];
 }
@@ -508,6 +623,7 @@ export function withRecentlyUsedEntry(recentlyUsed, componentId) {
 }
 
 export function loadPreviewDevice() {
+  migrateLegacyStorage();
   const value = readJson(KEYS.previewDevice, DEFAULT_DEVICE_MODE);
   return isValidDeviceMode(value) ? value : DEFAULT_DEVICE_MODE;
 }
@@ -515,7 +631,7 @@ export function savePreviewDevice(mode) {
   writeJson(KEYS.previewDevice, isValidDeviceMode(mode) ? mode : DEFAULT_DEVICE_MODE);
 }
 
-export function loadSettings() { return normalizeSettings(readJson(KEYS.settings, DEFAULT_SETTINGS)); }
+export function loadSettings() { migrateLegacyStorage(); return normalizeSettings(readJson(KEYS.settings, DEFAULT_SETTINGS)); }
 export function saveSettings(settings) {
   const normalized = normalizeSettings(settings);
   writeJson(KEYS.settings, normalized);

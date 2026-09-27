@@ -125,8 +125,10 @@ test('classification filter works within every category and the two facets parti
 
 test('text search matches the full classification label across categories (Favorites + Recent keep the metadata)', async ({ page }) => {
   // Seed favorites: one enhanced (accordion) + one custom (menu-list) from different categories.
+  // Hardcoded to this edition's namespaced key (js/client-isolation.js) rather than fetched
+  // from the live app: addInitScript runs before the page's own JS, so no import is possible.
   await page.addInitScript(() => {
-    localStorage.setItem('rise-builder-favorites-v1', JSON.stringify(['accordion', 'menu-list']));
+    localStorage.setItem('rise-builder-att-favorites-v1', JSON.stringify(['accordion', 'menu-list']));
   });
   await catalog(page);
 

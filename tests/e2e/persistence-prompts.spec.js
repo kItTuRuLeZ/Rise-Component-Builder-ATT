@@ -27,7 +27,9 @@ async function seedAndOpen(page) {
   await expect(page.locator('#input-block-headline')).toHaveText('Overview');
 }
 
-const draftKey = 'rise-builder-draft-v1';
+// Fetched from the live app rather than hardcoded, so this can never drift out of sync with
+// js/client-isolation.js's edition-namespaced key (audit 2026-09-27, section 3).
+const draftKey = page => page.evaluate(async () => (await import('/js/storage.js')).KEYS.draft);
 
 test('the unsaved-changes prompt names the block and its course, not "Untitled project"', async ({ page }) => {
   await seedAndOpen(page);
@@ -47,13 +49,14 @@ test('an explicit save leaves no recovery banner on the dashboard', async ({ pag
   await page.goto('/?dashboard');
   await expect(page.locator('.project-card').filter({ hasText: 'Audit Course' })).toHaveCount(1);
   await expect(page.locator('.dashboard-draft-banner')).toHaveCount(0);
-  expect(await page.evaluate(key => localStorage.getItem(key), draftKey)).toBeNull();
+  expect(await page.evaluate(key => localStorage.getItem(key), await draftKey(page))).toBeNull();
 });
 
 test('a genuinely unsaved edit is still recoverable, with a timestamp and what it differs from', async ({ page }) => {
   await seedAndOpen(page);
   await page.locator('#input-block-headline').fill('Unsaved headline');
-  await expect.poll(() => page.evaluate(key => localStorage.getItem(key), draftKey), { timeout: 10000 }).not.toBeNull();
+  const key = await draftKey(page);
+  await expect.poll(() => page.evaluate(k => localStorage.getItem(k), key), { timeout: 10000 }).not.toBeNull();
   await page.goto('/?dashboard');
   const banner = page.locator('.dashboard-draft-banner');
   await expect(banner).toBeVisible();

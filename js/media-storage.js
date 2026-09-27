@@ -1,7 +1,13 @@
 import { blobToDataURL, collectMediaReferences, createMediaReference, isMediaReference } from './media.js';
 import { registerLocalBlobURL, revokeLocalBlobURL } from './utilities.js';
+import { EDITION } from './client-isolation.js';
 
-export const MEDIA_DB_NAME = 'rise-component-builder-media';
+// Edition-scoped: AT&T and PMI share one browser origin, so before this existed both builds
+// opened the exact same IndexedDB database and could read/delete each other's uploads
+// (27 September 2026 functional audit, section 3). LEGACY_MEDIA_DB_NAME is the pre-split
+// shared database — read-only migration source, see migrateLegacyMediaForClaimedProjects.
+export const MEDIA_DB_NAME = `rise-component-builder-${EDITION.toLowerCase()}-media`;
+export const LEGACY_MEDIA_DB_NAME = 'rise-component-builder-media';
 export const MEDIA_DB_VERSION = 1;
 export const MEDIA_STORE_NAME = 'media';
 
@@ -12,14 +18,14 @@ function requestResult(request) {
   });
 }
 
-export function createIndexedDBMediaStore(indexedDBFactory = globalThis.indexedDB) {
+export function createIndexedDBMediaStore(indexedDBFactory = globalThis.indexedDB, dbName = MEDIA_DB_NAME) {
   let databasePromise;
 
   function open() {
     if (!indexedDBFactory) return Promise.reject(new Error('IndexedDB is not available in this browser.'));
     if (databasePromise) return databasePromise;
     databasePromise = new Promise((resolve, reject) => {
-      const request = indexedDBFactory.open(MEDIA_DB_NAME, MEDIA_DB_VERSION);
+      const request = indexedDBFactory.open(dbName, MEDIA_DB_VERSION);
       request.onupgradeneeded = () => {
         const database = request.result;
         if (!database.objectStoreNames.contains(MEDIA_STORE_NAME)) {
@@ -64,6 +70,79 @@ export function createIndexedDBMediaStore(indexedDBFactory = globalThis.indexedD
 
 const defaultStore = createIndexedDBMediaStore();
 const runtimeObjectURLs = new Map();
+
+function rawOpenDatabase(indexedDBFactory, dbName) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDBFactory.open(dbName, MEDIA_DB_VERSION);
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(MEDIA_STORE_NAME)) {
+        const store = database.createObjectStore(MEDIA_STORE_NAME, { keyPath: 'id' });
+        store.createIndex('createdAt', 'createdAt');
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Could not open a local media database.'));
+    request.onblocked = () => reject(new Error('A local media database is blocked by another tab.'));
+  });
+}
+const rawGet = (database, id) => requestResult(database.transaction(MEDIA_STORE_NAME, 'readonly').objectStore(MEDIA_STORE_NAME).get(id));
+const rawPut = (database, record) => requestResult(database.transaction(MEDIA_STORE_NAME, 'readwrite').objectStore(MEDIA_STORE_NAME).put(record));
+
+/**
+ * One-time, non-destructive copy of the media every project this edition has already
+ * claimed (js/storage.js#migrateLegacyStorage) actually references, from the pre-split
+ * shared database into this edition's own (27 September 2026 functional audit, section 3).
+ * Never deletes from LEGACY_MEDIA_DB_NAME — a media record belonging to a project this
+ * edition hasn't claimed (or that the author never imports) simply stays there, exactly as
+ * it was, available to the other edition or to a later explicit import.
+ *
+ * Talks to both databases through their own direct connections rather than through
+ * `defaultStore`/`createIndexedDBMediaStore`'s open()+transact(), so a media read that
+ * happens to fire while this is still running can never deadlock waiting on itself.
+ */
+export async function migrateLegacyMediaForClaimedProjects(indexedDBFactory = globalThis.indexedDB) {
+  const marker = `rise-builder-${EDITION.toLowerCase()}-media-migrated-v1`;
+  if (!indexedDBFactory) return;
+  try {
+    if (localStorage.getItem(marker)) return;
+    const { loadProjects } = await import('./storage.js');
+    const projects = loadProjects();
+    const mediaIds = new Set();
+    for (const project of projects) {
+      const components = project.components ? Object.values(project.components) : [project];
+      for (const comp of components) {
+        collectMediaReferences(comp?.config).forEach(ref => {
+          const id = ref?.mediaId || ref?.assetId;
+          if (id) mediaIds.add(id);
+        });
+      }
+    }
+    if (mediaIds.size) {
+      const legacyDb = await rawOpenDatabase(indexedDBFactory, LEGACY_MEDIA_DB_NAME);
+      const targetDb = await rawOpenDatabase(indexedDBFactory, MEDIA_DB_NAME);
+      for (const id of mediaIds) {
+        const existing = await rawGet(targetDb, id);
+        if (existing) continue;
+        const record = await rawGet(legacyDb, id);
+        if (record) await rawPut(targetDb, record);
+      }
+      legacyDb.close();
+      targetDb.close();
+    }
+    localStorage.setItem(marker, new Date().toISOString());
+  } catch (error) {
+    console.warn('[Media Storage Migration] Could not migrate pre-edition-split media:', error);
+  }
+}
+// Fire-and-forget at module load, same as js/storage.js's synchronous migration: the first
+// ever load after this edition split runs it once (guarded by the marker above); everything
+// else this module does (get/put/delete) works normally regardless of timing, and simply
+// won't see a not-yet-migrated record until this finishes — which is fast (typically well
+// under the time it takes an author to open a project) and self-heals on the next read.
+if (typeof globalThis.indexedDB !== 'undefined') {
+  migrateLegacyMediaForClaimedProjects().catch(() => { /* already logged above */ });
+}
 
 export async function saveMediaRecord(record, store = defaultStore) {
   try {

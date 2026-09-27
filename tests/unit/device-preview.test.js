@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'vitest';
 import {
   DEFAULT_DEVICE_MODE, DEVICE_MODES, getDeviceMode, getDeviceWidthLabel, isValidDeviceMode
 } from '../../js/device-preview.js';
-import { loadPreviewDevice, savePreviewDevice } from '../../js/storage.js';
+import { loadPreviewDevice, savePreviewDevice, KEYS } from '../../js/storage.js';
 import { memoryLocalStorage } from '../fixtures/index.js';
 
 describe('device preview modes', () => {
@@ -57,7 +57,7 @@ describe('preview device persistence', () => {
   });
 
   test('falls back to desktop for a corrupted stored value', () => {
-    localStorage.setItem('rise-builder-preview-device-v1', JSON.stringify('not-a-real-device'));
+    localStorage.setItem(KEYS.previewDevice, JSON.stringify('not-a-real-device'));
     expect(loadPreviewDevice()).toBe('desktop');
   });
 

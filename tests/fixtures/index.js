@@ -63,9 +63,13 @@ export function memoryLocalStorage() {
 // js/media-storage.js#createIndexedDBMediaStore without a real browser. Shared by every
 // test file that needs a media store (tests/media.test.mjs, tests/rise-zip.test.mjs,
 // tests/project-package.test.mjs) so the fake's behavior can't quietly drift between them.
+// Keyed by database name, so a caller that opens two differently-named databases against
+// the SAME fake factory instance (js/media-storage.js's legacy-media-migration tests) gets
+// two genuinely separate record stores — not silently the same one — the same way real
+// IndexedDB would. Every existing caller only ever opens one name, so this is unobservable
+// to them: they still always get back the one database they asked for.
 export function createFakeIndexedDB() {
-  const records = new Map();
-  let database;
+  const databasesByName = new Map();
   const makeRequest = operation => {
     const request = {};
     queueMicrotask(() => {
@@ -74,22 +78,29 @@ export function createFakeIndexedDB() {
     });
     return request;
   };
-  const objectStore = {
-    createIndex() {},
-    put: value => makeRequest(() => { records.set(value.id, structuredClone(value)); return value.id; }),
-    get: id => makeRequest(() => records.get(id)),
-    delete: id => makeRequest(() => records.delete(id)),
-    getAll: () => makeRequest(() => [...records.values()])
-  };
-  database = {
-    objectStoreNames: { contains: () => true },
-    createObjectStore: () => objectStore,
-    transaction: () => ({ objectStore: () => objectStore })
+  const getOrCreateDatabase = name => {
+    if (databasesByName.has(name)) return databasesByName.get(name);
+    const records = new Map();
+    const objectStore = {
+      createIndex() {},
+      put: value => makeRequest(() => { records.set(value.id, structuredClone(value)); return value.id; }),
+      get: id => makeRequest(() => records.get(id)),
+      delete: id => makeRequest(() => records.delete(id)),
+      getAll: () => makeRequest(() => [...records.values()])
+    };
+    const database = {
+      objectStoreNames: { contains: () => true },
+      createObjectStore: () => objectStore,
+      transaction: () => ({ objectStore: () => objectStore }),
+      close() {}
+    };
+    databasesByName.set(name, database);
+    return database;
   };
   return {
-    open() {
+    open(name) {
       const request = {};
-      queueMicrotask(() => { request.result = database; request.onsuccess?.(); });
+      queueMicrotask(() => { request.result = getOrCreateDatabase(name ?? 'default'); request.onsuccess?.(); });
       return request;
     }
   };

@@ -902,6 +902,69 @@
   flex-shrink: 0;
 }
 
+/* Unclaimed legacy projects (client-isolation.js, audit 2026-09-27 section 3): same visual
+   family as the draft-recovery banner above, plus a scrollable per-project import list. */
+.dashboard-legacy-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--att-grey-1, #F3F4F5);
+  border: 1.5px solid var(--att-border, #DCDFE3);
+  border-radius: var(--att-radius-lg, 16px);
+  padding: 16px 22px;
+  margin-bottom: 28px;
+}
+
+[data-theme="dark"] .dashboard-legacy-banner {
+  background: #1A1A1A;
+  border-color: #3A3A3A;
+}
+
+.legacy-project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.legacy-project-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--att-surface, #FFFFFF);
+  border: 1px solid var(--att-border, #DCDFE3);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+[data-theme="dark"] .legacy-project-row {
+  background: #242424;
+  border-color: #3A3A3A;
+}
+
+.legacy-project-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.legacy-project-name {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--att-heading-contrast, #000);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legacy-project-meta {
+  font-size: 0.75rem;
+  color: var(--att-text-muted, #707780);
+}
+
 /* ==========================================================================
    STARTER CARDS GRID
    ========================================================================== */

@@ -5,7 +5,8 @@
 
 import {
   clearDraft, deleteProject, duplicateProject, exportProjectJson, getProject,
-  compareDraftToSaved, importProjectJson, loadDraft, loadProjects, saveProject, toggleFavoriteProject
+  compareDraftToSaved, importProjectJson, loadDraft, loadProjects, saveProject, toggleFavoriteProject,
+  getUnclaimedLegacyProjects, importLegacyProjectById
 } from '../storage.js';
 import {
   buildProjectSchemaV3, createComponentInstance, createSection
@@ -155,6 +156,11 @@ export class DashboardView {
     const draftRelation = draftStatus.reason === 'differs'
       ? `It has changes that are not in the saved project “${this.escapeHtml(draftStatus.savedName)}”.`
       : 'It has never been saved as a project.';
+    // Projects saved before AT&T and PMI had separate local storage, that this edition
+    // can't confidently attribute to itself (audit 2026-09-27, section 3). Never auto-
+    // claimed — listed here so the author can import one explicitly, or leave it for the
+    // other edition; nothing is touched until they choose.
+    const unclaimedLegacy = getUnclaimedLegacyProjects();
 
     // Clear any previous modal rendered in modal host if modal is closed
     const modalHost = this.getModalHost();
@@ -233,6 +239,35 @@ export class DashboardView {
                   <span>Resume Draft</span>
                 </button>
                 <button type="button" class="btn btn-att-secondary" id="btn-dismiss-draft">Dismiss</button>
+              </div>
+            </section>
+          ` : ''}
+
+          <!-- Unclaimed legacy projects: saved before AT&T/PMI had separate storage, and not
+               confidently this edition's own (see getUnclaimedLegacyProjects). Explicit
+               per-project import only — nothing here is touched automatically. -->
+          ${unclaimedLegacy.length ? `
+            <section class="dashboard-legacy-banner" aria-label="Legacy projects from before this edition kept its own storage">
+              <div class="draft-banner-left">
+                <div class="draft-banner-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"></path><path d="M1 3h22v5H1z"></path><path d="M10 12h4"></path></svg>
+                </div>
+                <div class="draft-banner-text">
+                  <div class="draft-banner-tags"><span class="draft-badge-pill">Legacy data found</span></div>
+                  <h3 class="draft-banner-title">${unclaimedLegacy.length} project${unclaimedLegacy.length === 1 ? '' : 's'} saved before this edition kept its own storage</h3>
+                  <p class="draft-banner-sub">Not shown below until you import ${unclaimedLegacy.length === 1 ? 'it' : 'each one'} — nothing is changed automatically.</p>
+                </div>
+              </div>
+              <div class="legacy-project-list">
+                ${unclaimedLegacy.map(p => `
+                  <div class="legacy-project-row" data-legacy-id="${this.escapeHtml(p.id)}">
+                    <div class="legacy-project-row-text">
+                      <span class="legacy-project-name">${this.escapeHtml(p.name)}</span>
+                      <span class="legacy-project-meta">${p.clientLabel ? `Labelled “${this.escapeHtml(p.clientLabel)}”` : 'No client label'}</span>
+                    </div>
+                    <button type="button" class="btn btn-att-secondary btn-sm" data-action="import-legacy-project" data-legacy-id="${this.escapeHtml(p.id)}">Import into this edition</button>
+                  </div>
+                `).join('')}
               </div>
             </section>
           ` : ''}
@@ -589,6 +624,20 @@ export class DashboardView {
         this.render();
       });
     }
+
+    // Import a legacy (pre-edition-split) project explicitly, one at a time.
+    this.container.querySelectorAll('[data-action="import-legacy-project"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.legacyId;
+        try {
+          const imported = importLegacyProjectById(id);
+          showToast(`Imported “${imported.name}”.`, 'success');
+          this.render();
+        } catch (error) {
+          showToast(`Import failed: ${error.message}`, 'error', 6000);
+        }
+      });
+    });
 
     // Quick Action Starters
     const starterCourse = this.container.querySelector('#starter-action-course');
