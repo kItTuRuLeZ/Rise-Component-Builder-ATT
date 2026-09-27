@@ -134,7 +134,10 @@ export function jumpToEditorField(fieldId, itemIndex, _options = {}) {
 }
 
 export function addEditorItem(state, schema) {
-  state.config.items.push(createDefaultItem(schema));
+  // A schema with `pairLabels` (flip-cards' Front/Back) has no standalone item — a face on its
+  // own renders against a placeholder back, which is never what "Add" is for. Add a whole pair.
+  const count = schema.pairLabels ? schema.pairLabels.length : 1;
+  for (let i = 0; i < count; i += 1) state.config.items.push(createDefaultItem(schema));
 }
 
 export function validateActiveComponent(state, componentRegistry) {
@@ -444,21 +447,39 @@ export function createSchemaItemEditor({ container, onChange, focusFallback }) {
         button.addEventListener('click', handler);
         actions.appendChild(button);
       };
+      // A schema with `pairLabels` (flip-cards) pairs items up positionally (index 0+1 make card
+      // 1, 2+3 make card 2, ...) — see components/flip-cards.js#generateHTML. Every action here
+      // moves, duplicates or deletes the whole pair a face belongs to, never a lone face, so a
+      // card can never end up with an orphaned Front and no Back (or vice versa).
+      const pairSize = schema.pairLabels ? schema.pairLabels.length : 1;
+      const pairStart = index - (index % pairSize);
+      const pairEnd = pairStart + pairSize;
+      const isFirstPair = pairStart === 0;
+      const isLastPair = pairEnd >= items.length;
       addButton('⠿', 'Drag to reorder', event => event.preventDefault(), false, 'drag-handle');
-      addButton('↑', 'Move item up', () => { pendingFocus = { index: index - 1, part: 'Move item up' }; move(index, index - 1); }, index === 0);
-      addButton('↓', 'Move item down', () => { pendingFocus = { index: index + 1, part: 'Move item down' }; move(index, index + 1); }, index === items.length - 1);
-      const atMaxItems = Number.isInteger(schema.maxItems) && items.length >= schema.maxItems;
-      addButton('⧉', atMaxItems ? `Only ${schema.maxItems} ${schema.itemLabel.toLowerCase()}${schema.maxItems === 1 ? '' : 's'} allowed` : 'Duplicate item', () => {
-        const duplicate = structuredClone(item);
-        schema.itemFields.filter(field => field.groupAcrossItems).forEach(field => { duplicate[field.id] = false; });
-        items.splice(index + 1, 0, duplicate);
-        pendingFocus = { index: index + 1, part: 'heading' };
+      addButton('↑', pairSize > 1 ? 'Move card up' : 'Move item up', () => {
+        pendingFocus = { index: index - pairSize, part: 'Move item up' };
+        move(index, pairStart - 1);
+      }, isFirstPair);
+      addButton('↓', pairSize > 1 ? 'Move card down' : 'Move item down', () => {
+        pendingFocus = { index: index + pairSize, part: 'Move item down' };
+        move(index, pairEnd);
+      }, isLastPair);
+      const atMaxItems = Number.isInteger(schema.maxItems) && items.length + pairSize > schema.maxItems;
+      addButton('⧉', atMaxItems ? `Only ${schema.maxItems} ${schema.itemLabel.toLowerCase()}${schema.maxItems === 1 ? '' : 's'} allowed` : (pairSize > 1 ? 'Duplicate card' : 'Duplicate item'), () => {
+        const duplicates = items.slice(pairStart, pairEnd).map(face => {
+          const duplicate = structuredClone(face);
+          schema.itemFields.filter(field => field.groupAcrossItems).forEach(field => { duplicate[field.id] = false; });
+          return duplicate;
+        });
+        items.splice(pairEnd, 0, ...duplicates);
+        pendingFocus = { index: pairEnd, part: 'heading' };
         onChange();
         render(lastRender);
       }, atMaxItems);
-      addButton('×', 'Delete item', () => {
-        items.splice(index, 1);
-        pendingFocus = items.length ? { index: Math.min(index, items.length - 1), part: 'heading' } : { part: 'fallback' };
+      addButton('×', pairSize > 1 ? 'Delete card' : 'Delete item', () => {
+        items.splice(pairStart, pairSize);
+        pendingFocus = items.length ? { index: Math.min(pairStart, items.length - 1), part: 'heading' } : { part: 'fallback' };
         onChange();
         render(lastRender);
       });
@@ -525,34 +546,39 @@ export function createSchemaItemEditor({ container, onChange, focusFallback }) {
       });
       card.addEventListener('dragend', () => { draggedIndex = null; card.classList.remove('dragging'); card.draggable = false; });
 
-      // Keyboard shortcuts for item reordering, duplicating, and deleting
+      // Keyboard shortcuts for item reordering, duplicating, and deleting — the same pair-aware
+      // moves/duplicate/delete as the toolbar buttons above, via the pairStart/pairEnd/pairSize
+      // already computed for this item.
       card.addEventListener('keydown', event => {
         if (event.altKey && (event.key === 'ArrowUp' || event.key === 'Up')) {
           event.preventDefault();
-          if (index > 0) {
-            pendingFocus = { index: index - 1, part: 'Move item up' };
-            move(index, index - 1);
+          if (!isFirstPair) {
+            pendingFocus = { index: index - pairSize, part: 'Move item up' };
+            move(index, pairStart - 1);
           }
         } else if (event.altKey && (event.key === 'ArrowDown' || event.key === 'Down')) {
           event.preventDefault();
-          if (index < items.length - 1) {
-            pendingFocus = { index: index + 1, part: 'Move item down' };
-            move(index, index + 1);
+          if (!isLastPair) {
+            pendingFocus = { index: index + pairSize, part: 'Move item down' };
+            move(index, pairEnd);
           }
         } else if (event.altKey && (event.key === 'd' || event.key === 'D')) {
           event.preventDefault();
           if (!atMaxItems) {
-            const duplicate = structuredClone(item);
-            schema.itemFields.filter(field => field.groupAcrossItems).forEach(field => { duplicate[field.id] = false; });
-            items.splice(index + 1, 0, duplicate);
-            pendingFocus = { index: index + 1, part: 'heading' };
+            const duplicates = items.slice(pairStart, pairEnd).map(face => {
+              const duplicate = structuredClone(face);
+              schema.itemFields.filter(field => field.groupAcrossItems).forEach(field => { duplicate[field.id] = false; });
+              return duplicate;
+            });
+            items.splice(pairEnd, 0, ...duplicates);
+            pendingFocus = { index: pairEnd, part: 'heading' };
             onChange();
             render(lastRender);
           }
         } else if (event.altKey && (event.key === 'Delete' || event.key === 'Backspace')) {
           event.preventDefault();
-          items.splice(index, 1);
-          pendingFocus = items.length ? { index: Math.min(index, items.length - 1), part: 'heading' } : { part: 'fallback' };
+          items.splice(pairStart, pairSize);
+          pendingFocus = items.length ? { index: Math.min(pairStart, items.length - 1), part: 'heading' } : { part: 'fallback' };
           onChange();
           render(lastRender);
         }
@@ -564,11 +590,18 @@ export function createSchemaItemEditor({ container, onChange, focusFallback }) {
     applyPendingFocus();
   }
 
+  // Pair-aligned: for a `pairLabels` schema (flip-cards), `from`/`to` are rounded down to their
+  // pair's start and the whole pair moves as one block, so drag-and-drop and the keyboard
+  // shortcuts below can never separate a Front from its Back, same as the toolbar buttons.
   function move(from, to) {
-    const { items } = lastRender;
+    const { items, schema } = lastRender;
     if (to < 0 || to >= items.length || from === to) return;
-    const [item] = items.splice(from, 1);
-    items.splice(to, 0, item);
+    const size = schema.pairLabels ? schema.pairLabels.length : 1;
+    const fromStart = from - (from % size);
+    const toStart = to - (to % size);
+    if (fromStart === toStart) return;
+    const block = items.splice(fromStart, size);
+    items.splice(toStart, 0, ...block);
     onChange();
     render(lastRender);
   }

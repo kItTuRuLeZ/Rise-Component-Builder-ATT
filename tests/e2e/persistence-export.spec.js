@@ -110,7 +110,13 @@ test('export copy button copies the Rise code and shows visible confirmation', a
   await expect(riseInstructions).toContainText('Code');
   await expect(riseInstructions).toContainText('Add code');
 
-  const expectedCode = await page.locator('#export-html-code').textContent();
+  // The modal's HTML markup ships #export-html-code pre-seeded with a static placeholder
+  // ("Customized component styles"); setupExportModalContent() only overwrites it once the
+  // async preflight gate and export-preparation have finished. Wait for the real content —
+  // reading textContent() the instant the modal opens can still catch that placeholder.
+  const codeElement = page.locator('#export-html-code');
+  await expect(codeElement).toContainText('--primary: #00388F');
+  const expectedCode = await codeElement.textContent();
   const copyButton = page.locator('#btn-copy-html');
   await copyButton.click();
 
