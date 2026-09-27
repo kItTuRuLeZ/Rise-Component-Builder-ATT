@@ -650,13 +650,28 @@
 
 .dashboard-hero-section {
   position: relative;
-  background: linear-gradient(135deg, #001E50 0%, #00388F 45%, #0057B8 80%, #009FDB 100%);
+  /* Symmetric stops (not the original's flat 0%→100% ramp) so the sweep below has no seam:
+     the gradient reads the same forwards and backwards. */
+  background: linear-gradient(135deg, #001E50 0%, #00388F 25%, #0057B8 50%, #009FDB 75%, #0057B8 100%);
+  background-size: 220% 220%;
+  animation: att-hero-gradient-flow 20s ease-in-out infinite;
   border-radius: var(--att-radius-xl, 24px);
   padding: 36px 40px;
   color: #FFFFFF;
   box-shadow: 0 12px 32px rgba(0, 56, 143, 0.22);
   margin-bottom: 28px;
   overflow: hidden;
+}
+
+@keyframes att-hero-gradient-flow {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-hero-section {
+    animation: none;
+  }
 }
 
 .dashboard-hero-section::after {
@@ -1319,7 +1334,8 @@
 }
 
 [data-theme="dark"] .dashboard-hero-section {
-  background: linear-gradient(135deg, #0A2540 0%, #00388F 60%, #001D4A 100%) !important;
+  background: linear-gradient(135deg, #0A2540 0%, #00388F 25%, #001D4A 50%, #00388F 75%, #0A2540 100%) !important;
+  background-size: 220% 220% !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
   border: 1px solid rgba(56, 189, 248, 0.2) !important;
 }
