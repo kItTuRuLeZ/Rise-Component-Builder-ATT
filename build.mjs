@@ -22,7 +22,7 @@ import { computeStampedIndex } from './scripts/stamp-cache-busting.mjs';
 const root = dirname(fileURLToPath(import.meta.url));
 const distDir = join(root, 'dist');
 
-const ROOT_FILES = ['index.html', 'styles.css', 'app.js', 'fonts.css'];
+const ROOT_FILES = ['index.html', 'styles.css', 'app.js', 'fonts.css', 'favicon.svg'];
 const ROOT_DIRS = ['js', 'components'];
 
 // Individual files outside the repo root that index.html references and that must
