@@ -9,6 +9,8 @@ import { getProject } from '../storage.js';
 import { showPreExportReviewDialog, buildCourseProjectZip, downloadCourseProjectZip } from './project-export.js';
 import { showToast } from '../toast.js';
 import { describeTechnicalStatus, getCourseReadiness } from './course-readiness.js';
+import { getEditorSchema } from '../editor-schemas.js';
+import { primaryField } from '../validation.js';
 
 /**
  * Performs a deep audit of a course project.
@@ -95,9 +97,16 @@ export function auditCourseProject(project) {
     }
 
     // 4. Blank Item Titles Check
+    // Schema-aware: a component identifies its items by whichever field its own editor schema
+    // calls the primary one (validation.js#primaryField) — 'title'/'label' where one exists,
+    // else the first required text-like field. Comparison Slider has neither 'title' nor
+    // 'label' (its items use beforeLabel/afterLabel), so the old fixed-key guess treated every
+    // one of its items as unnamed even when beforeLabel/afterLabel were both filled in.
     if (items.length > 0) {
+      const schema = getEditorSchema(comp.type);
+      const field = primaryField(schema);
       const emptyTitles = items.filter(item => {
-        const titleVal = item.title || item.label || item.text || item.prompt || item.heading || item.name;
+        const titleVal = field ? item[field.id] : (item.title || item.label || item.text || item.prompt || item.heading || item.name);
         return !titleVal || !String(titleVal).trim();
       });
       if (emptyTitles.length > 0) {

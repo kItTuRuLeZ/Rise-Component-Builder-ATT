@@ -71,7 +71,10 @@ export function generateHTML(config, instanceId) {
         <div class="timeline-modal-backdrop"></div>
         <div class="timeline-lightbox-content">
           <button type="button" class="timeline-lightbox-close" aria-label="Close image popup">&times;</button>
-          <img src="" alt="" class="timeline-lightbox-img" id="${instanceId}-lightbox-img">
+          <!-- No src attribute (not src=""): JS sets it from the clicked thumbnail's data-img-src
+               when the lightbox opens. An empty src, unlike a missing one, reads to the course
+               export gate as a broken/dropped media reference (js/dashboard/project-export.js). -->
+          <img alt="" class="timeline-lightbox-img" id="${instanceId}-lightbox-img">
           <p class="timeline-lightbox-caption" id="${instanceId}-lightbox-caption"></p>
         </div>
       </div>

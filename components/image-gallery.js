@@ -56,7 +56,10 @@ export function generateHTML(config, instanceId) {
           <button type="button" class="lightbox-close" aria-label="Close image dialog">${getAttIconSvg('close', { className: 'lightbox-close-icon', width: 20, height: 20, ariaHidden: true })}</button>
         </div>
         <div class="lightbox-img-stage" id="${instanceId}-lightbox-stage">
-          <img class="lightbox-img" id="${instanceId}-lightbox-expanded-img" src="" alt="Lightbox image">
+          <!-- No src attribute (not src=""): JS sets it from the clicked card's data-img when the
+               lightbox opens. An empty src, unlike a missing one, reads to the course export gate
+               as a broken/dropped media reference (js/dashboard/project-export.js). -->
+          <img class="lightbox-img" id="${instanceId}-lightbox-expanded-img" alt="Lightbox image">
         </div>
         <div class="lightbox-caption" id="${instanceId}-lightbox-expanded-caption">Caption details</div>
       </div>

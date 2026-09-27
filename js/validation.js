@@ -320,8 +320,17 @@ function checkColorContrast(theme, componentOverrides) {
   });
 }
 
+// The field that identifies an item to an author scanning the list: an exact 'title' or
+// 'label' id when the schema has one, else the first required text-like field (e.g.
+// comparison-slider's 'beforeLabel' — it has neither 'title' nor 'label', so a check that
+// only looked for those two names would treat every one of its items as unnamed).
+export function primaryField(schema) {
+  return (schema.itemFields || []).find(candidate => ['title', 'label'].includes(candidate.id))
+    || (schema.itemFields || []).find(candidate => candidate.required && ['text', 'richtext'].includes(candidate.type));
+}
+
 function primaryFieldValue(schema, item) {
-  const field = (schema.itemFields || []).find(candidate => ['title', 'label'].includes(candidate.id));
+  const field = primaryField(schema);
   return field ? plainText(item[field.id]).toLowerCase() : '';
 }
 
