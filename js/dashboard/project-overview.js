@@ -792,7 +792,12 @@ export class ProjectOverviewView {
             <div style="display: flex; flex-direction: column; gap: 6px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-size: 0.8125rem; font-weight: 600; color: #1E293B;">Overall Readiness:</span>
-                <span class="badge ${qa.overallStatusClass}" style="font-size: 0.75rem;">${escapeHTML(qa.overallStatus)} (${qa.overallScore}%)</span>
+                <!-- Status label only, no percentage: overallScore is an internal weighted
+                     heuristic (js/dashboard/project-qa.js), not a compliance measurement, and
+                     showing it as "(100%)" reads as a certified pass automated checks can't
+                     make (audit 2026-09-27, section 2: "avoid broad claims such as 100%
+                     Compliant from automated WCAG checks"). -->
+                <span class="badge ${qa.overallStatusClass}" style="font-size: 0.75rem;">${escapeHTML(qa.overallStatus)}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #64748B;">
                 <span>Technical Checks:</span>
