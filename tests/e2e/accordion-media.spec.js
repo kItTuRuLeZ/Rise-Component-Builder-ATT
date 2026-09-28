@@ -66,6 +66,55 @@ test('Accordion item media supports audio with transcript drawer in preview', as
   await expect(audioSlot.locator('.item-media-transcript-body')).toContainText('Sound of heavy rain');
 });
 
+test('an image that finishes loading after the panel opens still fits — no clipping on first open', async ({ page }) => {
+  // Reported: an accordion item's image doesn't show on the first click, only after opening a
+  // different item and reopening this one. Root cause (components/accordion.js#toggleAccordion):
+  // the panel's max-height is measured via scrollHeight the instant it opens, but its item-media
+  // <img> is loading="lazy" (js/item-media.js) and only starts fetching once the panel actually
+  // becomes visible — so on first open, scrollHeight is read before the image has any rendered
+  // height, and the image gets clipped by overflow:hidden once it loads a moment later.
+  //
+  // A real but fast network fetch can beat the panel-open click and mask the bug, so the image
+  // request is held open deliberately — this guarantees it's still in flight at the exact moment
+  // the panel opens, reproducing the race condition every run instead of depending on timing.
+  const imageUrl = 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809';
+  let releaseImage;
+  const imageHeld = new Promise(resolve => { releaseImage = resolve; });
+  await page.route(imageUrl, async route => {
+    await imageHeld;
+    await route.continue();
+  });
+
+  const firstCard = page.locator('#dynamic-items-container > .dynamic-item-card:not(.component-fields-card)').first();
+  const mediaDetails = firstCard.locator('.item-media-details-shell');
+  await mediaDetails.locator('.item-media-type-select').selectOption('image');
+  await mediaDetails.locator('input[type="url"]').first().fill(imageUrl);
+
+  const frame = page.frameLocator('#live-preview-iframe');
+  const trigger = frame.locator('.accordion-trigger').first();
+  const panel = frame.locator('.accordion-content').first();
+  const img = panel.locator('img').first();
+  await expect(img).toBeAttached();
+  expect(await img.evaluate(el => el.complete)).toBe(false);
+
+  // Open the panel — this is the exact moment the buggy code measured scrollHeight, with the
+  // image request still held open above.
+  await trigger.click();
+  await expect(panel).toHaveAttribute('aria-hidden', 'false');
+  expect(await img.evaluate(el => el.complete)).toBe(false);
+
+  // Let the image finish loading now that the panel is already open.
+  releaseImage();
+  await expect.poll(async () => img.evaluate(el => el.complete && el.naturalWidth > 0), { timeout: 10000 }).toBe(true);
+
+  // No clipping: the panel's own rendered height must cover all of its content, including the
+  // now-loaded image, not just what fit before the image arrived.
+  await expect.poll(async () => panel.evaluate(el => el.scrollHeight - el.clientHeight)).toBeLessThanOrEqual(1);
+  const imgBox = await img.boundingBox();
+  const panelBox = await panel.boundingBox();
+  expect(imgBox.y + imgBox.height).toBeLessThanOrEqual(panelBox.y + panelBox.height + 1);
+});
+
 test('Accordion item media supports video with 16:9 aspect ratio and placement', async ({ page }) => {
   const firstCard = page.locator('#dynamic-items-container > .dynamic-item-card:not(.component-fields-card)').first();
   const mediaDetails = firstCard.locator('.item-media-details-shell');

@@ -477,6 +477,34 @@ export function generateJS(config, instanceId) {
       }
     }
 
+    // A panel's max-height above is measured via scrollHeight the instant it opens — but its
+    // item-media <img> is loading="lazy" (js/item-media.js), and a lazily-loaded image inside a
+    // still-collapsed (max-height:0) panel doesn't start fetching until the panel actually
+    // expands, which happens in the same tick as the scrollHeight read. So on a panel's first
+    // open, scrollHeight is measured before the image has any rendered height, and the image is
+    // clipped by overflow:hidden once it finishes loading a moment later — reported as "the
+    // image doesn't show on first click, only after opening another item and reopening this
+    // one" (reopening re-measures scrollHeight against the by-then-cached, already-loaded
+    // image). Re-measuring the still-open panel's height once its image actually finishes
+    // loading fixes this without waiting for a second open.
+    function refreshPanelHeightIfActive(item) {
+      if (!item.classList.contains('active')) return;
+      var contentPanel = item.querySelector('.accordion-content');
+      if (contentPanel) contentPanel.style.maxHeight = contentPanel.scrollHeight + 'px';
+    }
+
+    function watchLateLoadingImages() {
+      document.querySelectorAll('.accordion-item').forEach(function(item) {
+        var contentPanel = item.querySelector('.accordion-content');
+        if (!contentPanel) return;
+        contentPanel.querySelectorAll('img').forEach(function(img) {
+          if (img.complete) return;
+          img.addEventListener('load', function() { refreshPanelHeightIfActive(item); }, { once: true });
+          img.addEventListener('error', function() { refreshPanelHeightIfActive(item); }, { once: true });
+        });
+      });
+    }
+
     function expandAllPanels() {
       document.querySelectorAll('.accordion-item').forEach(function(itemEl) {
         var idx = parseInt(itemEl.getAttribute('data-idx'), 10);
@@ -539,6 +567,7 @@ export function generateJS(config, instanceId) {
         });
       });
 
+      watchLateLoadingImages();
       refreshLockState();
       updateProgressText();
 
