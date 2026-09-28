@@ -96,19 +96,32 @@ export function jumpToEditorField(fieldId, itemIndex, _options = {}) {
     }
   }
 
-  // Find target element
+  // Find target element. Every selector below excludes .preflight-issue-jump: the "Go to
+  // field"/"Go to item" button that TRIGGERS this jump (js/app.js's renderPreflightResults)
+  // carries the exact same data-field-id/data-item-index as its own target, for its own
+  // rendering — and closeModal() only hides the Preflight/Export modal (display:none), it
+  // doesn't remove it from the DOM, so an unscoped or loosely-scoped query run right after
+  // closing the modal can match that still-present (merely hidden) trigger button instead of
+  // the real field, silently focusing nothing useful. This is exactly what "Go to field"
+  // clicking through to nowhere turned out to be.
+  const NOT_JUMP_BUTTON = ':not(.preflight-issue-jump)';
   /** @type {HTMLElement|null} */
   let targetElem = null;
   if (fieldId) {
     if (itemIndex !== undefined && itemIndex !== null && itemIndex >= 0) {
-      targetElem = document.querySelector(`.dynamic-item-card[data-index="${itemIndex}"] [data-field-id="${fieldId}"]`)
-        || document.querySelector(`[data-field-id="${fieldId}"][data-item-index="${itemIndex}"]`)
+      targetElem = document.querySelector(`.dynamic-item-card[data-index="${itemIndex}"] [data-field-id="${fieldId}"]${NOT_JUMP_BUTTON}`)
+        || document.querySelector(`[data-field-id="${fieldId}"][data-item-index="${itemIndex}"]${NOT_JUMP_BUTTON}`)
         || document.getElementById(`schema-${itemIndex}-${fieldId}`)
-        || document.getElementById(`schema-item-${itemIndex}-${fieldId}`);
+        || document.getElementById(`schema-item-${itemIndex}-${fieldId}`)
+        // Item media (js/item-media.js) is a free-form per-item control, not a schema field —
+        // it has no data-field-id at all, and its inputs are id="<prefix>-<index>" instead
+        // (e.g. item-media-alt-2, item-media-file-2). js/validation.js's item-media issues
+        // report fieldId as that same prefix for exactly this fallback to resolve.
+        || document.getElementById(`${fieldId}-${itemIndex}`);
     }
     if (!targetElem) {
       const kebabField = fieldId.replace(/([A-Z])/g, '-$1').toLowerCase();
-      targetElem = document.querySelector(`[data-field-id="${fieldId}"]`)
+      targetElem = document.querySelector(`[data-field-id="${fieldId}"]${NOT_JUMP_BUTTON}`)
         || document.getElementById(`input-${fieldId}`)
         || document.getElementById(`select-${fieldId}`)
         || document.getElementById(`input-${kebabField}`)

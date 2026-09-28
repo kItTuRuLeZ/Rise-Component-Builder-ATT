@@ -34,6 +34,36 @@ test('clicking "Go to field" closes Preflight, expands a collapsed item, and foc
   await expect(secondCard.locator('[data-field-id="title"]')).toBeFocused();
 });
 
+// Reported: "Go to field" on the "Missing alt text or transcript" warning closed Preflight but
+// focus never actually landed on the alt-text field. Two independent bugs, both in this path:
+// (1) js/validation.js reported fieldId: 'media' for item-media issues, which doesn't match
+// any real data-field-id or element id (item media, js/item-media.js, is a free-form per-item
+// control with no schema-declared field, not a schema field with a data-field-id) — jumpToEditorField
+// (js/editor.js) had nothing to resolve it to. (2) even once jumpToEditorField's own fallback
+// resolution was taught the item-media id convention, its unscoped `[data-field-id="X"]` query
+// matched the "Go to field" BUTTON itself — it carries that exact same data-field-id/
+// data-item-index for its own rendering, and closeModal() only hides the modal (display:none),
+// it doesn't remove it from the DOM — so focus silently landed on nothing useful instead of
+// erroring, which is why this was easy to miss.
+test('"Go to field" on a missing-alt-text warning focuses the actual alt-text field, not the trigger button or nothing', async ({ page }) => {
+  const firstCard = page.locator('.dynamic-item-card[data-index="0"]');
+  const mediaDetails = firstCard.locator('.item-media-details-shell');
+  await mediaDetails.locator('.item-media-type-select').selectOption('image');
+  await mediaDetails.locator('input[type="url"]').first().fill('https://images.unsplash.com/photo-1579546929518-9e396f3cc809');
+  // Alt text deliberately left blank to trigger the warning.
+
+  await page.locator('#btn-preflight').click();
+  const issueRow = page.locator('.preflight-issue', { hasText: 'Missing alt text or transcript' }).first();
+  await expect(issueRow).toBeVisible();
+  await issueRow.getByRole('button', { name: 'Go to field' }).click();
+
+  await expect(page.locator('#modal-preflight')).toBeHidden();
+  // Only one element can hold focus at a time, so this alone also proves it never landed back
+  // on the "Go to field" button itself (the accidental-match failure mode this pins).
+  const altField = firstCard.locator('#item-media-alt-0');
+  await expect(altField).toBeFocused();
+});
+
 test('the "Go to field" action activates with the keyboard, not just a mouse click', async ({ page }) => {
   const secondCard = page.locator('.dynamic-item-card[data-index="1"]');
   // P11: expand this default-collapsed item to fill it, then collapse it again.

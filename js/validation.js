@@ -553,10 +553,16 @@ function checkMediaRules(schema, config, settings) {
     if (item?.media && item.media.type && item.media.type !== 'none') {
       const m = item.media;
       const mediaVal = m.mediaId ? { mediaId: m.mediaId, kind: m.type, source: 'upload', name: m.fileName || 'uploaded media', mimeType: m.mimeType, schemaVersion: 1, size: 0, createdAt: new Date().toISOString() } : m.src;
-      checkOne({ id: 'media', label: `Item ${itemIndex + 1} media`, type: m.type }, mediaVal, itemIndex);
+      // fieldId must match the actual editor control's own DOM id ('item-media-file-<index>',
+      // 'item-media-alt-<index>' — js/item-media.js), not a schema-declared data-field-id: item
+      // media is a free-form per-item control, not a schema field, so it has no data-field-id at
+      // all. jumpToEditorField (js/editor.js) resolves these via a `${fieldId}-${itemIndex}` id
+      // fallback specifically because of this — "Go to field" silently found nothing and left
+      // focus stranded on whatever button opened Preflight when this used the generic 'media'.
+      checkOne({ id: 'item-media-file', label: `Item ${itemIndex + 1} media`, type: m.type }, mediaVal, itemIndex);
       if (m.type === 'image' && !m.decorative && (!m.alt || !String(m.alt).trim())) {
         issues.push(issue('general-missing-alt-text', SEVERITY.WARNING, CATEGORY.MEDIA,
-          `Item ${itemIndex + 1} image is missing alternative text. Add descriptive alt text or mark it decorative.`, { fieldId: 'media', itemIndex }));
+          `Item ${itemIndex + 1} image is missing alternative text. Add descriptive alt text or mark it decorative.`, { fieldId: 'item-media-alt', itemIndex }));
       }
     }
   });
