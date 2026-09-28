@@ -118,3 +118,32 @@ test('a clean selection can export successfully', async ({ page }) => {
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/\.zip$/);
 });
+
+// Audit: the Export modal used to open showing its two cards already populated with "—"
+// placeholder sizes and no compliance section at all, then fill in the compliance banner and
+// real sizes a moment later once setupExportModalContent() (app.js) finished — a jarring
+// half-populated-then-rich two-step reveal. It now shows a dedicated loading state instead and
+// swaps straight to the fully-populated content in one step.
+test('the Export modal shows a loading state, not a half-populated one, before settling on the full content', async ({ page }) => {
+  await page.goto('/?catalog');
+  await selectAccordion(page);
+
+  // Dispatch the click and read the resulting DOM state in the same synchronous script — this
+  // is the only way to reliably observe the state right after the click, since
+  // setupExportModalContent()'s own async work can otherwise resolve before a separate
+  // Playwright action/assertion round-trip gets a chance to check.
+  const immediatelyAfterClick = await page.evaluate(() => {
+    document.getElementById('btn-export').click();
+    const loading = document.getElementById('export-modal-loading');
+    const content = document.getElementById('export-modal-content');
+    return { loadingHidden: loading.hidden, contentHidden: content.hidden };
+  });
+  expect(immediatelyAfterClick.loadingHidden).toBe(false);
+  expect(immediatelyAfterClick.contentHidden).toBe(true);
+
+  // Once ready, the swap is complete — never a partial state with the loading indicator still
+  // showing alongside real content, or vice versa.
+  await expect(page.locator('#btn-copy-html')).toBeEnabled();
+  await expect(page.locator('#export-modal-content')).toBeVisible();
+  await expect(page.locator('#export-modal-loading')).toBeHidden();
+});

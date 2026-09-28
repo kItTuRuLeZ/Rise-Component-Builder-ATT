@@ -3666,40 +3666,53 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function setupExportModalContent() {
-    const canExport = await runExportPreflightGate();
-    const warningBox = document.getElementById('export-media-warning');
-    if (warningBox) { warningBox.hidden = false; warningBox.classList.add('is-loading'); warningBox.textContent = 'Preparing media export…'; }
+    // The modal opens showing only #export-modal-loading (index.html); the real content
+    // (#export-modal-content) stays hidden until this whole function settles — success or
+    // failure — so the modal goes straight from "loading" to "ready" instead of briefly
+    // showing an empty compliance section and "—" placeholder sizes first.
+    const loadingEl = document.getElementById('export-modal-loading');
+    const contentEl = document.getElementById('export-modal-content');
+    if (loadingEl) loadingEl.hidden = false;
+    if (contentEl) contentEl.hidden = true;
     try {
-      currentExportBundle = await prepareCurrentExport();
-    } catch (error) {
-      currentExportBundle = null;
-      if (warningBox) { warningBox.classList.remove('is-loading'); warningBox.textContent = `Export preparation failed: ${error.message}`; }
-      showToast(`Export preparation failed: ${error.message}`, 'error', 6000);
-      return;
-    }
-    const payload = currentExportBundle;
+      const canExport = await runExportPreflightGate();
+      const warningBox = document.getElementById('export-media-warning');
+      if (warningBox) { warningBox.hidden = false; warningBox.classList.add('is-loading'); warningBox.textContent = 'Preparing media export…'; }
+      try {
+        currentExportBundle = await prepareCurrentExport();
+      } catch (error) {
+        currentExportBundle = null;
+        if (warningBox) { warningBox.classList.remove('is-loading'); warningBox.textContent = `Export preparation failed: ${error.message}`; }
+        showToast(`Export preparation failed: ${error.message}`, 'error', 6000);
+        return;
+      }
+      const payload = currentExportBundle;
 
-    // Paste-friendly HTML fragment for custom HTML blocks
-    const htmlCode = document.getElementById('export-html-code');
-    if (htmlCode) htmlCode.textContent = payload.fragment;
-    const htmlSize = getExportedFileSize(payload.fragment);
-    const htmlSizeLabel = document.getElementById('export-html-size');
-    if (htmlSizeLabel) htmlSizeLabel.textContent = formatExportedFileSize(htmlSize);
-    const pasteWarningBox = document.getElementById('export-large-paste-warning');
-    if (pasteWarningBox) {
-      const pasteWarning = buildLargePasteWarning(htmlSize);
-      pasteWarningBox.hidden = !pasteWarning;
-      pasteWarningBox.textContent = pasteWarning || '';
-    }
-    if (warningBox) {
-      warningBox.classList.remove('is-loading');
-      warningBox.hidden = payload.warnings.length === 0;
-      warningBox.textContent = payload.warnings.join(' ');
-    }
+      // Paste-friendly HTML fragment for custom HTML blocks
+      const htmlCode = document.getElementById('export-html-code');
+      if (htmlCode) htmlCode.textContent = payload.fragment;
+      const htmlSize = getExportedFileSize(payload.fragment);
+      const htmlSizeLabel = document.getElementById('export-html-size');
+      if (htmlSizeLabel) htmlSizeLabel.textContent = formatExportedFileSize(htmlSize);
+      const pasteWarningBox = document.getElementById('export-large-paste-warning');
+      if (pasteWarningBox) {
+        const pasteWarning = buildLargePasteWarning(htmlSize);
+        pasteWarningBox.hidden = !pasteWarning;
+        pasteWarningBox.textContent = pasteWarning || '';
+      }
+      if (warningBox) {
+        warningBox.classList.remove('is-loading');
+        warningBox.hidden = payload.warnings.length === 0;
+        warningBox.textContent = payload.warnings.join(' ');
+      }
 
-    updatePrimaryExportSection(payload);
-    await setupRiseZipPane(canExport);
-    applyCompletionExportGate();
+      updatePrimaryExportSection(payload);
+      await setupRiseZipPane(canExport);
+      applyCompletionExportGate();
+    } finally {
+      if (loadingEl) loadingEl.hidden = true;
+      if (contentEl) contentEl.hidden = false;
+    }
   }
 
   async function setupRiseZipPane(canExport) {

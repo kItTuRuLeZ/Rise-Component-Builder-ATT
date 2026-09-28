@@ -54,7 +54,11 @@ test('"Go to field" on a missing-alt-text warning focuses the actual alt-text fi
 
   await page.locator('#btn-preflight').click();
   const issueRow = page.locator('.preflight-issue', { hasText: 'Missing alt text or transcript' }).first();
-  await expect(issueRow).toBeVisible();
+  // Generous timeout: this specific check depends on a real, uncached fetch of the external
+  // image above before js/dom-measurement.js can settle — Playwright's default 5s occasionally
+  // isn't enough headroom for that real network round-trip, unlike the other, purely local
+  // "Go to field" tests in this file.
+  await expect(issueRow).toBeVisible({ timeout: 15000 });
   await issueRow.getByRole('button', { name: 'Go to field' }).click();
 
   await expect(page.locator('#modal-preflight')).toBeHidden();
