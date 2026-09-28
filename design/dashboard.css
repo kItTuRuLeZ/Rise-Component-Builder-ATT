@@ -650,6 +650,13 @@
 
 .dashboard-hero-section {
   position: relative;
+  /* isolate: the animated background-position below can otherwise get its own compositing
+     layer promoted independently of its absolutely-positioned children (the glow ::after and
+     the Globe watermark img), which — without an explicit stacking context tying them together —
+     let Chrome/WebKit briefly drop or reorder those children's paint during a repaint, visible as
+     a flicker/disappear a few frames into the animation. isolation:isolate pins every descendant
+     z-index layer to this one stacking context so paint order is deterministic every frame. */
+  isolation: isolate;
   /* Symmetric stops (not the original's flat 0%→100% ramp) so the sweep below has no seam:
      the gradient reads the same forwards and backwards. */
   background: linear-gradient(135deg, #001E50 0%, #00388F 25%, #0057B8 50%, #009FDB 75%, #0057B8 100%);
@@ -677,6 +684,7 @@
 .dashboard-hero-section::after {
   content: "";
   position: absolute;
+  z-index: 1;
   right: -80px;
   bottom: -80px;
   width: 320px;
@@ -687,9 +695,15 @@
 }
 
 /* AT&T Globe watermark in the hero's corner: faint, decorative, sits behind the glow above.
-   Hidden below 1200px, where it would meet the stats row. */
+   Hidden below 1200px, where it would meet the stats row. z-index:1 (matching ::after, painted
+   before it in DOM/generation order so the glow still sits on top) plus its own GPU layer
+   (will-change) keep it composited independently of the parent's animated background, instead of
+   sharing a repaint boundary with it — without that isolation this element could be briefly
+   dropped from the frame during the gradient sweep. */
 .hero-att-globe-pattern {
   position: absolute;
+  z-index: 1;
+  will-change: opacity;
   right: -40px;
   bottom: -60px;
   width: 280px;
