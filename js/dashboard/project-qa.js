@@ -358,7 +358,7 @@ export class ProjectQaView {
                 Editorial status: <strong>${audit.editorial.readyCount} Ready</strong>, <strong>${audit.editorial.inReviewCount} In Review</strong>, <strong>${audit.editorial.draftCount} Draft</strong> ·
                 Export: <strong>${pending ? 'checking…' : audit.exportReadiness ? (audit.exportReadiness.canExport ? 'can be built' : 'blocked') : this.escapeHtml(audit.overallStatus)}</strong>
               </p>
-              <div style="margin-top: 10px; font-size: 0.8125rem; color: #555555; display: flex; gap: 14px; flex-wrap: wrap;">
+              <div style="margin-top: 10px; font-size: 0.875rem; color: #555555; display: flex; gap: 14px; flex-wrap: wrap;">
                 <span>🛑 <strong>${audit.counts.blockers}</strong> blockers</span>
                 <span>⚠️ <strong>${audit.counts.errors}</strong> errors</span>
                 <span>📋 <strong>${audit.counts.warnings}</strong> warnings</span>
@@ -366,7 +366,7 @@ export class ProjectQaView {
                 <span>✅ <strong>${audit.counts.passed}</strong> passed</span>
               </div>
 
-              <details class="qa-score-explainer" style="margin-top: 14px; background: #FFFFFF; border: 1px solid var(--att-border, #DCDFE3); border-radius: 8px; padding: 10px 14px; font-size: 0.8125rem;">
+              <details class="qa-score-explainer" style="margin-top: 14px; background: #FFFFFF; border: 1px solid var(--att-border, #DCDFE3); border-radius: 8px; padding: 10px 14px; font-size: 0.875rem;">
                 <summary style="font-weight: 600; cursor: pointer; color: var(--att-cobalt, #00388F);">
                   What do these statuses mean?
                 </summary>
@@ -377,7 +377,7 @@ export class ProjectQaView {
                     <li><strong>Editorial status:</strong> the Draft / In Review / Ready label authors set on each component. Draft is a workflow note, not a defect.</li>
                     <li><strong>Export:</strong> whether anything stops the package being built (for example a missing uploaded file).</li>
                   </ul>
-                  <p style="margin: 0; font-size: 0.75rem; color: #666;">
+                  <p style="margin: 0; font-size: 0.875rem; color: #666;">
                     <em>Layout measurements are heuristics taken in this Builder's own preview with collapsed sections opened. Confirm in Rise's own preview before publishing.</em>
                   </p>
                 </div>
@@ -432,26 +432,26 @@ export class ProjectQaView {
                       ${this.escapeHtml(item.component.status || 'draft')}
                     </span>
                   </div>
-                  <button class="btn-att-secondary" data-action="edit-audited" data-comp-id="${item.component.id}" title="Edit ${this.escapeHtml(item.component.name)} in Single Component Builder" style="font-size: 0.8125rem; padding: 6px 14px;">
+                  <button class="btn-att-secondary" data-action="edit-audited" data-comp-id="${item.component.id}" title="Edit ${this.escapeHtml(item.component.name)} in Single Component Builder" style="font-size: 0.875rem; padding: 6px 14px;">
                     Open ${this.escapeHtml(item.component.name)}
                   </button>
                 </div>
                 <div class="section-card-body" style="padding: 16px 20px;">
                   ${item.issues.length > 0 ? item.issues.map(iss => `
-                    <div style="display: flex; align-items: flex-start; gap: 12px; font-size: 0.875rem; margin-bottom: 10px; padding: 8px 12px; border-radius: 6px; ${this.getSeverityRowStyle(iss.severity)}">
-                      <span style="font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 2px 8px; border-radius: 4px; white-space: nowrap; ${this.getSeverityBadgeStyle(iss.severity)}">
+                    <div style="display: flex; align-items: flex-start; gap: 12px; font-size: 0.9375rem; margin-bottom: 10px; padding: 8px 12px; border-radius: 6px; ${this.getSeverityRowStyle(iss.severity)}">
+                      <span style="font-weight: 700; text-transform: uppercase; font-size: 13px; padding: 2px 8px; border-radius: 4px; white-space: nowrap; ${this.getSeverityBadgeStyle(iss.severity)}">
                         ${iss.severity}
                       </span>
                       <div style="flex: 1;">
                         <strong style="color: var(--att-heading-contrast, #111);">${this.escapeHtml(iss.title)}:</strong>
                         <span style="color: var(--att-text, #333); margin-left: 4px;">${this.escapeHtml(iss.message)}</span>
-                        ${iss.formats?.length ? `<span style="display: block; font-size: 0.75rem; color: #555; margin-top: 2px;">Affects: ${this.escapeHtml(iss.formats.join(', '))}</span>` : ''}
-                        ${iss.remediation ? `<span style="display: block; font-size: 0.75rem; color: #555; margin-top: 2px;">Fix: ${this.escapeHtml(iss.remediation)}</span>` : ''}
-                        ${iss.preventsExport ? `<span style="display: block; font-size: 0.75rem; color: #D32F2F; font-weight: 600; margin-top: 2px;">🛑 Prevents package export</span>` : ''}
+                        ${iss.formats?.length ? `<span style="display: block; font-size: 0.875rem; color: #555; margin-top: 2px;">Affects: ${this.escapeHtml(iss.formats.join(', '))}</span>` : ''}
+                        ${iss.remediation ? `<span style="display: block; font-size: 0.875rem; color: #555; margin-top: 2px;">Fix: ${this.escapeHtml(iss.remediation)}</span>` : ''}
+                        ${iss.preventsExport ? `<span style="display: block; font-size: 0.875rem; color: #D32F2F; font-weight: 600; margin-top: 2px;">🛑 Prevents package export</span>` : ''}
                       </div>
                     </div>
                   `).join('') : `
-                    <p style="margin: 0; font-size: 0.875rem; color: #10B981; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <p style="margin: 0; font-size: 0.9375rem; color: #10B981; display: flex; align-items: center; gap: 8px; font-weight: 500;">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       ${pending ? 'Running technical checks…' : 'No findings from the automated technical, content and metadata checks.'}
                     </p>

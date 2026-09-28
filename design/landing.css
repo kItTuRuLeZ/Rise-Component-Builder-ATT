@@ -152,7 +152,7 @@ body.is-landing-mode .app-container {
 }
 
 .landing-brand-tag {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 700;
   color: #70D6FF;
   letter-spacing: 0.08em;
@@ -167,7 +167,7 @@ body.is-landing-mode .app-container {
 }
 
 .landing-brand-tech {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -339,7 +339,7 @@ body.is-landing-mode .app-container {
 }
 
 .landing-hint-text {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: rgba(56, 189, 248, 0.55);
   letter-spacing: 0.28em;

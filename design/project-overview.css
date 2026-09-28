@@ -95,7 +95,7 @@
   gap: 5px;
   padding: 4.5px 12px;
   border-radius: 9999px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-muted, #64748B);
   text-decoration: none;
@@ -259,7 +259,7 @@
 }
 
 .workspace-desc {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: #666;
   margin: 0;
   line-height: 1.4;
@@ -288,7 +288,7 @@
 
 .workspace-search-group input[type="search"] {
   padding: 4px 8px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   width: 120px;
 }
 
@@ -299,7 +299,7 @@
 
 .filter-chip {
   padding: 2px 6px;
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   border-radius: 6px;
   border: 1px solid var(--att-border, #DCDFE3);
   background: var(--att-surface, #FFF);
@@ -381,7 +381,7 @@
 }
 
 .section-title {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 700;
   margin: 0;
   color: var(--text-main, #111);
@@ -389,7 +389,7 @@
 
 .section-component-badge {
   background: var(--att-grey-1, #E4E7EC);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 12px;
@@ -460,13 +460,13 @@
 
 .component-drag-handle {
   color: #999;
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   user-select: none;
 }
 
 .component-type-badge {
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   background: rgba(0, 56, 143, 0.08);
   color: var(--att-cobalt, #00388F);
   padding: 2px 6px;
@@ -476,7 +476,7 @@
 }
 
 .component-name {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-main, #111);
   margin: 0;
@@ -486,7 +486,7 @@
 }
 
 .editorial-status-dropdown-wrapper select {
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 10px;
@@ -522,7 +522,7 @@
 }
 
 .quick-add-chip {
-  font-size: 0.75rem !important;
+  font-size: 0.875rem !important;
   background: #FFF !important;
   border: 1px solid #CBD5E1 !important;
   padding: 4px 10px !important;
@@ -546,7 +546,7 @@
 
 .canvas-active-title {
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   color: var(--text-main, #111);
 }
 
@@ -586,7 +586,7 @@
 }
 
 .inspector-title {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 700;
   margin: 0;
   color: var(--text-main, #111);
@@ -606,7 +606,7 @@
 
 .inspector-label {
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: #444;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -664,7 +664,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 .picker-category-tabs {
@@ -677,7 +677,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #555;
 }
 
@@ -730,7 +730,7 @@
 }
 
 .picker-item-title {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   margin: 0;
   color: var(--text-main, #111);
@@ -751,7 +751,7 @@
 }
 
 .picker-item-desc {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: #555;
   margin: 0;
   line-height: 1.35;
@@ -762,7 +762,7 @@
 }
 
 .picker-card-bestfor {
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   color: #475569;
   background: var(--att-surface-sunken, #F1F5F9);
   padding: 4px 6px;
@@ -820,7 +820,7 @@
   padding: 6px 14px;
   background: transparent;
   border: none;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-main, #333);
   text-align: left;
   cursor: pointer;
