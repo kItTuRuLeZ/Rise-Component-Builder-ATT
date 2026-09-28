@@ -657,11 +657,19 @@
      a flicker/disappear a few frames into the animation. isolation:isolate pins every descendant
      z-index layer to this one stacking context so paint order is deterministic every frame. */
   isolation: isolate;
-  /* Symmetric stops (not the original's flat 0%→100% ramp) so the sweep below has no seam:
-     the gradient reads the same forwards and backwards. */
-  background: linear-gradient(135deg, #001E50 0%, #00388F 25%, #0057B8 50%, #009FDB 75%, #0057B8 100%);
-  background-size: 220% 220%;
-  animation: att-hero-gradient-flow 20s ease-in-out infinite;
+  /* Purely horizontal (90deg), monotonic Navy->Cobalt->Blue->Cyan ramp — no repeated/mirrored
+     stop and no dark-bright-dark peak. The earlier 135deg diagonal + dark/bright/dark stop
+     pattern (Navy-Cobalt-Blue-Cyan-Blue) put a bright Cyan "peak" between two darker regions,
+     which at this panel's wide-short aspect ratio and a diagonal gradient axis read as a
+     distinct hard-edged band sweeping across, not an ambient color shift — and that same bright
+     peak was also where the Globe watermark below lost contrast. A horizontal axis removes any
+     vertical/diagonal banding (every row shows the same color at a given animation frame), and a
+     one-directional ramp has no internal peak for the eye to track as a "shape". Animation
+     mechanics (3-keyframe 0%->100%->0% position loop, ease timing) adopted from the referenced
+     "Pure CSS Animated Gradient Background" pen (codepen.io/P1N2O/pen/pyBNzX). */
+  background: linear-gradient(90deg, #001E50 0%, #00388F 40%, #0057B8 75%, #009FDB 100%);
+  background-size: 300% 100%;
+  animation: att-hero-gradient-flow 18s ease infinite;
   border-radius: var(--att-radius-xl, 24px);
   padding: 36px 40px;
   color: #FFFFFF;
@@ -671,8 +679,9 @@
 }
 
 @keyframes att-hero-gradient-flow {
-  0%, 100% { background-position: 0% 0%; }
-  50% { background-position: 100% 100%; }
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 0%; }
+  100% { background-position: 0% 0%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -709,6 +718,11 @@
   width: 280px;
   height: 280px;
   opacity: 0.14;
+  /* Soft dark halo around the globe shape's own alpha edge (not a box) so it keeps some contrast
+     against every frame of the animated background, including its brightest (Cyan) moments —
+     without this, a light-toned watermark at low opacity can wash out against a light-toned
+     background frame. */
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.35));
   pointer-events: none;
 }
 @media (max-width: 1200px) {
@@ -1348,8 +1362,11 @@
 }
 
 [data-theme="dark"] .dashboard-hero-section {
-  background: linear-gradient(135deg, #0A2540 0%, #00388F 25%, #001D4A 50%, #00388F 75%, #0A2540 100%) !important;
-  background-size: 220% 220% !important;
+  /* Monotonic and horizontal, matching the light-mode fix — the old dark/bright/dark/bright/dark
+     stop pattern had two brightness peaks, which read as moving shapes rather than an ambient
+     wash. */
+  background: linear-gradient(90deg, #001D4A 0%, #0A2540 40%, #00388F 100%) !important;
+  background-size: 300% 100% !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
   border: 1px solid rgba(56, 189, 248, 0.2) !important;
 }
