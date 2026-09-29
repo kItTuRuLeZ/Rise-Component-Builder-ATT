@@ -361,15 +361,27 @@
   border-bottom: 1px solid var(--att-border, #EFEFEF);
   padding: 10px 14px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  row-gap: 8px;
   cursor: pointer;
+}
+
+/* .section-header-left sits inside .section-select-target (generic min-width:0 rule,
+   shared with other "select target" buttons) — this override gives it a real floor so the
+   title+badge shrink to a point and then stop, forcing .section-header-right to wrap to its
+   own row instead of the two sides infinitely compressing into each other. */
+.section-card-header .section-select-target {
+  min-width: 140px;
 }
 
 .section-header-left {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
+  min-width: 0;
 }
 
 .section-toggle-icon {
@@ -394,10 +406,12 @@
   padding: 2px 8px;
   border-radius: 12px;
   color: #333;
+  white-space: nowrap;
 }
 
 .section-header-right {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 6px;
 }
@@ -412,8 +426,10 @@
 /* Component Row in Outline */
 .component-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  row-gap: 8px;
   padding: 8px 12px;
   background: var(--att-surface-sunken, #FAFAFA);
   border: 1px solid var(--att-border, #EAEAEA);
@@ -497,7 +513,9 @@
 
 .component-row-right {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
 }
 

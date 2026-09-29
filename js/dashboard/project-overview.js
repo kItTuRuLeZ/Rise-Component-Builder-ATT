@@ -1084,9 +1084,11 @@ export class ProjectOverviewView {
           </div>
 
           ${isRise ? '' : `
-          <button class="btn btn-secondary btn-sm" data-action="edit-comp" data-comp-id="${compId}" aria-label="Open Focus Editor for ${escapeHTML(comp.name)}">
+          <button class="btn btn-secondary btn-sm btn-icon" data-action="edit-comp" data-comp-id="${compId}" title="Focus Edit" aria-label="Open Focus Editor for ${escapeHTML(comp.name)}">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-            <span>Focus Edit</span>
+          </button>
+          <button class="btn btn-secondary btn-sm btn-icon" data-action="export-comp" data-comp-id="${compId}" title="Export This Block" aria-label="Export ${escapeHTML(comp.name)}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
           </button>
           `}
 
@@ -1100,8 +1102,6 @@ export class ProjectOverviewView {
             </button>
           ${isMenuOpen ? `
             <div class="project-action-menu">
-              ${isRise ? '' : `<button class="project-menu-item" data-action="open-focus-editor" data-comp-id="${compId}">Open Focus Editor</button>`}
-              ${isRise ? '' : `<button class="project-menu-item" data-action="export-comp" data-comp-id="${compId}">Export This Block</button>`}
               <button class="project-menu-item" data-action="duplicate-comp" data-comp-id="${compId}">Duplicate</button>
               <button class="project-menu-item" data-action="rename-comp" data-comp-id="${compId}">Rename</button>
               <button class="project-menu-item text-danger" data-action="delete-comp" data-comp-id="${compId}" data-sec-id="${sectionId || ''}">Delete</button>

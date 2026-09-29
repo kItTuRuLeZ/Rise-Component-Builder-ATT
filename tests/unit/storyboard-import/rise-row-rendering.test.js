@@ -31,7 +31,7 @@ describe('course outline: kind:"rise" row rendering', () => {
     document.body.innerHTML = '<div id="container"></div>';
   });
 
-  test('the RISE row shows a Rise badge and no Focus Edit / Open Focus Editor controls; the BUILDER row keeps both', () => {
+  test('the RISE row shows a Rise badge and no Focus Edit / Export icon buttons; the BUILDER row keeps both', () => {
     saveProject(mixedProject());
     const container = document.getElementById('container');
     const overview = new ProjectOverviewView({ container, projectId: 'p1' });
@@ -41,29 +41,32 @@ describe('course outline: kind:"rise" row rendering', () => {
     const builderRow = container.querySelector('[data-comp-id="c1"]');
     expect(riseRow.textContent).toContain('Rise: Text');
     expect(riseRow.querySelector('[data-action="edit-comp"]')).toBeNull();
+    expect(riseRow.querySelector('[data-action="export-comp"]')).toBeNull();
     expect(builderRow.querySelector('[data-action="edit-comp"]')).not.toBeNull();
+    expect(builderRow.querySelector('[data-action="export-comp"]')).not.toBeNull();
 
     overview.unmount();
   });
 
-  test('the RISE row\'s overflow menu has no "Open Focus Editor" or "Export This Block" item, but keeps Duplicate/Rename/Delete', () => {
+  test('the overflow menu (RISE or BUILDER) only ever has Duplicate/Rename/Delete — Focus Edit and Export are explicit row buttons, not buried in the menu', () => {
     saveProject(mixedProject());
     const container = document.getElementById('container');
     const overview = new ProjectOverviewView({ container, projectId: 'p1' });
     overview.mount();
-    overview.state.activeMenuId = 'c2';
+    overview.state.activeMenuId = 'c1';
     overview.render();
 
-    const riseRow = container.querySelector('[data-comp-id="c2"]');
-    expect(riseRow.querySelector('[data-action="open-focus-editor"]')).toBeNull();
-    expect(riseRow.querySelector('[data-action="export-comp"]')).toBeNull();
-    expect(riseRow.querySelector('[data-action="duplicate-comp"]')).not.toBeNull();
-    expect(riseRow.querySelector('[data-action="delete-comp"]')).not.toBeNull();
+    const builderRow = container.querySelector('[data-comp-id="c1"]');
+    expect(builderRow.querySelector('.project-action-menu [data-action="open-focus-editor"]')).toBeNull();
+    expect(builderRow.querySelector('.project-action-menu [data-action="export-comp"]')).toBeNull();
+    expect(builderRow.querySelector('.project-action-menu [data-action="duplicate-comp"]')).not.toBeNull();
+    expect(builderRow.querySelector('.project-action-menu [data-action="rename-comp"]')).not.toBeNull();
+    expect(builderRow.querySelector('.project-action-menu [data-action="delete-comp"]')).not.toBeNull();
 
     overview.unmount();
   });
 
-  test('the BUILDER row\'s overflow menu keeps "Export This Block", which fires onExportComponent with the project and component', () => {
+  test('the BUILDER row\'s explicit Export button fires onExportComponent with the project and component', () => {
     saveProject(mixedProject());
     const container = document.getElementById('container');
     let exported = null;
@@ -72,13 +75,11 @@ describe('course outline: kind:"rise" row rendering', () => {
       onExportComponent: (project, comp) => { exported = { project, comp }; }
     });
     overview.mount();
-    overview.state.activeMenuId = 'c1';
-    overview.render();
 
     const builderRow = container.querySelector('[data-comp-id="c1"]');
     const exportBtn = builderRow.querySelector('[data-action="export-comp"]');
     expect(exportBtn).not.toBeNull();
-    expect(exportBtn.textContent).toBe('Export This Block');
+    expect(exportBtn.getAttribute('title')).toBe('Export This Block');
     exportBtn.click();
 
     expect(exported).not.toBeNull();
