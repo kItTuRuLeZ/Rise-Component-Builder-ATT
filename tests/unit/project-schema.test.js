@@ -111,4 +111,38 @@ describe('Project Schema v3 & Migration Unit Tests', () => {
     expect(getProject(project.id)).toBeNull();
     expect(getProject(dup.id)).not.toBeNull();
   });
+
+  // Storyboard import (docs/STORYBOARD-IMPORT-DESIGN.md): a RISE-kind row is a component-map
+  // entry, not a separate structure, so it round-trips through the exact same
+  // createComponentInstance()/buildProjectSchemaV3() path as every builder component. `kind`
+  // must default to 'builder' for data that predates this field — every existing v3 project on
+  // disk has no `kind` at all, and every one of them is a real, schema-driven component.
+  test('createComponentInstance defaults kind to "builder", and accepts "rise" explicitly', () => {
+    const builderDefault = createComponentInstance({ id: 'c1', type: 'accordion' });
+    expect(builderDefault.kind).toBe('builder');
+
+    const explicitBuilder = createComponentInstance({ id: 'c2', type: 'accordion', kind: 'builder' });
+    expect(explicitBuilder.kind).toBe('builder');
+
+    const riseRow = createComponentInstance({ id: 'c3', type: 'Text', kind: 'rise', name: 'Welcome' });
+    expect(riseRow.kind).toBe('rise');
+    expect(riseRow.name).toBe('Welcome');
+
+    // Not an open-ended string field: anything other than the literal 'rise' is treated as the
+    // safe default, the same way an invalid `status` already falls back to 'draft' above.
+    const garbage = createComponentInstance({ id: 'c4', kind: 'not-a-real-kind' });
+    expect(garbage.kind).toBe('builder');
+  });
+
+  test('a project built from pre-existing (no "kind") component data treats every component as "builder"', () => {
+    // Simulates buildProjectSchemaV3() reconstructing components from raw, on-disk v3 project
+    // data that predates the `kind` field entirely — the exact path every already-saved project
+    // takes on load (normalizedComponents in buildProjectSchemaV3).
+    const legacyComponentData = { id: 'legacy-1', name: 'Old Accordion', type: 'accordion', config: componentConfig() };
+    const project = buildProjectSchemaV3({
+      unsectionedComponentOrder: ['legacy-1'],
+      components: { 'legacy-1': legacyComponentData }
+    });
+    expect(project.components['legacy-1'].kind).toBe('builder');
+  });
 });
