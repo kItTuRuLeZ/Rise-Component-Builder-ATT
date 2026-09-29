@@ -3736,8 +3736,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       updatePrimaryExportSection(payload);
-      await setupRiseZipPane(canExport);
       applyCompletionExportGate();
+      // Not awaited: the Web Package ZIP pane prepares an entire second bundle (media packaged
+      // as real files, a second full compile, then the ZIP bytes themselves), which most opens
+      // of this modal never need (Copy for Rise is the common path). It already has its own
+      // "Preparing…" loading state (rise-zip-warning below) and fills in a moment after the
+      // modal reveals, instead of the modal blocking on work the user may never use.
+      setupRiseZipPane(canExport);
     } finally {
       if (loadingEl) loadingEl.hidden = true;
       if (contentEl) contentEl.hidden = false;
