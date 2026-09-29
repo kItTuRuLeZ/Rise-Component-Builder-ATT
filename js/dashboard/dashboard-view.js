@@ -23,6 +23,7 @@ export class DashboardView {
     onOpenCatalog = null,
     onOpenComponent = null,
     onOpenPostPublish = null,
+    onOpenStoryboardImport = null,
     onRestoreDraft = null
   } = {}) {
     this.container = container;
@@ -31,6 +32,7 @@ export class DashboardView {
     this.onOpenCatalog = onOpenCatalog;
     this.onOpenComponent = onOpenComponent;
     this.onOpenPostPublish = onOpenPostPublish;
+    this.onOpenStoryboardImport = onOpenStoryboardImport;
     this.onRestoreDraft = onRestoreDraft;
 
     this.state = {
@@ -316,6 +318,19 @@ export class DashboardView {
                 <p class="starter-card-desc">Restore an existing course project file or packaged interactive component from your device.</p>
                 <div class="starter-card-footer">
                   <span class="starter-card-cta">Upload Project File →</span>
+                </div>
+              </div>
+
+              <!-- Starter 4: Storyboard Import -->
+              <div class="starter-card" id="starter-action-storyboard" role="button" tabindex="0">
+                <div class="starter-card-badge is-neutral">.docx</div>
+                <div class="starter-card-icon-wrap">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+                </div>
+                <h3 class="starter-card-title">Import Storyboard (.docx)</h3>
+                <p class="starter-card-desc">Build a new course project from an instructional designer's filled-in storyboard document.</p>
+                <div class="starter-card-footer">
+                  <span class="starter-card-cta">Upload Storyboard →</span>
                 </div>
               </div>
             </div>
@@ -686,6 +701,19 @@ export class DashboardView {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           starterImport.click();
+        }
+      });
+    }
+
+    const starterStoryboard = this.container.querySelector('#starter-action-storyboard');
+    if (starterStoryboard) {
+      starterStoryboard.addEventListener('click', () => {
+        if (this.onOpenStoryboardImport) this.onOpenStoryboardImport();
+      });
+      starterStoryboard.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          starterStoryboard.click();
         }
       });
     }

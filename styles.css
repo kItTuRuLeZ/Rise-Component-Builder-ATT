@@ -3725,6 +3725,43 @@ input[type="number"]:focus::-webkit-inner-spin-button {
   margin: 0;
 }
 
+/* Storyboard import "parsing…" state (js/dashboard/storyboard-import-view.js) — same visual
+   pattern as the export modal's loading state above, kept as its own rule set since the two
+   features are unrelated and shouldn't share a class name by coincidence. */
+.storyboard-import-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 56px 24px;
+  text-align: center;
+}
+
+.storyboard-import-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: storyboard-import-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storyboard-import-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+@keyframes storyboard-import-spin {
+  to { transform: rotate(360deg); }
+}
+
+.storyboard-import-loading-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
 /* Export Modal 2-Card Layout */
 .export-cards-grid {
   display: grid;

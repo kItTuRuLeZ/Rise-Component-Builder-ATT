@@ -42,6 +42,7 @@ import { ProjectOverviewView } from './js/dashboard/project-overview.js';
 import { ProjectMediaView } from './js/dashboard/project-media.js';
 import { CoursePreviewView } from './js/dashboard/course-preview.js';
 import { ProjectQaView } from './js/dashboard/project-qa.js';
+import { StoryboardImportView } from './js/dashboard/storyboard-import-view.js';
 import { downloadCourseProjectZip, showPreExportReviewDialog } from './js/dashboard/project-export.js';
 import { isolateModal, clearAllModalIsolations } from './js/dashboard/att-modal.js';
 // app.js is the composition root and is explicitly allowed to depend on any module,
@@ -125,6 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const projectMediaWorkspace = document.getElementById('project-media-workspace');
   const coursePreviewWorkspace = document.getElementById('course-preview-workspace');
   const projectQaWorkspace = document.getElementById('project-qa-workspace');
+  const storyboardImportWorkspace = document.getElementById('storyboard-import-workspace');
   const btnProjectsDashboard = document.getElementById('btn-projects-dashboard');
 
   let activeProjectId = null;
@@ -133,6 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let projectMediaInstance = null;
   let coursePreviewInstance = null;
   let projectQaInstance = null;
+  let storyboardImportInstance = null;
   
   const btnBackToCatalog = document.getElementById('btn-back-to-catalog');
   const activeComponentTitle = document.getElementById('active-component-title');
@@ -981,7 +984,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function hideAllWorkspacePanels() {
-    [landingWorkspace, dashboardWorkspace, projectOverviewWorkspace, projectMediaWorkspace, coursePreviewWorkspace, projectQaWorkspace, postPublishWorkspace].forEach(panel => {
+    [landingWorkspace, dashboardWorkspace, projectOverviewWorkspace, projectMediaWorkspace, coursePreviewWorkspace, projectQaWorkspace, storyboardImportWorkspace, postPublishWorkspace].forEach(panel => {
       if (panel) {
         panel.hidden = true;
         panel.style.display = 'none';
@@ -998,7 +1001,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       unmountContextBandFields();
     }
 
-    if (['landing', 'dashboard', 'project-overview', 'project-media', 'course-preview', 'project-qa', 'post-publish'].includes(state)) {
+    if (['landing', 'dashboard', 'project-overview', 'project-media', 'course-preview', 'project-qa', 'storyboard-import', 'post-publish'].includes(state)) {
       if (sidebar) {
         sidebar.hidden = true;
         sidebar.style.display = 'none';
@@ -1063,6 +1066,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             },
             onOpenPostPublish: () => {
               showState('post-publish');
+            },
+            onOpenStoryboardImport: () => {
+              showState('storyboard-import');
             },
             onRestoreDraft: async (draft) => {
               if (await applyProject(draft, true)) {
@@ -1161,6 +1167,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
           });
           projectQaInstance.mount();
+        }
+      } else if (state === 'storyboard-import') {
+        if (storyboardImportWorkspace) {
+          storyboardImportWorkspace.hidden = false;
+          storyboardImportWorkspace.style.display = 'flex';
+          if (storyboardImportInstance) storyboardImportInstance.unmount();
+          storyboardImportInstance = new StoryboardImportView({
+            container: storyboardImportWorkspace,
+            onBack: () => showState('dashboard'),
+            onImported: (projectId) => {
+              activeProjectId = projectId;
+              showState('project-overview', { projectId });
+            }
+          });
+          storyboardImportInstance.mount();
         }
       } else if (state === 'post-publish') {
         if (postPublishWorkspace) {
@@ -1280,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       contextualToolbar.style.display = (state === 'editor') ? 'flex' : 'none';
     }
 
-    if (['landing', 'dashboard', 'project-overview', 'project-media', 'course-preview', 'project-qa', 'post-publish'].includes(state)) {
+    if (['landing', 'dashboard', 'project-overview', 'project-media', 'course-preview', 'project-qa', 'storyboard-import', 'post-publish'].includes(state)) {
       if (toolbarActions) toolbarActions.style.display = 'none';
       if (projectTitleEditor) projectTitleEditor.style.display = 'none';
       if (status) status.hidden = true;
