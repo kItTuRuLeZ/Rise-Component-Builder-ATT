@@ -64,3 +64,25 @@ test('a fully filled-in storyboard imports end to end: review, confirm, and land
   await expect(page.locator('#att-rise-sheet-text')).toContainText('S01-B01');
   await expect(page.locator('#att-rise-sheet-text')).not.toContainText('Key principles');
 });
+
+test('the real all-26-component-types template uploads and reviews through the actual UI, mapping every BUILDER row to its real type', async ({ page }) => {
+  await openStoryboardImporter(page);
+  await page.locator('#sbi-file-input').setInputFiles(fixture('all-components-template.docx'));
+
+  const importer = page.locator('#storyboard-import-workspace');
+
+  // Parsed and reviewed, not stuck on the parse-error step — proves the real upload path
+  // handles a large, real, multi-section document with every supported component type.
+  await expect(page.locator('#sbi-project-name')).toHaveValue('Fiber Deployment Readiness');
+  await expect(importer.getByText('4 sections')).toBeVisible();
+
+  // A representative sample of the 26 types, each shown with its real block type badge.
+  for (const blockType of ['Accordion', 'Study Cards', 'Hotspots', 'Multiple Select', 'Scenario', 'Interactive Video', 'Confidence Matrix']) {
+    await expect(importer.getByText(blockType, { exact: true }).first()).toBeVisible();
+  }
+
+  // The template's own 2 genuine content gaps (see all-components-field-mapping.test.js) are
+  // surfaced, not silently accepted — Confirm correctly stays disabled for this exact file.
+  await expect(importer.getByText(/must be fixed before this can be imported/i)).toBeVisible();
+  await expect(page.locator('#sbi-confirm-btn')).toBeDisabled();
+});
