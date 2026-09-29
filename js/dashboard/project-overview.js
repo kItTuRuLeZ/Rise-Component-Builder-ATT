@@ -550,6 +550,25 @@ export class ProjectOverviewView {
       deviceWidthStyle = 'width: 375px; max-width: 100%;';
     }
 
+    if (selectedComp && selectedComp.kind === 'rise') {
+      return `
+        <div class="canvas-header">
+          <div class="canvas-header-title">
+            <span class="component-type-badge" style="background: rgba(2, 119, 189, 0.08); color: #0277BD;">Rise: ${escapeHTML(selectedComp.type)}</span>
+            <span class="canvas-active-title">${escapeHTML(selectedComp.name)}</span>
+          </div>
+        </div>
+        <div class="canvas-viewport-frame" style="padding: 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+          <div style="width: 56px; height: 56px; border-radius: 14px; background: rgba(2, 119, 189, 0.08); color: #0277BD; display: flex; align-items: center; justify-content: center;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </div>
+          <h2 style="font-size: 1.0625rem; font-weight: 700; margin: 0; color: var(--text-main, #111);">Authored directly in Rise</h2>
+          <p style="font-size: 0.875rem; color: #64748B; margin: 0; max-width: 420px;">This outline entry stands in for a native Rise block (from a storyboard import) — there is nothing to preview or edit here. It is excluded from this Builder's QA, Preflight, and course export.</p>
+          ${selectedComp.config?.notes ? `<p style="font-size: 0.8125rem; color: #475569; margin: 8px 0 0 0; max-width: 420px; padding: 10px 14px; background: var(--att-surface-sunken, #F8FAFC); border-radius: 8px;"><strong>Build note:</strong> ${escapeHTML(selectedComp.config.notes)}</p>` : ''}
+        </div>
+      `;
+    }
+
     if (selectedComp) {
       const regEntry = getComponentById(COMPONENT_REGISTRY, selectedComp.type);
       const typeLabel = regEntry?.name || selectedComp.type;
@@ -665,6 +684,36 @@ export class ProjectOverviewView {
   renderContextualInspector(project) {
     const { selectedType, selectedId } = this.state;
     const totalComponents = Object.keys(project.components || {}).length;
+
+    if (selectedType === 'component' && selectedId && project.components?.[selectedId]?.kind === 'rise') {
+      const comp = project.components[selectedId];
+      return `
+        <div class="inspector-header">
+          <h3 class="inspector-title">Component Inspector</h3>
+          <span class="project-client-badge" style="background: rgba(2, 119, 189, 0.08); color: #0277BD;">Rise: ${escapeHTML(comp.type)}</span>
+        </div>
+        <div class="inspector-body">
+          <div class="inspector-prop-group">
+            <label class="inspector-label" for="insp-comp-name">Component Title</label>
+            <input id="insp-comp-name" class="form-input" type="text" value="${escapeHTML(comp.name)}" style="font-size: 0.8125rem;" />
+          </div>
+          <div class="inspector-prop-group">
+            <span class="inspector-label">Authored in</span>
+            <span style="font-size: 0.8125rem; color: #555;">Rise (this outline entry is a reference only — there is no editor for it here)</span>
+          </div>
+          ${comp.config?.notes ? `
+          <div class="inspector-prop-group">
+            <span class="inspector-label">Build note</span>
+            <span style="font-size: 0.8125rem; color: #555;">${escapeHTML(comp.config.notes)}</span>
+          </div>` : ''}
+        </div>
+        <div class="inspector-footer">
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-sm text-danger" data-action="delete-comp" data-comp-id="${comp.id}" style="flex: 1; font-size: 0.75rem;">Delete</button>
+          </div>
+        </div>
+      `;
+    }
 
     if (selectedType === 'component' && selectedId && project.components?.[selectedId]) {
       const comp = project.components[selectedId];
@@ -996,8 +1045,9 @@ export class ProjectOverviewView {
 
     const isMenuOpen = this.state.activeMenuId === compId;
     const isSelected = this.state.selectedType === 'component' && this.state.selectedId === compId;
+    const isRise = comp.kind === 'rise';
     const registryEntry = COMPONENT_REGISTRY.find(r => r.id === comp.type);
-    const typeLabel = registryEntry?.name || comp.type;
+    const typeLabel = isRise ? `Rise: ${comp.type}` : (registryEntry?.name || comp.type);
     const statusClass = comp.status === 'ready' ? 'status-ready' : (comp.status === 'in_review' || comp.status === 'in-review') ? 'status-review' : 'status-draft';
 
     return `
@@ -1009,7 +1059,7 @@ export class ProjectOverviewView {
               <h4 class="component-name" title="${escapeHTML(comp.name)}">${escapeHTML(comp.name)}</h4>
             </div>
             <div class="component-row-meta-line">
-              <span class="component-type-badge">${escapeHTML(typeLabel)}</span>
+              <span class="component-type-badge" ${isRise ? 'style="background: rgba(2, 119, 189, 0.08); color: #0277BD;"' : ''}>${escapeHTML(typeLabel)}</span>
             </div>
           </div>
         </button>
@@ -1024,11 +1074,13 @@ export class ProjectOverviewView {
             </select>
           </div>
 
+          ${isRise ? '' : `
           <button class="btn btn-secondary btn-sm" data-action="edit-comp" data-comp-id="${compId}" aria-label="Open Focus Editor for ${escapeHTML(comp.name)}">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
             <span>Focus Edit</span>
           </button>
-          
+          `}
+
           <!-- Keyboard Move buttons -->
           ${index > 0 ? `<button class="btn btn-secondary btn-sm btn-icon" data-action="move-comp-up" data-comp-id="${compId}" data-sec-id="${sectionId || ''}" title="Move Up" aria-label="Move ${escapeHTML(comp.name)} Up"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="18 15 12 9 6 15"></polyline></svg></button>` : ''}
           ${index < totalInGroup - 1 ? `<button class="btn btn-secondary btn-sm btn-icon" data-action="move-comp-down" data-comp-id="${compId}" data-sec-id="${sectionId || ''}" title="Move Down" aria-label="Move ${escapeHTML(comp.name)} Down"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></button>` : ''}
@@ -1039,7 +1091,7 @@ export class ProjectOverviewView {
             </button>
           ${isMenuOpen ? `
             <div class="project-action-menu">
-              <button class="project-menu-item" data-action="open-focus-editor" data-comp-id="${compId}">Open Focus Editor</button>
+              ${isRise ? '' : `<button class="project-menu-item" data-action="open-focus-editor" data-comp-id="${compId}">Open Focus Editor</button>`}
               <button class="project-menu-item" data-action="duplicate-comp" data-comp-id="${compId}">Duplicate</button>
               <button class="project-menu-item" data-action="rename-comp" data-comp-id="${compId}">Rename</button>
               <button class="project-menu-item text-danger" data-action="delete-comp" data-comp-id="${compId}" data-sec-id="${sectionId || ''}">Delete</button>
