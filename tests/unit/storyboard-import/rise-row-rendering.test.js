@@ -46,7 +46,7 @@ describe('course outline: kind:"rise" row rendering', () => {
     overview.unmount();
   });
 
-  test('the RISE row\'s overflow menu has no "Open Focus Editor" item, but keeps Duplicate/Rename/Delete', () => {
+  test('the RISE row\'s overflow menu has no "Open Focus Editor" or "Export This Block" item, but keeps Duplicate/Rename/Delete', () => {
     saveProject(mixedProject());
     const container = document.getElementById('container');
     const overview = new ProjectOverviewView({ container, projectId: 'p1' });
@@ -56,8 +56,34 @@ describe('course outline: kind:"rise" row rendering', () => {
 
     const riseRow = container.querySelector('[data-comp-id="c2"]');
     expect(riseRow.querySelector('[data-action="open-focus-editor"]')).toBeNull();
+    expect(riseRow.querySelector('[data-action="export-comp"]')).toBeNull();
     expect(riseRow.querySelector('[data-action="duplicate-comp"]')).not.toBeNull();
     expect(riseRow.querySelector('[data-action="delete-comp"]')).not.toBeNull();
+
+    overview.unmount();
+  });
+
+  test('the BUILDER row\'s overflow menu keeps "Export This Block", which fires onExportComponent with the project and component', () => {
+    saveProject(mixedProject());
+    const container = document.getElementById('container');
+    let exported = null;
+    const overview = new ProjectOverviewView({
+      container, projectId: 'p1',
+      onExportComponent: (project, comp) => { exported = { project, comp }; }
+    });
+    overview.mount();
+    overview.state.activeMenuId = 'c1';
+    overview.render();
+
+    const builderRow = container.querySelector('[data-comp-id="c1"]');
+    const exportBtn = builderRow.querySelector('[data-action="export-comp"]');
+    expect(exportBtn).not.toBeNull();
+    expect(exportBtn.textContent).toBe('Export This Block');
+    exportBtn.click();
+
+    expect(exported).not.toBeNull();
+    expect(exported.project.id).toBe('p1');
+    expect(exported.comp.id).toBe('c1');
 
     overview.unmount();
   });

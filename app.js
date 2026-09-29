@@ -1093,6 +1093,14 @@ document.addEventListener('DOMContentLoaded', async () => {
               activeProjectId = project.id;
               applyComponentInstance(project, comp);
             },
+            onExportComponent: async (project, comp) => {
+              activeProjectId = project.id;
+              const loaded = await applyComponentInstance(project, comp);
+              if (loaded) {
+                setupExportModalContent();
+                openModal('modal-export');
+              }
+            },
             onOpenPreview: (id) => showState('course-preview', { projectId: id }),
             onOpenMedia: (id) => showState('project-media', { projectId: id }),
             onOpenQa: (id) => showState('project-qa', { projectId: id }),

@@ -30,6 +30,7 @@ export class ProjectOverviewView {
     projectId,
     onBackToDashboard,
     onEditComponent,
+    onExportComponent,
     onOpenPreview,
     onOpenMedia,
     onOpenQa,
@@ -39,6 +40,7 @@ export class ProjectOverviewView {
     this.projectId = projectId;
     this.onBackToDashboard = onBackToDashboard;
     this.onEditComponent = onEditComponent;
+    this.onExportComponent = onExportComponent;
     this.onOpenPreview = onOpenPreview;
     this.onOpenMedia = onOpenMedia;
     this.onOpenQa = onOpenQa;
@@ -1099,6 +1101,7 @@ export class ProjectOverviewView {
           ${isMenuOpen ? `
             <div class="project-action-menu">
               ${isRise ? '' : `<button class="project-menu-item" data-action="open-focus-editor" data-comp-id="${compId}">Open Focus Editor</button>`}
+              ${isRise ? '' : `<button class="project-menu-item" data-action="export-comp" data-comp-id="${compId}">Export This Block</button>`}
               <button class="project-menu-item" data-action="duplicate-comp" data-comp-id="${compId}">Duplicate</button>
               <button class="project-menu-item" data-action="rename-comp" data-comp-id="${compId}">Rename</button>
               <button class="project-menu-item text-danger" data-action="delete-comp" data-comp-id="${compId}" data-sec-id="${sectionId || ''}">Delete</button>
@@ -1613,6 +1616,20 @@ export class ProjectOverviewView {
         const comp = project.components?.[compId];
         if (comp && this.onEditComponent) {
           this.onEditComponent(project, comp);
+        }
+      });
+    });
+
+    // Export This Block — opens Focus Editor for the component and, once loaded, the same
+    // Export Custom Block modal Focus Edit's own Export button opens, without a manual two-step.
+    this.container.querySelectorAll('[data-action="export-comp"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const compId = btn.dataset.compId;
+        const project = this.getProject();
+        const comp = project.components?.[compId];
+        if (comp && this.onExportComponent) {
+          this.onExportComponent(project, comp);
         }
       });
     });
