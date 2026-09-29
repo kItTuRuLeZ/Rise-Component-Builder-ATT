@@ -20,6 +20,7 @@ import { auditCourseProject } from './project-qa.js';
 import { generateIframeContent } from '../preview.js';
 import { toRgba as colorToRgba, escapeHTML } from '../utilities.js';
 import { showToast } from '../toast.js';
+import { showRiseBuildSheetDialog } from '../storyboard-import/build-sheet.js';
 import { getBuiltInTheme, DEFAULT_THEME_ID } from '../themes.js';
 import { defaultBlockHeader } from '../state.js';
 
@@ -380,6 +381,12 @@ export class ProjectOverviewView {
           </div>
 
           <div class="workspace-header-actions">
+            ${Object.values(project.components || {}).some(c => c.kind === 'rise') ? `
+            <button id="wp-rise-sheet-btn" class="btn btn-secondary btn-sm" title="Copy or download the Rise build sheet">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+              <span>Rise Build Sheet</span>
+            </button>
+            ` : ''}
             <button id="wp-media-btn" class="btn btn-secondary btn-sm" title="Project media library">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
               <span>Media</span>
@@ -1435,6 +1442,10 @@ export class ProjectOverviewView {
     });
     this.container.querySelector('#wp-media-btn')?.addEventListener('click', () => {
       if (this.onOpenMedia) this.onOpenMedia(this.projectId);
+    });
+    this.container.querySelector('#wp-rise-sheet-btn')?.addEventListener('click', (e) => {
+      const project = this.getProject();
+      if (project) showRiseBuildSheetDialog({ project, triggerElement: e.currentTarget });
     });
     this.container.querySelector('#wp-qa-btn')?.addEventListener('click', () => {
       if (this.onOpenQa) this.onOpenQa(this.projectId);
