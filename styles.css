@@ -774,6 +774,7 @@ a {
 .project-media-workspace-panel,
 .course-preview-workspace-panel,
 .project-qa-workspace-panel,
+.storyboard-import-workspace-panel,
 .post-publish-workspace-panel {
   flex: 1;
   width: 100%;
