@@ -42,6 +42,7 @@ import { ProjectOverviewView } from './js/dashboard/project-overview.js';
 import { ProjectMediaView } from './js/dashboard/project-media.js';
 import { CoursePreviewView } from './js/dashboard/course-preview.js';
 import { ProjectQaView } from './js/dashboard/project-qa.js';
+import { StoryboardImportView } from './js/dashboard/storyboard-import-view.js';
 import { downloadCourseProjectZip, showPreExportReviewDialog } from './js/dashboard/project-export.js';
 import { isolateModal, clearAllModalIsolations } from './js/dashboard/att-modal.js';
 // app.js is the composition root and is explicitly allowed to depend on any module,
@@ -125,6 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const projectMediaWorkspace = document.getElementById('project-media-workspace');
   const coursePreviewWorkspace = document.getElementById('course-preview-workspace');
   const projectQaWorkspace = document.getElementById('project-qa-workspace');
+  const storyboardImportWorkspace = document.getElementById('storyboard-import-workspace');
   const btnProjectsDashboard = document.getElementById('btn-projects-dashboard');
 
   let activeProjectId = null;
@@ -133,6 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let projectMediaInstance = null;
   let coursePreviewInstance = null;
   let projectQaInstance = null;
+  let storyboardImportInstance = null;
   
   const btnBackToCatalog = document.getElementById('btn-back-to-catalog');
   const activeComponentTitle = document.getElementById('active-component-title');
@@ -981,7 +984,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function hideAllWorkspacePanels() {
-    [landingWorkspace, dashboardWorkspace, projectOverviewWorkspace, projectMediaWorkspace, coursePreviewWorkspace, projectQaWorkspace, postPublishWorkspace].forEach(panel => {
+    [landingWorkspace, dashboardWorkspace, projectOverviewWorkspace, projectMediaWorkspace, coursePreviewWorkspace, projectQaWorkspace, storyboardImportWorkspace, postPublishWorkspace].forEach(panel => {
       if (panel) {
         panel.hidden = true;
         panel.style.display = 'none';
@@ -998,7 +1001,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       unmountContextBandFields();
     }
 
-    if (['landing', 'dashboard', 'project-overview', 'project-media', 'course-preview', 'project-qa', 'post-publish'].includes(state)) {
+    if (['landing', 'dashboard', 'project-overview', 'project-media', 'course-preview', 'project-qa', 'storyboard-import', 'post-publish'].includes(state)) {
       if (sidebar) {
         sidebar.hidden = true;
         sidebar.style.display = 'none';
@@ -1064,6 +1067,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             onOpenPostPublish: () => {
               showState('post-publish');
             },
+            onOpenStoryboardImport: () => {
+              showState('storyboard-import');
+            },
             onRestoreDraft: async (draft) => {
               if (await applyProject(draft, true)) {
                 showToast(`Restored draft “${draft.name}”.`, 'success');
@@ -1086,6 +1092,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             onEditComponent: (project, comp) => {
               activeProjectId = project.id;
               applyComponentInstance(project, comp);
+            },
+            onExportComponent: async (project, comp) => {
+              activeProjectId = project.id;
+              const loaded = await applyComponentInstance(project, comp);
+              if (loaded) {
+                setupExportModalContent();
+                openModal('modal-export');
+              }
             },
             onOpenPreview: (id) => showState('course-preview', { projectId: id }),
             onOpenMedia: (id) => showState('project-media', { projectId: id }),
@@ -1161,6 +1175,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
           });
           projectQaInstance.mount();
+        }
+      } else if (state === 'storyboard-import') {
+        if (storyboardImportWorkspace) {
+          storyboardImportWorkspace.hidden = false;
+          storyboardImportWorkspace.style.display = 'flex';
+          if (storyboardImportInstance) storyboardImportInstance.unmount();
+          storyboardImportInstance = new StoryboardImportView({
+            container: storyboardImportWorkspace,
+            onBack: () => showState('dashboard'),
+            onImported: (projectId) => {
+              activeProjectId = projectId;
+              showState('project-overview', { projectId });
+            }
+          });
+          storyboardImportInstance.mount();
         }
       } else if (state === 'post-publish') {
         if (postPublishWorkspace) {
@@ -1280,7 +1309,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       contextualToolbar.style.display = (state === 'editor') ? 'flex' : 'none';
     }
 
-    if (['landing', 'dashboard', 'project-overview', 'project-media', 'course-preview', 'project-qa', 'post-publish'].includes(state)) {
+    if (['landing', 'dashboard', 'project-overview', 'project-media', 'course-preview', 'project-qa', 'storyboard-import', 'post-publish'].includes(state)) {
       if (toolbarActions) toolbarActions.style.display = 'none';
       if (projectTitleEditor) projectTitleEditor.style.display = 'none';
       if (status) status.hidden = true;
@@ -3607,9 +3636,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Identifies the newest export-modal Preflight run, so a slow layout measurement from an
+  // earlier open (or a component that has since changed) can never overwrite a fresher result.
+  let exportPreflightRunId = 0;
+
+  function showLayoutCheckPending(container) {
+    const note = document.createElement('div');
+    note.className = 'preflight-layout-pending';
+    note.setAttribute('role', 'status');
+    note.textContent = 'Checking layout at desktop and mobile widths…';
+    container.appendChild(note);
+  }
+
+  function issueSignature(issues) {
+    return JSON.stringify(issues.map(item => [item.ruleId, item.itemIndex ?? null, item.explanation]));
+  }
+
+  // Never throws and never touches export availability: a failed/aborted measurement just
+  // surfaces the same manual-check Recommendation the blocking version always did.
+  async function refreshExportPreflightWithLayout(context, container, firstIssues, runId) {
+    try {
+      await attachDomMeasurement(context);
+      if (runId !== exportPreflightRunId) return;
+      const issues = await runPreflight(context);
+      if (runId !== exportPreflightRunId) return;
+      // Re-rendering replaces the list (and any focused "Go to field" button), so only do it
+      // when the layout check actually added something; otherwise just clear the pending note.
+      if (issueSignature(issues) === issueSignature(firstIssues)) {
+        container.querySelector('.preflight-layout-pending')?.remove();
+        return;
+      }
+      const summary = renderPreflightResults(container, issues);
+      updatePreflightBadge(summary);
+      announcePreflightSummary('export-preflight-announcement', issues);
+    } catch {
+      if (runId === exportPreflightRunId) container.querySelector('.preflight-layout-pending')?.remove();
+    }
+  }
+
   async function runExportPreflightGate() {
     const container = document.getElementById('export-preflight-results');
     if (!container) { setExportActionsEnabled(true); return true; } // fail open: a missing results panel is a tooling problem, not a content one
+    const runId = ++exportPreflightRunId;
     const context = buildPreflightContext();
     // P12 Requirement 3: no selected component is a genuine reason to block export — the
     // toolbar's Export button is already disabled in this case (updateToolbarActionAvailability),
@@ -3620,12 +3688,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       return false;
     }
     try {
-      await attachDomMeasurement(context);
+      // The layout measurement (hidden-iframe renders at desktop and mobile widths) is by far
+      // the slowest part of Preflight, and its two rules can only ever raise Warnings or
+      // Recommendations (js/validation.js checkClippingRisk/checkMobileOverflow) — never a
+      // Blocking error — so it can't change `canExport`. The modal therefore reveals as soon
+      // as the fast checks are done and folds the layout findings in when they arrive.
       const issues = await runPreflight(context);
       const summary = renderPreflightResults(container, issues);
       updatePreflightBadge(summary);
       announcePreflightSummary('export-preflight-announcement', issues);
       setExportActionsEnabled(summary.canExport);
+      showLayoutCheckPending(container);
+      refreshExportPreflightWithLayout(context, container, issues, runId);
       return summary.canExport;
     } catch (error) {
       container.innerHTML = `<div class="preflight-empty">Preflight check failed: ${escapeHTML(error.message)}</div>`;
@@ -3707,8 +3781,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       updatePrimaryExportSection(payload);
-      await setupRiseZipPane(canExport);
       applyCompletionExportGate();
+      // Not awaited: the Web Package ZIP pane prepares an entire second bundle (media packaged
+      // as real files, a second full compile, then the ZIP bytes themselves), which most opens
+      // of this modal never need (Copy for Rise is the common path). It already has its own
+      // "Preparing…" loading state (rise-zip-warning below) and fills in a moment after the
+      // modal reveals, instead of the modal blocking on work the user may never use.
+      setupRiseZipPane(canExport);
     } finally {
       if (loadingEl) loadingEl.hidden = true;
       if (contentEl) contentEl.hidden = false;
@@ -3745,9 +3824,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (zipSizeLabel) zipSizeLabel.textContent = blocked ? '' : `Web Package ZIP size: ${formatExportedFileSize(bundle.size)}`;
     if (zipButton) {
-      const enabled = canExport && !blocked;
+      // This pane now fills in after the modal reveals (setupExportModalContent no longer
+      // awaits it), so it must fold in the completion-format gate itself: applyCompletionExportGate
+      // already ran by then and would otherwise be silently overwritten here.
+      const completionBlocked = Boolean(checkCompletionExportFormatIssue(appState.config, 'rise-zip'));
+      const enabled = canExport && !blocked && !completionBlocked;
       zipButton.disabled = !enabled;
-      zipButton.title = blocked ? 'Re-upload the missing asset(s) before exporting.' : enabled ? '' : 'Fix the blocking errors listed above before exporting.';
+      zipButton.title = blocked
+        ? 'Re-upload the missing asset(s) before exporting.'
+        : completionBlocked
+          ? 'Switch to "Copy for Rise" — the ZIP package doesn\'t report completion to Rise.'
+          : enabled ? '' : 'Fix the blocking errors listed above before exporting.';
     }
   }
 

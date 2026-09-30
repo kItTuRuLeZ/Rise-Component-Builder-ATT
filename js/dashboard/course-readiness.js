@@ -104,7 +104,10 @@ async function measureComponent(project, component, entry) {
  */
 export async function collectPreflightIssues(project, options = {}) {
   const { mediaStore, measure = typeof document !== 'undefined', measureFn = measureComponent } = options;
-  const components = Object.values(project?.components || {});
+  // RISE-kind components (storyboard import) have no entry in this Builder's component
+  // registry by design — without this filter every one would be reported as a blocking
+  // "Unknown component type" issue instead of being silently out of scope for Preflight.
+  const components = Object.values(project?.components || {}).filter(component => component.kind !== 'rise');
   const result = new Map();
 
   if (measure) {

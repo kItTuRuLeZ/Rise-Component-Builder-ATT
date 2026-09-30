@@ -240,6 +240,20 @@ test.describe('js/dom-measurement.js — deterministic and expansion-aware', () 
   });
 });
 
+test('the export modal reveals before the layout measurement finishes, then folds its findings in', async ({ page }) => {
+  // The observable contract: content is visible and export is enabled without waiting on the
+  // measurement, and the layout findings still arrive afterwards.
+  await page.locator('#btn-export').click();
+  const results = page.locator('#export-preflight-results');
+  await expect(page.locator('#export-modal-content')).toBeVisible();
+  await expect(results).toContainText('Compliance Status');
+  await expect(page.locator('#btn-copy-html')).toBeEnabled();
+  // The pending note is replaced by the measured result (the default Accordion is taller than
+  // a typical Embed frame, so the clipping warning is added).
+  await expect(results).toContainText('May be clipped in a fixed-height Embed frame');
+  await expect(results.locator('.preflight-layout-pending')).toHaveCount(0);
+});
+
 test('Preflight measures the real rendered height with every section open, the same way on every engine', async ({ page }) => {
   await page.locator('#btn-preflight').click();
   const results = page.locator('#preflight-results');

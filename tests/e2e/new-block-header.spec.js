@@ -45,7 +45,9 @@ test('a Multiple Choice block added to a course gets its own title, not INTERACT
   expect(added.blockDesc).not.toContain('Click on the headers');
 
   // Open the new block from the outline; the editor must show the block's own header.
-  await page.locator('.component-row').filter({ hasText: /Multiple Choice/ }).first().click();
+  // Via the row's explicit Focus Edit button: clicking the row body only selects it (the row is
+  // compact, so its centre is no longer the Edit button).
+  await page.locator('.component-row').filter({ hasText: /Multiple Choice/ }).first().locator('[data-action="edit-comp"]').click();
   await expect(page.locator('#editor-state')).toBeVisible({ timeout: 15000 });
   await expect(page.locator('#input-block-title')).toContainText('MULTIPLE CHOICE');
   await expect(page.locator('#input-block-title')).not.toContainText('ACCORDION');

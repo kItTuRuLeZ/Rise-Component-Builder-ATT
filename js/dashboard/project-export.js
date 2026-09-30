@@ -152,7 +152,9 @@ export async function buildCourseProjectZip(projectId, options = {}) {
     exportedAt: new Date().toISOString(),
     schemaVersion: project.schemaVersion,
     totalSections: (project.sectionOrder || []).length,
-    totalComponents: Object.keys(project.components || {}).length,
+    // RISE-kind components (storyboard import) stand for native Rise blocks and are never part
+    // of this package — the manifest's component count should reflect what's actually exported.
+    totalComponents: Object.values(project.components || {}).filter(comp => comp.kind !== 'rise').length,
     totalAssets: 0,
     sections: []
   };
@@ -162,7 +164,9 @@ export async function buildCourseProjectZip(projectId, options = {}) {
     let compIdx = 1;
     for (const compId of componentIds) {
       const comp = project.components?.[compId];
-      if (!comp) continue;
+      // RISE-kind components (storyboard import) have no schema-driven config to compile —
+      // they never reach the compiler and never appear in the exported package.
+      if (!comp || comp.kind === 'rise') continue;
       const compFolder = `${folder}/${padZero(compIdx)}-${sanitizeSlug(comp.name)}`;
       const added = await addComponentToArchive(project, comp, compFolder, entries, options.store);
       manifest.totalAssets += added.assets.length;

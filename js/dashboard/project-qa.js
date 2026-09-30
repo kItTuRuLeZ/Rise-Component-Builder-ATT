@@ -18,7 +18,9 @@ import { primaryField } from '../validation.js';
  * @returns {Object} Full audit report with separate technical and editorial metrics
  */
 export function auditCourseProject(project) {
-  const components = Object.values(project?.components || {});
+  // RISE-kind components stand for native Rise blocks (storyboard import) — they carry no
+  // schema-driven config and are never compiled, so QA/Preflight has nothing to check.
+  const components = Object.values(project?.components || {}).filter(comp => comp.kind !== 'rise');
   const totalComponents = components.length;
 
   let blockerCount = 0;

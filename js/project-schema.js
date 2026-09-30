@@ -34,7 +34,8 @@ const validDate = value => typeof value === 'string' && !Number.isNaN(Date.parse
 
 /**
  * @param {{ id?: string|null, name?: string, type?: string, config?: any, styleOverrides?: any,
- *   mediaRefs?: any[], qa?: any, status?: string, createdAt?: string|null, updatedAt?: string|null }} [options]
+ *   mediaRefs?: any[], qa?: any, status?: string, kind?: string, createdAt?: string|null,
+ *   updatedAt?: string|null }} [options]
  */
 export function createComponentInstance({
   id = null,
@@ -45,6 +46,7 @@ export function createComponentInstance({
   mediaRefs = [],
   qa = {},
   status = 'draft',
+  kind = 'builder',
   createdAt = null,
   updatedAt = null
 } = {}) {
@@ -58,6 +60,14 @@ export function createComponentInstance({
     mediaRefs: Array.isArray(mediaRefs) ? [...mediaRefs] : [],
     qa: isObject(qa) ? clone(qa) : { status: 'untested', notes: '' },
     status: ['draft', 'in_review', 'in-review', 'ready', 'approved'].includes(status) ? (status === 'approved' ? 'ready' : status) : 'draft',
+    // Additive, backward-compatible: existing v3 projects have no `kind` field at all, and every
+    // one of them is (and always was) a real, schema-driven component — 'builder' is the correct
+    // default for data that predates this field, not just an arbitrary fallback. 'rise' marks a
+    // storyboard-imported row that stands for a native Rise block: it carries no schema-driven
+    // config, is never compiled/previewed, and must be excluded from QA, Preflight, and export
+    // (js/dashboard/project-qa.js, js/dashboard/project-export.js) — see
+    // docs/STORYBOARD-IMPORT-DESIGN.md.
+    kind: kind === 'rise' ? 'rise' : 'builder',
     createdAt: createdAt && validDate(createdAt) ? new Date(createdAt).toISOString() : now,
     updatedAt: updatedAt && validDate(updatedAt) ? new Date(updatedAt).toISOString() : now
   };
