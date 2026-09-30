@@ -91,7 +91,7 @@ describe('buildProjectFromStoryboard: a filled-in, valid storyboard', () => {
     expect(project.name).toBe('Imported Storyboard');
   });
 
-  test('clientLabel option is honored, defaulting to AT&T', () => {
+  test('clientLabel option is honored, defaulting to the edition label', () => {
     const storyboard = filledInStoryboard();
     const validation = validateStoryboard(storyboard);
     expect(buildProjectFromStoryboard(storyboard, validation).clientLabel).toBe('AT&T');

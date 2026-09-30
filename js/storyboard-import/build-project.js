@@ -10,6 +10,9 @@
 // can render and explain what belongs there.
 
 import { createSectionId, createComponentInstanceId, buildProjectSchemaV3 } from '../project-schema.js';
+import { EDITION } from '../client-isolation.js';
+
+const DEFAULT_CLIENT_LABEL = String(EDITION) === 'ATT' ? 'AT&T' : EDITION;
 
 // "Welcome — paste the approved introduction in Rise." -> { title: 'Welcome', note: '...' }
 function splitTitleAndNote(text) {
@@ -65,7 +68,7 @@ export function buildProjectFromStoryboard(storyboard, validation, options = {})
   const courseTitle = (storyboard.metadata['Course title'] || '').trim();
   return buildProjectSchemaV3({
     name: options.name || (courseTitle && !/^\[.*\]$/.test(courseTitle) ? courseTitle : 'Imported Storyboard'),
-    clientLabel: options.clientLabel || 'AT&T',
+    clientLabel: options.clientLabel || DEFAULT_CLIENT_LABEL,
     sectionOrder,
     sections,
     components

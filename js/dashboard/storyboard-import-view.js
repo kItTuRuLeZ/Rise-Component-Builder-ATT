@@ -20,7 +20,7 @@ import { showToast } from '../toast.js';
 // edition's own project storage, matching every other dashboard starter workflow; there is no
 // picker for it (a stray "Client edition: PMI" note inside the .docx's own metadata table is
 // informational text for the document's author, not something this app acts on).
-const CLIENT_LABEL = EDITION === 'ATT' ? 'AT&T' : EDITION;
+const CLIENT_LABEL = String(EDITION) === 'ATT' ? 'AT&T' : EDITION;
 
 function isPlaceholderText(text) {
   const trimmed = (text || '').trim();
