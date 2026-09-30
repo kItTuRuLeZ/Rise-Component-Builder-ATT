@@ -3824,9 +3824,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (zipSizeLabel) zipSizeLabel.textContent = blocked ? '' : `Web Package ZIP size: ${formatExportedFileSize(bundle.size)}`;
     if (zipButton) {
-      const enabled = canExport && !blocked;
+      // This pane now fills in after the modal reveals (setupExportModalContent no longer
+      // awaits it), so it must fold in the completion-format gate itself: applyCompletionExportGate
+      // already ran by then and would otherwise be silently overwritten here.
+      const completionBlocked = Boolean(checkCompletionExportFormatIssue(appState.config, 'rise-zip'));
+      const enabled = canExport && !blocked && !completionBlocked;
       zipButton.disabled = !enabled;
-      zipButton.title = blocked ? 'Re-upload the missing asset(s) before exporting.' : enabled ? '' : 'Fix the blocking errors listed above before exporting.';
+      zipButton.title = blocked
+        ? 'Re-upload the missing asset(s) before exporting.'
+        : completionBlocked
+          ? 'Switch to "Copy for Rise" — the ZIP package doesn\'t report completion to Rise.'
+          : enabled ? '' : 'Fix the blocking errors listed above before exporting.';
     }
   }
 
