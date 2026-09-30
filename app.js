@@ -3636,9 +3636,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Identifies the newest export-modal Preflight run, so a slow layout measurement from an
+  // earlier open (or a component that has since changed) can never overwrite a fresher result.
+  let exportPreflightRunId = 0;
+
+  function showLayoutCheckPending(container) {
+    const note = document.createElement('div');
+    note.className = 'preflight-layout-pending';
+    note.setAttribute('role', 'status');
+    note.textContent = 'Checking layout at desktop and mobile widths…';
+    container.appendChild(note);
+  }
+
+  function issueSignature(issues) {
+    return JSON.stringify(issues.map(item => [item.ruleId, item.itemIndex ?? null, item.explanation]));
+  }
+
+  // Never throws and never touches export availability: a failed/aborted measurement just
+  // surfaces the same manual-check Recommendation the blocking version always did.
+  async function refreshExportPreflightWithLayout(context, container, firstIssues, runId) {
+    try {
+      await attachDomMeasurement(context);
+      if (runId !== exportPreflightRunId) return;
+      const issues = await runPreflight(context);
+      if (runId !== exportPreflightRunId) return;
+      // Re-rendering replaces the list (and any focused "Go to field" button), so only do it
+      // when the layout check actually added something; otherwise just clear the pending note.
+      if (issueSignature(issues) === issueSignature(firstIssues)) {
+        container.querySelector('.preflight-layout-pending')?.remove();
+        return;
+      }
+      const summary = renderPreflightResults(container, issues);
+      updatePreflightBadge(summary);
+      announcePreflightSummary('export-preflight-announcement', issues);
+    } catch {
+      if (runId === exportPreflightRunId) container.querySelector('.preflight-layout-pending')?.remove();
+    }
+  }
+
   async function runExportPreflightGate() {
     const container = document.getElementById('export-preflight-results');
     if (!container) { setExportActionsEnabled(true); return true; } // fail open: a missing results panel is a tooling problem, not a content one
+    const runId = ++exportPreflightRunId;
     const context = buildPreflightContext();
     // P12 Requirement 3: no selected component is a genuine reason to block export — the
     // toolbar's Export button is already disabled in this case (updateToolbarActionAvailability),
@@ -3649,12 +3688,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       return false;
     }
     try {
-      await attachDomMeasurement(context);
+      // The layout measurement (hidden-iframe renders at desktop and mobile widths) is by far
+      // the slowest part of Preflight, and its two rules can only ever raise Warnings or
+      // Recommendations (js/validation.js checkClippingRisk/checkMobileOverflow) — never a
+      // Blocking error — so it can't change `canExport`. The modal therefore reveals as soon
+      // as the fast checks are done and folds the layout findings in when they arrive.
       const issues = await runPreflight(context);
       const summary = renderPreflightResults(container, issues);
       updatePreflightBadge(summary);
       announcePreflightSummary('export-preflight-announcement', issues);
       setExportActionsEnabled(summary.canExport);
+      showLayoutCheckPending(container);
+      refreshExportPreflightWithLayout(context, container, issues, runId);
       return summary.canExport;
     } catch (error) {
       container.innerHTML = `<div class="preflight-empty">Preflight check failed: ${escapeHTML(error.message)}</div>`;
