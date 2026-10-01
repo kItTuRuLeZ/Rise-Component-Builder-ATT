@@ -429,6 +429,10 @@ export function createPostPublishWorkflow({ onBack = null } = {}) {
     box.className = 'ppt-step-panel';
 
     const validation = validatePostPublishConfig(currentConfig);
+    // The download button is always shown. Hiding it when validation fails left the author with no
+    // button and no way forward; blocked, it is disabled, explained, and the fixes are one click away.
+    const blocked = validation.errors.length > 0;
+    const needsSampleReview = validation.samples.length > 0 && !currentConfig.settings.sampleContentAcknowledged;
 
     box.innerHTML = `
       <div class="ppt-step-header">
@@ -438,18 +442,24 @@ export function createPostPublishWorkflow({ onBack = null } = {}) {
 
       <div class="ppt-package-summary" id="ppt-package-summary" aria-live="polite">Preparing summary of what will change…</div>
 
-      ${validation.errors.length > 0 ? `
-        <div class="ppt-package-detected-card error">
-          <h4>Export Blocked by Validation Errors</h4>
-          <p>Please resolve the following errors before exporting:</p>
+      ${blocked ? `
+        <div class="ppt-package-detected-card error" id="ppt-export-blockers" role="alert">
+          <h4>Download is unavailable until ${validation.errors.length} issue${validation.errors.length === 1 ? ' is' : 's are'} fixed</h4>
           <ul>${validation.errors.map(e => `<li>${escapeHTML(e)}</li>`).join('')}</ul>
+          <p class="field-hint">Replace each placeholder address (such as example.com) and each sample item with your real content, or remove it, in <strong>Add Content</strong>. Sample content you deliberately want to keep can be acknowledged in <strong>Preview &amp; Validate</strong>; placeholder addresses cannot.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-fix-content">Fix in Add Content (step 3)</button>
+            ${needsSampleReview ? '<button type="button" class="btn btn-secondary btn-sm" id="btn-fix-sample">Review sample content (step 5)</button>' : ''}
+          </div>
         </div>
-      ` : `
-        <div class="ppt-export-action-box">
-          <button type="button" class="btn btn-primary btn-lg" id="btn-run-enhancement" aria-label="Download Enhanced Rise Package">
+      ` : ''}
+
+      <div class="ppt-export-action-box">
+          <button type="button" class="btn btn-primary btn-lg" id="btn-run-enhancement" aria-label="Download Enhanced Rise Package" ${blocked ? 'disabled aria-disabled="true" aria-describedby="ppt-export-blockers"' : ''}>
             <svg width="20" height="20" viewBox="0 0 32 32" fill="currentColor"><path d="M26 24v4H6v-4H4v4a2 2 0 002 2h20a2 2 0 002-2v-4z"/><path d="M15 3v16.17l-4.59-4.58L9 16l7 7 7-7-1.41-1.41L17 19.17V3h-2z"/></svg>
             <span>Download Enhanced Rise Package</span>
           </button>
+          ${blocked ? '<p class="field-hint" style="margin: 8px 0 0;">The download button is turned on as soon as the issues above are fixed.</p>' : ''}
           <div id="ppt-enhancement-status" class="ppt-enhancement-status" style="display:none;"></div>
         </div>
 
@@ -457,8 +467,10 @@ export function createPostPublishWorkflow({ onBack = null } = {}) {
           <h4>Enhancement Report Summary</h4>
           <pre class="ppt-report-pre" id="ppt-report-text"></pre>
         </div>
-      `}
     `;
+
+    box.querySelector('#btn-fix-content')?.addEventListener('click', () => goToStep(3));
+    box.querySelector('#btn-fix-sample')?.addEventListener('click', () => goToStep(5));
 
     planEnhancement(uploadedFile, packageDetection, currentConfig).then(plan => {
       const target = box.querySelector('#ppt-package-summary');
