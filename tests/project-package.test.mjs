@@ -64,7 +64,8 @@ test('importing a package does not re-fetch media that already exists locally', 
 test('a package missing its project.json gives a readable error, not a crash', async () => {
   const { createZip } = await import('../js/zip.js');
   const bogusZip = createZip([{ path: 'assets/photo.png', data: new Uint8Array([1, 2, 3]) }]);
-  await assert.rejects(() => importProjectPackage(bogusZip), /missing its project\.json/i);
+  // The message now says what the ZIP is not and what to use instead (see describeNonProjectZip).
+  await assert.rejects(() => importProjectPackage(bogusZip), /has no project\.json.*Export Package/i);
 });
 
 test('a package whose project.json fails validation gives the same readable error validateProject would', async () => {
