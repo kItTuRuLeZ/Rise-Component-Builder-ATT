@@ -145,6 +145,35 @@ export function applyInlineStyle(property, value, editorEl) {
   if (editorEl) syncListBulletStyles(editorEl);
 }
 
+let labelIdCounter = 0;
+
+/**
+ * Names a rich-text editor from its visible `<label>`.
+ *
+ * The editor is a `<div contenteditable role="textbox">`, and a `<label for="…">` only reaches
+ * labelable form controls (input, textarea, select, …), so the label that sits right above it
+ * gave it no accessible name at all. This points the textbox at the label with
+ * `aria-labelledby` and makes a click on the label focus the editor, as it would a native input.
+ * An explicit `aria-label` / `aria-labelledby` already on the control wins.
+ *
+ * @param {HTMLElement | null | undefined} control the editor element (`validationControl`)
+ * @param {HTMLElement | null | undefined} label the visible label
+ */
+export function labelRichTextControl(control, label) {
+  if (!control || !label) return;
+  if (!label.id) {
+    labelIdCounter += 1;
+    label.id = control.id ? `${control.id}-label` : `rte-label-${labelIdCounter}`;
+  }
+  if (!control.hasAttribute('aria-label') && !control.hasAttribute('aria-labelledby')) {
+    control.setAttribute('aria-labelledby', label.id);
+  }
+  if (label.dataset.focusesEditor !== 'true') {
+    label.dataset.focusesEditor = 'true';
+    label.addEventListener('click', () => control.focus());
+  }
+}
+
 /**
  * Creates an accessible rich text formatting toolbar and contentEditable editor.
  * @param {Object} options
@@ -178,8 +207,8 @@ export function createRichTextEditor({
 
   // Editable area reference
   const editor = document.createElement('div');
-  editor.id = controlId;
-  editor.dataset.fieldId = fieldId;
+  if (controlId) editor.id = controlId;
+  if (fieldId) editor.dataset.fieldId = fieldId;
   editor.className = 'schema-richtext rich-text-contenteditable';
   editor.contentEditable = 'true';
   editor.setAttribute('contenteditable', 'true');
@@ -1042,7 +1071,10 @@ export function upgradeTextareaToRichText(targetElement, { fieldId, isSingleLine
     onChange
   });
 
+  // Matched on `htmlFor` rather than a `label[for="…"]` selector, so an id needs no CSS escaping.
+  const label = controlId ? [...document.querySelectorAll('label[for]')].find(candidate => /** @type {HTMLLabelElement} */ (candidate).htmlFor === controlId) : null;
   targetElement.replaceWith(rte.element);
+  labelRichTextControl(rte.validationControl, /** @type {HTMLElement | null} */ (label));
   return rte;
 }
 
