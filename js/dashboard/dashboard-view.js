@@ -186,7 +186,7 @@ export class DashboardView {
                 <span class="hero-brand-pill">Aptara Learning Interaction Studio · AT&amp;T edition</span>
                 <span class="hero-compliance-pill">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Built for WCAG 2.2 AA · brand-checked
+                  Design target: WCAG 2.2 AA · automated brand checks
                 </span>
               </div>
 

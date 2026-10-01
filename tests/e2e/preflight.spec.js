@@ -246,7 +246,7 @@ test('the export modal reveals before the layout measurement finishes, then fold
   await page.locator('#btn-export').click();
   const results = page.locator('#export-preflight-results');
   await expect(page.locator('#export-modal-content')).toBeVisible();
-  await expect(results).toContainText('Compliance Status');
+  await expect(results).toContainText('Automated checks');
   await expect(page.locator('#btn-copy-html')).toBeEnabled();
   // The pending note is replaced by the measured result (the default Accordion is taller than
   // a typical Embed frame, so the clipping warning is added).
@@ -259,7 +259,7 @@ test('Preflight measures the real rendered height with every section open, the s
   const results = page.locator('#preflight-results');
   // Auto-retrying assertion — waits out the "Running preflight checks…" placeholder and
   // the real async hidden-iframe measurement without a fixed sleep.
-  await expect(results).toContainText('Compliance Status');
+  await expect(results).toContainText('Automated checks');
   // A successful measurement must not fall back to the "couldn't measure" manual-check text.
   await expect(results).not.toContainText("couldn't be automatically measured");
   // Collapsed accordion panels are opened for the measurement, so the default Accordion is
@@ -275,4 +275,28 @@ test('Preflight measures the real rendered height with every section open, the s
   await expect(results).toContainText('Copy for Rise');
   // No mobile-overflow warning for a normal component.
   await expect(results).not.toContainText('May overflow on mobile width');
+});
+
+test('Preflight reports automated checks with their scope, and never claims compliance', async ({ page }) => {
+  await page.locator('#btn-preflight').click();
+  const results = page.locator('#preflight-results');
+  await expect(results).toContainText('Automated checks:');
+  await expect(results.locator('.preflight-summary-line')).toContainText(/\d of 4 areas passed/);
+  // The limits are visible with the result, not buried: a pass is never a certificate.
+  await expect(results.locator('.preflight-scope-note')).toContainText('cannot certify WCAG conformance or Rise 360 compatibility');
+  const text = await results.innerText();
+  expect(text).not.toMatch(/100%|compliant|verified|certified/i);
+  // The scope is available to keyboard and screen-reader users via a native disclosure.
+  const scope = results.locator('.preflight-scope summary');
+  await expect(scope).toContainText('What do these checks cover');
+  await scope.click();
+  await expect(results.locator('.preflight-scope li').first()).toBeVisible();
+  await expect(results.locator('.preflight-scope')).toContainText('screen reader');
+});
+
+test('a passing area reads "Automated checks passed", not "100% Compliant"', async ({ page }) => {
+  await page.locator('#btn-preflight').click();
+  const results = page.locator('#preflight-results');
+  await expect(results).toContainText('Automated checks:');
+  await expect(results.locator('.compliance-pillar-meta', { hasText: 'Automated checks passed' }).first()).toBeVisible();
 });
