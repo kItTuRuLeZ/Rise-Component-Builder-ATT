@@ -165,6 +165,19 @@ Scoped to the `interactive-video` component. Unlike every other section here, th
 | `interactive-video-non-direct-video-url` | Blocking | (Phase 7) `videoSourceType: 'url'` and `videoUrl`'s hostname is a known video-hosting page (YouTube, `youtube-nocookie.com`, `youtu.be`, Vimeo including `player.vimeo.com`) rather than a direct media file. A native `<video>` element cannot play a hosting-page URL at all — the export would show no video whatsoever, meeting this file's own Blocking bar ("the output would be broken, empty, or fundamentally unusable"). Deliberately a short, explicit host list rather than an attempt to enumerate every video-hosting service that exists — see "Rules requiring manual judgment" below. Skipped entirely for `videoSourceType: 'upload'` and for a URL that fails to parse at all (`general-invalid-url` already covers a malformed URL for this same field). |
 | `interactive-video-uploaded-media-export-format` | Warning | (Phase 7) An uploaded video (`videoSourceType: 'upload'`) and/or an uploaded captions file are present. `prepareMediaExport()` (`js/export.js`) never inlines video/audio/captions, so the Iframe Snippet and HTML Block Fragment export formats produce a dangling `assets/<filename>` reference that 404s once pasted into Rise (`docs/INTERACTIVE-VIDEO.md` "Media-storage and export behavior") — this rule surfaces that pre-existing limitation proactively, recommending Web Package ZIP, rather than leaving the author to discover it only after publishing. |
 
+## Timestamps vs. media length (audit 2026-09-30, section 3)
+
+Chapters, synchronized-transcript rows and Interactive Video markers are checked against the media file's recorded length (`duration` on its media reference; for Interactive Video the editor's live `videoDurationSeconds` wins when present). A timestamp is out of range only when it is **strictly greater** than the length. An unknown length is reported as unverified, never as a pass.
+
+| Rule ID | Severity | Trigger |
+| --- | --- | --- |
+| `audio-player-chapter-outside-duration` / `video-frame-chapter-outside-duration` | Warning | A chapter starts after the end of the attached file. Names the row, timestamp and permitted range; does not block export; nothing is rewritten. |
+| `audio-player-transcript-segment-outside-duration` / `video-frame-transcript-segment-outside-duration` | Warning | A synchronized-transcript row starts after the end of the attached file. |
+| `audio-player-timestamps-unverified` / `video-frame-timestamps-unverified` | Recommendation | Chapters or transcript rows exist but the file's length is unknown (external URL, or an upload whose metadata could not be read). |
+| `interactive-video-duration-unknown` | Recommendation | Markers exist but the video's length is unknown (an external URL whose metadata has not loaded). Clears once the preview has measured the video. |
+
+`interactive-video-marker-outside-duration` (above) now also uses an uploaded video's recorded length when the editor has not measured it, so a project checked from QA or export without opening the editor is still verified.
+
 ## AT&T Brand compliance rules (Prompt 8)
 
 Enforces AT&T Design Standards across all generated component exports and prevents visual, typographical, or accessibility regressions.
