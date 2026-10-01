@@ -74,7 +74,7 @@ async function copyText(text) {
   return copied;
 }
 
-function downloadText(text, filename) {
+export function downloadText(text, filename) {
   const blob = new Blob([text], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

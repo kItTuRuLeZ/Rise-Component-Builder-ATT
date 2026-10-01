@@ -11,6 +11,8 @@ import { parseDocxToBlocks } from '../storyboard-import/docx-parser.js';
 import { extractStoryboard } from '../storyboard-import/storyboard-extract.js';
 import { validateStoryboard } from '../storyboard-import/validation.js';
 import { buildProjectFromStoryboard } from '../storyboard-import/build-project.js';
+import { downloadText } from '../storyboard-import/build-sheet.js';
+import { buildFieldGuideMarkdown, describeStoryboardCounts, getSupportedComponents } from '../storyboard-import/field-guide.js';
 import { saveProject } from '../storage.js';
 import { EDITION } from '../client-isolation.js';
 import { escapeHTML } from '../utilities.js';
@@ -21,6 +23,23 @@ import { showToast } from '../toast.js';
 // picker for it (a stray "Client edition: PMI" note inside the .docx's own metadata table is
 // informational text for the document's author, not something this app acts on).
 const CLIENT_LABEL = String(EDITION) === 'ATT' ? 'AT&T' : EDITION;
+
+// Shipped with the app (templates/ is copied into dist/ by build.mjs). Relative, so it resolves
+// under a GitHub Pages sub-path as well as at a domain root.
+const TEMPLATE_DOWNLOADS = [
+  {
+    id: 'sbi-download-blank',
+    href: './templates/storyboard/Rise_Storyboard_Blank_Template.docx',
+    label: 'Download blank template (.docx)',
+    hint: 'The empty storyboard to fill in.'
+  },
+  {
+    id: 'sbi-download-example',
+    href: './templates/storyboard/Rise_Storyboard_All_Components_Example.docx',
+    label: 'Download example with all components (.docx)',
+    hint: 'A complete sample showing every supported component. It imports as-is.'
+  }
+];
 
 function isPlaceholderText(text) {
   const trimmed = (text || '').trim();
@@ -131,26 +150,56 @@ export class StoryboardImportView {
   }
 
   renderSelect() {
+    const components = getSupportedComponents();
     return `
       <div class="workspace-banner" style="margin-bottom: 24px;">
         <div class="workspace-banner-info">
           <h1 class="workspace-title">Import Storyboard (.docx)</h1>
           <p class="workspace-desc">
             Upload an instructional designer's filled-in storyboard document to create a new course project.
-            Rise-authored blocks (Text, Image, etc.) appear in the outline as reference entries only — they are
-            never exported from this Builder — and each Builder block (Accordion, Multiple Choice, Image Gallery,
-            or Horizontal Timeline) is imported from its own content record table.
+            The importer fills each Builder component with the content you supplied. It does not write content for you,
+            and it does not create native Rise blocks.
           </p>
         </div>
       </div>
-      <div class="dashboard-empty-state" style="border: 2px dashed var(--att-border, #CBD5E1); padding: 48px 24px;">
-        <h3 class="empty-state-title">Choose a storyboard .docx file</h3>
-        <p class="empty-state-subtitle">Only the documented storyboard template format is supported — see the storyboard importer guide for the required structure.</p>
+
+      <section class="section-card" style="margin-bottom: 16px;" aria-labelledby="sbi-template-heading">
+        <div class="section-card-body" style="padding: 16px 20px;">
+          <h2 id="sbi-template-heading" class="section-title" style="margin: 0 0 6px 0; font-size: 1.05rem;">1. Start from the template</h2>
+          <p style="margin: 0 0 12px 0; font-size: 0.875rem; color: #555;">Only the documented template format is supported. Download it, fill it in, then upload it below.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            ${TEMPLATE_DOWNLOADS.map(item => `
+              <a id="${item.id}" class="btn btn-secondary" href="${item.href}" download aria-describedby="${item.id}-hint">${escapeHTML(item.label)}</a>
+              <span id="${item.id}-hint" class="sr-only">${escapeHTML(item.hint)}</span>
+            `).join('')}
+            <button type="button" id="sbi-download-guide" class="btn btn-secondary" aria-describedby="sbi-download-guide-hint">Download field guide (.md)</button>
+            <span id="sbi-download-guide-hint" class="sr-only">Every component's fields, which are required, and how to lay out the document.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" style="margin-bottom: 16px;" aria-labelledby="sbi-supported-heading">
+        <div class="section-card-body" style="padding: 16px 20px;">
+          <h2 id="sbi-supported-heading" class="section-title" style="margin: 0 0 6px 0; font-size: 1.05rem;">Supported Builder components (${components.length})</h2>
+          <ul id="sbi-supported-list" style="margin: 0 0 12px 0; padding-left: 20px; columns: 3 200px; column-gap: 24px; font-size: 0.875rem; color: #333;">
+            ${components.map(c => `<li>${escapeHTML(c.name)}</li>`).join('')}
+          </ul>
+          <p id="sbi-rise-note" style="margin: 0; font-size: 0.875rem; color: #555;">
+            Rows marked <strong>RISE</strong> are references to blocks you build by hand in Rise 360 (Text, Image, Knowledge Check, and so on).
+            They stay in the course outline, in order, but are excluded from the Builder's preview, QA and export.
+            After importing, use <strong>Rise Build Sheet</strong> to copy or download all of them as a checklist.
+          </p>
+        </div>
+      </section>
+
+      <section class="dashboard-empty-state" style="border: 2px dashed var(--att-border, #CBD5E1); padding: 40px 24px;" aria-labelledby="sbi-upload-heading">
+        <h2 id="sbi-upload-heading" class="empty-state-title">2. Choose your storyboard .docx file</h2>
+        <p class="empty-state-subtitle">The file is read in your browser and nothing is uploaded. You will review everything it found before a project is created.</p>
         <label class="btn btn-primary" style="margin-top: 12px; display: inline-flex; cursor: pointer;">
           <span>Choose File…</span>
           <input type="file" id="sbi-file-input" accept=".docx" style="position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0;" />
         </label>
-      </div>
+      </section>
     `;
   }
 
@@ -178,17 +227,18 @@ export class StoryboardImportView {
     const fatal = validation.findings.filter(f => f.severity === 'fatal');
     const warnings = validation.findings.filter(f => f.severity === 'warning');
     const canImport = fatal.length === 0;
-    const totalOutlineRows = storyboard.sections.reduce((sum, s) => sum + s.outlineRows.length, 0);
     const builderCount = Object.keys(validation.mappedComponentsByBlockId).length;
+    const riseCount = storyboard.sections.reduce((sum, s) => sum + s.outlineRows.filter(row => row.kind === 'RISE').length, 0);
 
     return `
       <div class="workspace-banner" style="margin-bottom: 20px;">
         <div class="workspace-banner-info">
           <h1 class="workspace-title">Review “${escapeHTML(fileName || '')}”</h1>
           <p class="workspace-desc">
-            ${storyboard.sections.length} section${storyboard.sections.length === 1 ? '' : 's'},
-            ${totalOutlineRows} outline row${totalOutlineRows === 1 ? '' : 's'},
-            ${builderCount} Builder block${builderCount === 1 ? '' : 's'} ready to import.
+            <span id="sbi-review-counts">${storyboard.sections.length} section${storyboard.sections.length === 1 ? '' : 's'}:
+            ${escapeHTML(describeStoryboardCounts(builderCount, riseCount))}.</span>
+            ${builderCount} Builder component${builderCount === 1 ? '' : 's'} will be imported.
+            ${riseCount ? `The ${riseCount} Rise reference${riseCount === 1 ? ' is' : 's are'} kept in the outline, in order, but excluded from the Builder's preview, QA and export; the Rise Build Sheet lists ${riseCount === 1 ? 'it' : 'them'} for the Rise build.` : ''}
           </p>
         </div>
       </div>
@@ -275,6 +325,10 @@ export class StoryboardImportView {
     fileInput?.addEventListener('change', () => {
       const file = fileInput.files?.[0];
       if (file) this.handleFile(file);
+    });
+
+    this.container.querySelector('#sbi-download-guide')?.addEventListener('click', () => {
+      downloadText(buildFieldGuideMarkdown({ editionLabel: CLIENT_LABEL }), 'Rise-Storyboard-Field-Guide.md');
     });
 
     this.container.querySelector('#sbi-retry-btn')?.addEventListener('click', () => this.chooseAnotherFile());
