@@ -50,7 +50,7 @@ Syntax, parsing tolerance (a malformed line is skipped, never throws), and the "
 - **`video-frame-invalid-chapter-line` / `video-frame-duplicate-chapter-timestamps`** — a chapter row with a bad/missing timestamp or title, or two rows sharing one timestamp.
 - **`video-frame-invalid-transcript-segment`** — a synchronized-transcript row with a bad/missing timestamp.
 
-**Not implemented: "chapter timestamp beyond video duration."** Same reasoning as `audio-player` — see `docs/AUDIO-PLAYER.md` "Validation." The exported component degrades gracefully at the one place duration is actually knowable: a chapter marker past the real `video.duration` (once `loadedmetadata` fires) is simply not rendered on the scrub track.
+**Timestamps vs. the video's length (audit 2026-09-30, section 3).** The same checks as `audio-player` run against the uploaded video's recorded length (`items[0].content.duration`): `video-frame-chapter-outside-duration` and `video-frame-transcript-segment-outside-duration` (Warning, with the row, timestamp and permitted range), and `video-frame-timestamps-unverified` (Recommendation) when the length is unknown, for example an external URL. See `docs/AUDIO-PLAYER.md` "Validation" for the end-boundary rule and the correction path. The exported component also hides a chapter marker past the real `video.duration` (once `loadedmetadata` fires) from the scrub track.
 
 ## Resume and progress — what it is and isn't
 

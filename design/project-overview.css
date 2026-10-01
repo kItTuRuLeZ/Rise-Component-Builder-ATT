@@ -450,13 +450,22 @@
   box-shadow: 0 0 0 1.5px var(--att-cobalt, #00388F);
 }
 
+/* The row wraps (flex-wrap above), but only when the title has a real minimum width to give up.
+   Without a basis here the select button shrank to its content, so the status dropdown and the
+   action buttons stayed on the same line and squeezed the title to a few characters. With a
+   140px basis the title keeps a readable width and the controls drop to their own line. */
+.component-row > .component-select-target {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
 .component-row-left {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 3px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 140px;
 }
 
 .component-row-title-line {

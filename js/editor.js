@@ -4,7 +4,7 @@ import { isMediaReference } from './media.js';
 import { createMediaUploadControl } from './media-upload.js';
 import { getAccessibilityWarning, getLengthGuidance, isEmpty, validateSchemaField } from './field-validation.js';
 import { createItemMediaControl } from './item-media.js';
-import { createRichTextEditor } from './rich-text-editor.js';
+import { createRichTextEditor, labelRichTextControl } from './rich-text-editor.js';
 
 export { validateSchemaField } from './field-validation.js';
 
@@ -335,6 +335,9 @@ export function createSchemaItemEditor({ container, onChange, focusFallback }) {
     }
 
     const label = createLabel(field, controlId);
+    // `richtext` and single-line `text` fields are both a contenteditable textbox, which a
+    // `<label for>` cannot name — see labelRichTextControl.
+    if (field.type === 'richtext' || field.type === 'text') labelRichTextControl(control, label);
     wrapper.append(label, fieldElement);
 
     // P11: static, non-blocking guidance for fields prone to overflowing the fixed-width

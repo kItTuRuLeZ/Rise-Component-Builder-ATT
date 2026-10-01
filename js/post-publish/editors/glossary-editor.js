@@ -282,6 +282,7 @@ export function createGlossaryEditor(config, onUpdate) {
       const rteSlot = card.querySelector('.rte-container-slot');
       if (rteSlot) {
         const rte = createRichTextEditor({
+          ariaLabel: `Definition for glossary entry ${actualIndex + 1}`,
           value: entry.definition || '',
           onChange: (sanitizedHTML) => {
             entry.definition = sanitizedHTML;
