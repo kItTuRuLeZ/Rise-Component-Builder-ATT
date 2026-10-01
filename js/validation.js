@@ -104,15 +104,22 @@ const RULE_TITLES = Object.freeze({
   'interactive-video-near-duplicate-timestamps': 'Markers are very close together',
   'interactive-video-marker-near-edge': 'Marker is close to the start or end of the video',
   'interactive-video-marker-outside-duration': 'Marker timestamp is past the video duration',
+  'interactive-video-duration-unknown': 'Marker timestamps could not be checked against the video length',
   'interactive-video-required-never-pauses': 'Required marker never pauses the video',
   'interactive-video-non-direct-video-url': 'External video URL is a hosting page, not a direct file',
   'interactive-video-uploaded-media-export-format': 'Uploaded video/captions need the Web Package ZIP export format',
   'audio-player-invalid-chapter-line': 'Chapter row has an invalid timestamp or missing title',
   'audio-player-duplicate-chapter-timestamps': 'Two chapters share the same timestamp',
   'audio-player-invalid-transcript-segment': 'Synchronized transcript row has an invalid timestamp',
+  'audio-player-chapter-outside-duration': 'Chapter timestamp is past the end of the audio',
+  'audio-player-transcript-segment-outside-duration': 'Transcript timestamp is past the end of the audio',
+  'audio-player-timestamps-unverified': 'Timestamps could not be checked against the audio length',
   'video-frame-invalid-chapter-line': 'Chapter row has an invalid timestamp or missing title',
   'video-frame-duplicate-chapter-timestamps': 'Two chapters share the same timestamp',
   'video-frame-invalid-transcript-segment': 'Synchronized transcript row has an invalid timestamp',
+  'video-frame-chapter-outside-duration': 'Chapter timestamp is past the end of the video',
+  'video-frame-transcript-segment-outside-duration': 'Transcript timestamp is past the end of the video',
+  'video-frame-timestamps-unverified': 'Timestamps could not be checked against the video length',
   'brand-color-literal': 'Color literal is not an approved AT&T brand token',
   'brand-font-family': 'Font family is not AT&T Aleck',
   'brand-font-size-floor': 'Learner-facing body text is below 16px floor',
@@ -912,7 +919,11 @@ function checkInteractiveVideoTimestampRules(componentId, config) {
   if (componentId !== 'interactive-video') return [];
   const items = Array.isArray(config.items) ? config.items : [];
   const issues = [];
-  const duration = Number(config.videoDurationSeconds);
+  // The authoring widget's live measurement wins (it reflects what the preview actually loaded);
+  // otherwise the uploaded file's recorded length, so a project checked without opening the editor
+  // (QA, export) still verifies its markers. See the section comment above recordedDurationSeconds.
+  const uploadedLength = config.videoSourceType === 'upload' ? recordedDurationSeconds(config.videoMediaId) : null;
+  const duration = recordedDurationSeconds(config.videoDurationSeconds) ?? uploadedLength ?? NaN;
   const hasDuration = Number.isFinite(duration) && duration > 0;
 
   const timestamps = [];
@@ -945,6 +956,15 @@ function checkInteractiveVideoTimestampRules(componentId, config) {
           { fieldId: 'timestamp', itemIndex: timestamps[j].itemIndex }));
       }
     }
+  }
+
+  // No known length (an external URL whose metadata has not loaded, or an upload whose length
+  // could not be read): say so, rather than letting the absence of an "outside duration" warning
+  // read as "timestamps verified".
+  if (!hasDuration && timestamps.length) {
+    issues.push(issue('interactive-video-duration-unknown', SEVERITY.RECOMMENDATION, CATEGORY.INTERACTIVE_VIDEO,
+      `The video's length is not known yet, so marker timestamps have not been checked against it. Let the preview video load (the timeline below the video appears once it has), or re-upload the file, and the Builder will check every marker. Until then, confirm each marker falls inside the video.`,
+      { fieldId: 'timestamp' }));
   }
 
   // A Required marker only ever shows its interaction (and so can only ever be completed)
@@ -1019,6 +1039,38 @@ function checkInteractiveVideoUploadedMediaExportFormat(componentId, config) {
     { fieldId: hasUploadedVideo ? 'videoMediaId' : 'captionsUrl' })];
 }
 
+// ---------------------------------------------------------------------------
+// Media length vs. authored timestamps (audit 2026-09-30, section 3). Chapters, synchronized
+// transcript rows and Interactive Video markers are all authored as timestamps into a media file
+// whose length can change (the author replaces the file) or be unknown (an external URL, or an
+// upload whose metadata could not be read). The length comes from where it is already recorded:
+// an uploaded file's media reference carries `duration` (read from the file's metadata at upload
+// time, js/media-upload.js), so replacing the file replaces the length and the next Preflight
+// re-checks every timestamp with no extra step. When no length is known the result is an
+// explicit "unverified" Recommendation, never a silent pass.
+//
+// End boundary, used by every rule below: a timestamp is out of range only when it is strictly
+// greater than the length. A timestamp equal to the length sits on the final instant and is not
+// "past the end"; Interactive Video separately warns about a marker within 2s of the end.
+// ---------------------------------------------------------------------------
+
+/** The positive, finite length in seconds recorded on a media reference (or a bare number), else null. */
+function recordedDurationSeconds(source) {
+  const raw = source !== null && typeof source === 'object' ? source.duration : source;
+  const seconds = Number(raw);
+  return raw !== null && raw !== undefined && raw !== '' && Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+}
+
+/** 72 -> "1:12"; 12.6 -> "0:12.6"; 3725 -> "1:02:05". One decimal only for a fractional second. */
+function formatMediaTime(totalSeconds) {
+  const whole = Math.floor(totalSeconds);
+  const fraction = totalSeconds - whole;
+  const h = Math.floor(whole / 3600);
+  const m = Math.floor((whole % 3600) / 60);
+  const secondsText = String(whole % 60).padStart(2, '0') + (fraction >= 0.05 ? `.${Math.round(fraction * 10) % 10}` : '');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${secondsText}` : `${m}:${secondsText}`;
+}
+
 // "MM:SS"/"HH:MM:SS" -> seconds, or null. Deliberately duplicated from
 // components/audio-player.js#parseTimestampToSeconds (and components/video-frame.js's own
 // identical copy) rather than imported — no other Preflight rule in this file imports a
@@ -1048,6 +1100,8 @@ function auParseTimestamp(raw) {
 function checkMediaChapterAndTranscriptRules(componentId, config) {
   const category = componentId === 'video-frame' ? CATEGORY.VIDEO_FRAME : CATEGORY.AUDIO_PLAYER;
   const issues = [];
+  /** @type {{ kind: 'chapter' | 'transcript', row: number, title: string, timestamp: number }[]} */
+  const timed = [];
   const normalizedChapters = normalizeDelimitedLines(config.chapters);
   const chapterLines = normalizedChapters.split('\n');
   const seenChapterTimestamps = new Map();
@@ -1062,6 +1116,7 @@ function checkMediaChapterAndTranscriptRules(componentId, config) {
         { fieldId: 'chapters' }));
       return;
     }
+    timed.push({ kind: 'chapter', row: lineIndex + 1, title, timestamp });
     if (seenChapterTimestamps.has(timestamp)) {
       issues.push(issue(`${componentId}-duplicate-chapter-timestamps`, SEVERITY.WARNING, category,
         `Chapter row ${lineIndex + 1} ("${title}") shares its timestamp with an earlier chapter ("${seenChapterTimestamps.get(timestamp)}") — both will still be shown, but a duplicate timestamp is usually an authoring mistake.`,
@@ -1081,9 +1136,42 @@ function checkMediaChapterAndTranscriptRules(componentId, config) {
       issues.push(issue(`${componentId}-invalid-transcript-segment`, SEVERITY.WARNING, category,
         `Synchronized transcript row ${lineIndex + 1} ("${line.trim().slice(0, 60)}") has an invalid or missing timestamp and will be skipped.`,
         { fieldId: 'transcriptSegments' }));
+      return;
     }
+    timed.push({ kind: 'transcript', row: lineIndex + 1, title: '', timestamp });
   });
 
+  issues.push(...checkTimestampsAgainstDuration(componentId, category, config, timed));
+  return issues;
+}
+
+/**
+ * Compares the parsed chapter / transcript timestamps with the attached file's recorded length.
+ * Out-of-range rows are Warnings that name the row, its timestamp and the permitted range; they
+ * never delete or rewrite anything, and do not block export. With no known length, one
+ * Recommendation says the timestamps are unverified.
+ */
+function checkTimestampsAgainstDuration(componentId, category, config, timed) {
+  if (!timed.length) return [];
+  const mediaLabel = componentId === 'video-frame' ? 'video' : 'audio';
+  const source = Array.isArray(config.items) ? config.items[0] : null;
+  const duration = recordedDurationSeconds(source?.content) ?? recordedDurationSeconds(source?.contentDuration);
+
+  if (duration === null) {
+    return [issue(`${componentId}-timestamps-unverified`, SEVERITY.RECOMMENDATION, category,
+      `The ${mediaLabel}'s length is not known (it is an external URL, or an uploaded file whose length could not be read), so its chapter and transcript timestamps have not been checked against it. Play the ${mediaLabel} in the preview and confirm every timestamp falls inside it. Re-uploading the file lets the Builder read its length and check them automatically.`,
+      { fieldId: 'chapters' })];
+  }
+
+  const issues = [];
+  const range = `0:00 to ${formatMediaTime(duration)}`;
+  for (const entry of timed) {
+    if (entry.timestamp <= duration) continue;
+    const isChapter = entry.kind === 'chapter';
+    issues.push(issue(`${componentId}-${isChapter ? 'chapter' : 'transcript-segment'}-outside-duration`, SEVERITY.WARNING, category,
+      `${isChapter ? `Chapter ${entry.row} ("${entry.title}")` : `Synchronized transcript row ${entry.row}`} starts at ${formatMediaTime(entry.timestamp)}, but the ${mediaLabel} is only ${formatMediaTime(duration)} long, so learners can never reach it. Timestamps for this ${mediaLabel} must fall between ${range}. Correct the timestamp, or attach the right ${mediaLabel} file if this is the wrong one. This does not block export, and nothing was changed or removed.`,
+      { fieldId: isChapter ? 'chapters' : 'transcriptSegments' }));
+  }
   return issues;
 }
 
