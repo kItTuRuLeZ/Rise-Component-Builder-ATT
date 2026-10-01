@@ -69,6 +69,7 @@ export function createHelpEditor(config, onUpdate) {
   const rteSlot = contactSection.querySelector('.rte-intro-slot');
   if (rteSlot) {
     const rte = createRichTextEditor({
+      ariaLabel: 'Welcome / Introductory Instructions',
       value: config.help.intro || '',
       onChange: (sanitized) => {
         config.help.intro = sanitized;
@@ -162,6 +163,7 @@ export function createHelpEditor(config, onUpdate) {
       const ansSlot = card.querySelector('.rte-faq-answer-slot');
       if (ansSlot) {
         const rte = createRichTextEditor({
+          ariaLabel: `Answer / Resolution Steps for FAQ ${idx + 1}`,
           value: faq.answer || '',
           onChange: (sanitized) => {
             faq.answer = sanitized;
