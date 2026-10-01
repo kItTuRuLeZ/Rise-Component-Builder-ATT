@@ -19,7 +19,7 @@ export const defaultConfig = {
   flipCardsFrontLabel: 'Front',
   flipCardsBackLabel: 'Back',
   items: [
-    { title: 'Front Side A', content: 'Hover to reveal definition.' },
+    { title: 'Front Side A', content: 'Click, tap, or press Enter to reveal the definition.' },
     { title: 'Back Side A', content: 'Definitions should be concise.' },
     { title: 'Front Side B', content: 'Mobile compatibility check.' },
     { title: 'Back Side B', content: 'Rise blocks fit full width.' }

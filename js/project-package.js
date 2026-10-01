@@ -10,6 +10,7 @@
 import { collectMediaReferences, computeFileHash, sanitizeAssetFilename } from './media.js';
 import { getMediaRecord, saveMediaRecord } from './media-storage.js';
 import { buildProject, saveProject, validateProject } from './storage.js';
+import { buildProjectSchemaV3 } from './project-schema.js';
 import { registerLocalBlobURL, revokeLocalBlobURL, slugify } from './utilities.js';
 import { createZip, readZip } from './zip.js';
 
@@ -47,6 +48,28 @@ export async function exportProjectPackage(project, options = {}) {
  *   (js/media-storage.js#restoreMediaReferences, called from app.js#applyProject) finds it
  *   already there and never needs to report it missing.
  */
+/**
+ * Says what a ZIP that is not a project backup actually is, and what to use instead. Several of
+ * this Builder's exports are ZIPs that look alike but are not restorable: a hosted component or
+ * course package is a published copy (an index.html and assets), not the editable project.
+ * @param {{ path: string, data: Uint8Array }[]} entries
+ */
+export function describeNonProjectZip(entries) {
+  const paths = entries.map(entry => entry.path.replace(/\\/g, '/').toLowerCase());
+  const has = test => paths.some(test);
+  const instead = 'To keep an editable copy of a project, open the Open dialog in the editor and use the menu on that project: Export Package makes a .rise-project.zip that includes the media, and Export JSON saves the content only. (The Export Package tab on a course makes a hosted copy, which cannot be imported back.)';
+  if (has(p => p.endsWith('imsmanifest.xml'))) {
+    return `This ZIP is a SCORM package, not an editable project backup, so it cannot be imported as a project. To add tools to a published Rise course, use Post-Publish. ${instead}`;
+  }
+  if (has(p => p === 'project-backup.json') || has(p => p === 'manifest.json')) {
+    return `This ZIP is a course pack exported for hosting (one folder per component), not an editable project backup, so it cannot be imported as a project. ${instead}`;
+  }
+  if (has(p => p === 'index.html' || p.endsWith('/index.html'))) {
+    return `This ZIP is a hosted web package (it contains an index.html), not an editable project backup, so it cannot be imported as a project. ${instead}`;
+  }
+  return `This ZIP is not a Rise Component Builder project package (it has no project.json). ${instead}`;
+}
+
 export async function importProjectPackage(zipBlob, options = {}) {
   let entries;
   try {
@@ -55,7 +78,7 @@ export async function importProjectPackage(zipBlob, options = {}) {
     throw new Error(`This does not appear to be a valid project package: ${error.message}`);
   }
   const projectEntry = entries.find(entry => entry.path === 'project.json');
-  if (!projectEntry) throw new Error('This package is missing its project.json file and cannot be opened.');
+  if (!projectEntry) throw new Error(describeNonProjectZip(entries));
 
   let parsed;
   try { parsed = JSON.parse(new TextDecoder().decode(projectEntry.data)); }
@@ -86,7 +109,13 @@ export async function importProjectPackage(zipBlob, options = {}) {
     restoredMediaCount += 1;
   }
 
-  const imported = buildProject({ ...result.project, id: null, createdAt: null, name: result.project.name });
+  // Same split as storage.js#importProjectJson: a course project (Schema v3: sections, components)
+  // must be rebuilt as v3. Rebuilding it with buildProject() (the single-component v2 builder) dropped
+  // its structure and failed with a cryptic '"undefined" is not valid JSON', so a course project's
+  // package could never be imported.
+  const imported = result.project.schemaVersion === 3
+    ? buildProjectSchemaV3({ ...result.project, id: null, createdAt: null, updatedAt: null, name: result.project.name })
+    : buildProject({ ...result.project, id: null, createdAt: null, name: result.project.name });
   const saved = saveProject(imported);
   return { project: saved, restoredMediaCount, missingMedia };
 }

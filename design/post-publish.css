@@ -22,6 +22,11 @@
   margin-bottom: 24px;
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
   overflow-x: auto;
+  /* The workflow container is a flex column. With overflow set, a flex item may shrink below its
+     content, so on a tall step (Upload, Add Content) the stepper was squeezed to a sliver with a
+     vertical scrollbar. It keeps its own height; the step content is what scrolls. */
+  overflow-y: hidden;
+  flex-shrink: 0;
 }
 
 .ppt-step-node {
@@ -311,12 +316,21 @@
 .ppt-val-group ul { margin: 0; padding-left: 20px; }
 .ppt-val-group li { margin-bottom: 4px; }
 
+/* A blocked download must look blocked, not just refuse clicks. */
+.ppt-export-action-box .btn:disabled,
+.ppt-export-action-box .btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 /* Footer Navigation */
 .ppt-workflow-footer-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-top: 24px;
+  flex-shrink: 0;
 }
 
 /* Workspace Integration */

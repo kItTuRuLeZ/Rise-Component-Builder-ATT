@@ -16,7 +16,12 @@ export const defaultConfig = {
 export const editorSchema = getEditorSchema(id);
 
 function parseFeatureWithTooltip(rawFeature) {
-  const match = rawFeature.match(/^(.*?)\s*\[info:\s*(.*?)\]$/i);
+  // Features are split on "•", so most arrive with a leading and trailing space (and rich text can
+  // leave a trailing &nbsp;). The tooltip pattern is anchored to the end of the feature, so
+  // untrimmed input made "1 User [info: …] " fail to match and show the raw [info: …] text to
+  // learners; only the last feature in a list (no trailing space) was ever parsed.
+  const trimmed = String(rawFeature).replace(/(?:&nbsp;|\s)+$/gi, '').trim();
+  const match = trimmed.match(/^(.*?)\s*\[info:\s*(.*?)\]$/i);
   if (match) {
     return {
       text: match[1].trim(),
