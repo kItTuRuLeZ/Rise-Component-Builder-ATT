@@ -273,7 +273,11 @@ export function createPostPublishWorkflow({ onBack = null } = {}) {
       chk.addEventListener('change', () => {
         const toolKey = chk.getAttribute('data-tool');
         currentConfig.settings.enabledTools[toolKey] = chk.checked;
-        renderStep2ChooseTools();
+        // Update the card in place. This used to call renderStep2ChooseTools() again, which only
+        // appends a panel (the container is cleared by renderStepContent(), not here), so every
+        // toggle stacked another copy of the step. Nothing else on screen depends on the choice
+        // (the footer checks it when Next is pressed), and keeping the node keeps keyboard focus.
+        chk.closest('.ppt-tool-card')?.classList.toggle('selected', chk.checked);
       });
     });
 
