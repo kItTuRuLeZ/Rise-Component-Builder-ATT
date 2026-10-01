@@ -57,7 +57,7 @@ export async function exportProjectPackage(project, options = {}) {
 export function describeNonProjectZip(entries) {
   const paths = entries.map(entry => entry.path.replace(/\\/g, '/').toLowerCase());
   const has = test => paths.some(test);
-  const instead = 'To keep an editable copy of a project with its media, use Export Package (a .rise-project.zip); Export JSON saves the content without the media files.';
+  const instead = 'To keep an editable copy of a project, open the editor's Open dialog and use the project's menu: Export Package makes a .rise-project.zip that includes the media, and Export JSON saves the content only. (The Export Package tab on a course makes a hosted copy, which cannot be imported back.)';
   if (has(p => p.endsWith('imsmanifest.xml'))) {
     return `This ZIP is a SCORM package, not an editable project backup, so it cannot be imported as a project. To add tools to a published Rise course, use Post-Publish. ${instead}`;
   }
