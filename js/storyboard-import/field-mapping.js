@@ -712,7 +712,7 @@ const MAPPERS = {
 // tables in docs/STORYBOARD-IMPORT-GUIDE.md). Anything in a content record that isn't in this
 // set for its type is flagged as an "unmapped-field" finding rather than silently dropped, per
 // the reference template's own stated requirement ("SB Template/Rise_Storyboard_All_Components.docx").
-const KNOWN_TEMPLATE_FIELDS = {
+export const KNOWN_TEMPLATE_FIELDS = {
   accordion: ['Title', 'Introduction', 'Item title', 'Item body'],
   'flip-cards': ['Title', 'Introduction', 'Item title', 'Item body'],
   'tab-blocks': ['Title', 'Introduction', 'Item title', 'Item body'],
@@ -741,6 +741,32 @@ const KNOWN_TEMPLATE_FIELDS = {
   'confidence-matrix': ['Title', 'Introduction', 'Item title', 'Item body']
 };
 
+// Which of a component's template fields are filled once for the whole block (the Item column is
+// blank, "—") rather than once per numbered item. Everything else in KNOWN_TEMPLATE_FIELDS repeats
+// per item. Kept beside KNOWN_TEMPLATE_FIELDS so the in-app field guide and the shipped example
+// storyboard are checked against the same source (tests/unit/storyboard-import/field-guide.test.js
+// fails if the example template and this table disagree).
+const SHARED_BY_COMPONENT = {
+  hotspots: ['Background image', 'Background alt text'],
+  'multiple-choice': ['Question'],
+  'multiple-select': ['Question'],
+  'fill-blank': ['Feedback'],
+  scenario: ['Prompt'],
+  'interactive-video': ['Video source', 'Captions file'],
+  'dial-gauge': ['Value', 'Minimum', 'Maximum']
+};
+
+/**
+ * @param {string} componentId a Builder component id (a value of SUPPORTED_COMPONENT_TYPES)
+ * @param {string} field a template field label
+ * @returns {boolean} true when the field is filled once per block, false when it repeats per item
+ */
+export function isSharedTemplateField(componentId, field) {
+  const usesGenericHeader = componentId !== 'multiple-choice' && componentId !== 'multiple-select';
+  if (usesGenericHeader && (field === 'Title' || field === 'Introduction')) return true;
+  return (SHARED_BY_COMPONENT[componentId] || []).includes(field);
+}
+
 function collectUnmappedFieldFindings(contentRecord, componentId, findings) {
   const known = new Set(KNOWN_TEMPLATE_FIELDS[componentId] || []);
   const seen = new Set();
@@ -760,7 +786,7 @@ export function mapContentRecordToComponent(contentRecord) {
   const findings = [];
   const componentId = SUPPORTED_COMPONENT_TYPES[contentRecord.component.trim().toLowerCase()];
   if (!componentId) {
-    findings.push(finding('fatal', 'unsupported-import-mapping', `Block "${contentRecord.blockId}": "${contentRecord.component}" does not match a known AT&T Builder component name (field mapping v${FIELD_MAPPING_VERSION}).`));
+    findings.push(finding('fatal', 'unsupported-import-mapping', `Block "${contentRecord.blockId}": "${contentRecord.component}" does not match a known Builder component name (field mapping v${FIELD_MAPPING_VERSION}).`));
     return { type: null, config: null, findings };
   }
   const config = MAPPERS[componentId](contentRecord.blockId, contentRecord.fields, findings);

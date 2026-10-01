@@ -23,7 +23,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const distDir = join(root, 'dist');
 
 const ROOT_FILES = ['index.html', 'styles.css', 'app.js', 'fonts.css', 'favicon.svg'];
-const ROOT_DIRS = ['js', 'components'];
+const ROOT_DIRS = ['js', 'components', 'templates'];
 
 // Individual files outside the repo root that index.html references and that must
 // ship in dist/ at the same relative path.
