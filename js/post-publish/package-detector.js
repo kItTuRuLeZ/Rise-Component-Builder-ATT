@@ -14,8 +14,12 @@ export const ENHANCEMENT_SIGNATURE = '<!-- RCB-POST-PUBLISH-TOOLS:START -->';
  *   - `generic-web` a plain web page with a root index.html and no Rise markers. Accepted but
  *                  labelled distinctly: nothing Rise-specific (navigation, completion, LMS
  *                  communication) can be assumed to work.
- * Rejected, with an explanation: this Builder's own course ZIP, archives whose only HTML lives in
- * nested folders, SCORM manifests pointing at a missing file, and anything without a launch file.
+ * A package may sit inside ONE wrapper folder (for example `content/index.html`, as produced when a
+ * course folder is zipped, or by some Rise export routes). That folder is treated as the package
+ * root, the files keep their paths, and a warning says so.
+ * Rejected, with an explanation: this Builder's own course ZIP, archives whose HTML lives only in
+ * several different nested folders, SCORM manifests pointing at a missing file, and anything
+ * without a launch file.
  *
  * Detection is by file structure only. It has not been verified against a live Rise export in
  * this repository (none is bundled), so a `web` result means "looks like a Rise export".
@@ -37,6 +41,23 @@ function rejected(entries, error, extra = {}) {
     error,
     ...extra
   };
+}
+
+// Entries that are not part of the course itself: what a zip tool adds, and the two files this tool
+// puts at the ZIP root of an enhanced package (so an enhanced package can be uploaded again).
+const ENHANCER_ROOT_FILES = new Set([MANIFEST_FILENAME, 'rcb-ppt-enhancement-report.txt']);
+const isJunkPath = p => /^__macosx\//i.test(p) || /(^|\/)(\.ds_store|thumbs\.db)$/i.test(p) || ENHANCER_ROOT_FILES.has(p);
+
+/**
+ * When nothing sits at the ZIP root and everything lives under exactly one top-level folder, that
+ * folder is the package root. Returns its prefix ("content/"), or '' when the ZIP already has files
+ * at the root (or several top-level folders, which is not a wrapper).
+ */
+function findWrapperPrefix(files) {
+  const real = files.map(e => norm(e.path)).filter(p => !isJunkPath(p));
+  if (!real.length || real.some(p => !p.includes('/'))) return '';
+  const tops = new Set(real.map(p => p.split('/')[0]));
+  return tops.size === 1 ? `${[...tops][0]}/` : '';
 }
 
 /** Builder course/component packages are an input mistake worth naming specifically. */
@@ -81,10 +102,19 @@ function manifestLaunchHref(manifestText) {
 export async function detectRisePackage(zipBlob) {
   try {
     const entries = await readZip(zipBlob);
-    const files = entries.filter(e => !e.isDirectory);
+    const allFiles = entries.filter(e => !e.isDirectory);
+    // Everything below is decided on paths relative to the package root; `prefix` is put back
+    // wherever a path is reported or used to rewrite the ZIP, so the enhanced file keeps its layout.
+    const prefix = findWrapperPrefix(allFiles);
+    const files = prefix
+      ? allFiles.filter(e => norm(e.path).startsWith(prefix)).map(e => ({ ...e, path: norm(e.path).slice(prefix.length) }))
+      : allFiles;
     const byPath = new Map(files.map(e => [norm(e.path).toLowerCase(), e]));
     const paths = [...byPath.keys()];
     const warnings = [];
+    if (prefix) {
+      warnings.push(`All of this package's files are inside one folder, “${prefix.slice(0, -1)}”, so that folder is treated as the package root. The enhanced ZIP keeps the same layout; if your LMS or host expects the files at the top of the ZIP, re-zip the folder's contents.`);
+    }
 
     // Previous enhancement manifest
     let isPreviouslyEnhanced = false;
@@ -134,7 +164,7 @@ export async function detectRisePackage(zipBlob) {
             `imsmanifest.xml says the course launches from “${href}”, but that file is not in the package. The ZIP may be incomplete or re-zipped with an extra folder; re-export it from Rise.`,
             { kind: packageType, label: 'SCORM package with a missing launch file' });
         }
-        launch = hit.path;
+        launch = prefix + hit.path;
       } else {
         const guess = ['scormcontent/index.html', 'index_lms.html', 'index.html'].map(p => byPath.get(p)).find(Boolean);
         if (!guess) {
@@ -142,7 +172,7 @@ export async function detectRisePackage(zipBlob) {
             'imsmanifest.xml does not name a launch file and none of the usual Rise launch pages (scormcontent/index.html, index_lms.html, index.html) is present.',
             { kind: packageType, label: 'SCORM package without a launch file' });
         }
-        launch = guess.path;
+        launch = prefix + guess.path;
         warnings.push('imsmanifest.xml does not name a launch resource, so the launch page was inferred from the file layout. Confirm it is the page your LMS actually opens.');
       }
       return {
@@ -176,7 +206,7 @@ export async function detectRisePackage(zipBlob) {
         packageType: 'web',
         kind: 'rise-web',
         label: 'Rise Web export (identified from its file structure)',
-        launchHtmlPath: rootLaunch.path,
+        launchHtmlPath: prefix + rootLaunch.path,
         isPreviouslyEnhanced,
         previousConfig,
         warnings,
@@ -190,7 +220,7 @@ export async function detectRisePackage(zipBlob) {
       packageType: 'generic-web',
       kind: 'generic-web',
       label: 'Generic web page (not identified as a Rise export)',
-      launchHtmlPath: rootLaunch.path,
+      launchHtmlPath: prefix + rootLaunch.path,
       isPreviouslyEnhanced,
       previousConfig,
       warnings,

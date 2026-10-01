@@ -26,8 +26,16 @@ describe('package input contract', () => {
     expect(result.error).toMatch(/Web or SCORM export/i);
   });
 
-  test('rejects an archive whose only index.html is inside a subfolder, and says why', async () => {
-    const result = await detectRisePackage(zipOf([{ path: 'my-course/index.html', data: html('x') }, { path: 'my-course/lib/main.js', data: '//' }]));
+  // A single wrapper folder (my-course/index.html with everything else beside it) is accepted as the
+  // package root; see post-publish-wrapper-folder.test.js. What is still rejected is an archive whose
+  // index.html is nested while other top-level folders exist, where there is no way to know which
+  // folder is the course.
+  test('rejects an archive whose only index.html is inside a subfolder alongside other folders, and says why', async () => {
+    const result = await detectRisePackage(zipOf([
+      { path: 'my-course/index.html', data: html('x') },
+      { path: 'my-course/lib/main.js', data: '//' },
+      { path: 'notes/readme.txt', data: 'x' }
+    ]));
     expect(result.valid).toBe(false);
     expect(result.error).toMatch(/root/i);
     expect(result.error).toMatch(/my-course\/index\.html/);
