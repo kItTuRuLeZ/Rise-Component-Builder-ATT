@@ -4036,10 +4036,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     return [
-      { id: 'brand', name: 'Brand & Typography', state: getPillarState(brandIssues), count: brandIssues.length },
-      { id: 'a11y', name: 'Accessibility (WCAG 2.2 AA, automated checks)', state: getPillarState(a11yIssues), count: a11yIssues.length },
-      { id: 'rise', name: 'Rise 360 Compatibility', state: getPillarState(riseIssues), count: riseIssues.length },
-      { id: 'media', name: 'Media & Asset Budgets', state: getPillarState(mediaIssues), count: mediaIssues.length }
+      { id: 'brand', name: 'Brand & typography', state: getPillarState(brandIssues), count: brandIssues.length },
+      { id: 'a11y', name: 'Accessibility (automated checks only)', state: getPillarState(a11yIssues), count: a11yIssues.length },
+      { id: 'rise', name: 'Rise 360 layout & completion', state: getPillarState(riseIssues), count: riseIssues.length },
+      { id: 'media', name: 'Media & asset budgets', state: getPillarState(mediaIssues), count: mediaIssues.length }
     ];
   }
 
@@ -4052,7 +4052,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="compliance-pillars-grid">
         ${pillars.map(p => {
           const icon = p.state === 'pass' ? '✓' : p.state === 'warning' ? '!' : '×';
-          const metaText = p.state === 'pass' ? '100% Compliant' : `${p.count} ${p.state === 'blocking' ? 'blocking issue' : 'warning'}${p.count === 1 ? '' : 's'}`;
+          const metaText = p.state === 'pass' ? 'Automated checks passed' : `${p.count} ${p.state === 'blocking' ? 'blocking issue' : 'warning'}${p.count === 1 ? '' : 's'}`;
           return `
             <div class="compliance-pillar-card">
               <span class="compliance-pillar-status is-${p.state}">${icon}</span>
@@ -4082,9 +4082,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         </ul>
       </div>`).join('');
 
-    const statusBanner = `<div class="preflight-summary-line" style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: ${summary.blocking.length ? 'var(--danger)' : 'var(--text-main)'};">AT&T Compliance Status: ${passingCount}/4 Pillars Verified${summary.blocking.length ? ' · Fix blocking errors before export' : ''}</div>`;
+    const statusBanner = `<div class="preflight-summary-line" style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: ${summary.blocking.length ? 'var(--danger)' : 'var(--text-main)'};">Automated checks: ${passingCount} of 4 areas passed${summary.blocking.length ? ' · Fix blocking errors before export' : ''}</div>`;
+    // Scope and limits of the automated checks, always visible with the result so a pass is never
+    // read as a certificate (audit 2026-09-30, section 1). Kept as one shared block so the
+    // Preflight panel and the export modal cannot drift apart.
+    const scopeHTML = `
+      <div class="preflight-scope">
+        <p class="preflight-scope-note">These are automated checks only. They cannot certify WCAG conformance or Rise 360 compatibility.</p>
+        <details>
+          <summary>What do these checks cover, and what still needs a person?</summary>
+          <ul>
+            <li><strong>Brand &amp; typography:</strong> the approved AT&amp;T colour, type and icon tokens.</li>
+            <li><strong>Accessibility:</strong> a subset of WCAG-related rules only: accessible names, alt text, colour contrast, heading level, link text and focus outlines.</li>
+            <li><strong>Rise 360 layout &amp; completion:</strong> rendered height and mobile width measured in this Builder's own preview, and completion-tracking settings.</li>
+            <li><strong>Media &amp; asset budgets:</strong> file type and size limits, and missing or external files.</li>
+          </ul>
+          <p>Before publishing, operate the block with only a keyboard, test it with a screen reader, and preview it in Rise 360 itself.</p>
+        </details>
+      </div>`;
 
-    container.innerHTML = statusBanner + pillarsHTML + (sectionsHTML || '<div class="preflight-empty">No issues found — this component is clean and ready for Rise.</div>');
+    container.innerHTML = statusBanner + pillarsHTML + scopeHTML + (sectionsHTML || '<div class="preflight-empty">The automated checks found no issues. Review the block in Rise 360 before publishing.</div>');
     container.querySelectorAll('.preflight-issue-jump').forEach(button => {
       button.addEventListener('click', () => jumpToPreflightField(button.dataset.fieldId, button.dataset.itemIndex));
     });

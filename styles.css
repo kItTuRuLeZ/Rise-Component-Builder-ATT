@@ -1986,6 +1986,28 @@ a {
   margin-top: 12px;
 }
 
+/* Scope and limits of the automated checks, shown with every Preflight result. */
+.preflight-scope {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.preflight-scope-note { margin: 0 0 6px; color: var(--text-main); }
+
+.preflight-scope summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.preflight-scope summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.preflight-scope ul { margin: 8px 0 8px 18px; padding: 0; }
+.preflight-scope li { margin: 0 0 4px; }
+.preflight-scope p { margin: 0; }
+
 .preflight-issue-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 
 .preflight-issue {
