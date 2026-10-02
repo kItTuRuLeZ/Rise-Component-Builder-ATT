@@ -46,7 +46,7 @@ test('the template and example actions are real, named links; there is no field-
   await expect(importer.getByRole('link', { name: /field guide/i })).toHaveCount(0);
   await expect(importer.getByRole('link', { name: /blank template \(\.docx\)/i })).toHaveCount(0);
   // The template says what Word will ask for before the macro can run.
-  await expect(importer).toContainText('enable editing');
+  await expect(importer).toContainText('tick Unblock');
 });
 
 test('the storyboard template downloads as a real macro-enabled .docm (a ZIP with a VBA project)', async ({ page }) => {

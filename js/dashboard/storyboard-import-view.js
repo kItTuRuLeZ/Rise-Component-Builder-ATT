@@ -30,7 +30,7 @@ const TEMPLATE_DOWNLOADS = [
     id: 'sbi-download-template',
     href: './templates/storyboard/Rise_Component_Storyboard_Template.docm',
     label: 'Download storyboard template with macro (.docm)',
-    hint: 'The working storyboard template. Its Word macro inserts new component records for you. Word will ask you to enable editing and then content before the macro can run.'
+    hint: 'The working storyboard template. Its Word macro inserts new component records for you. Word blocks macros in downloaded files: before opening it, right-click the file, choose Properties, tick Unblock and press OK. Then open it and choose Enable Editing and Enable Content. The template still imports without the macro.'
   },
   {
     id: 'sbi-download-example',

@@ -17,7 +17,7 @@ Mark each line Pass / Fail. For a Fail, write what you did, what you expected, w
 ### 1. Storyboard import
 - [ ] Dashboard > **Import Storyboard** lists all 26 components (not four).
 - [ ] **Download storyboard template with macro (.docm)** and **Download example with all components (.docx)** each download a file. There is no field-guide download.
-- [ ] Open the downloaded `.docm` in Word. Word opens it in Protected View: choose **Enable Editing**, then **Enable Content**. The macro that inserts a new component record runs. (If your network blocks `.docm` downloads, tell us.)
+- [ ] Before opening the downloaded `.docm`, right-click it in File Explorer > **Properties** > tick **Unblock** > OK. (Without this, Word shows "Microsoft has blocked macros from running because the source of this file is untrusted" and the macro cannot be enabled.) Open it, choose **Enable Editing** and **Enable Content**, and run the macro that inserts a new component record. (If your network blocks `.docm` downloads, or Unblock is not offered, tell us.)
 - [ ] Upload the downloaded **example** without editing it. The review screen reads "26 Builder components + 8 Rise references (34 outline rows)" with no blocking errors.
 - [ ] **Create Project.** The outline shows all 34 rows in order. The 8 Rise rows are labelled as Rise references.
 - [ ] **Rise Build Sheet** lists all 8 Rise references in order. Copy and Download both work.
@@ -68,7 +68,7 @@ Mark each line Pass / Fail. For a Fail, write what you did, what you expected, w
 - **External audio and video links:** chapter timestamps cannot be checked against their length, and Preflight says "unverified". Upload the file to have it checked.
 - **Backups:** a `.json` file holds content only. A `.rise-project.zip` (**Export Backup**) holds content and media. The **Export for Hosting** tab on a course and hosted component ZIPs make published copies that cannot be re-imported as projects.
 - **Post-Publish:** placeholder addresses (example.com) always block the download; deliberate sample content can be acknowledged in Preview & Validate.
-- **Storyboard template (.docm):** it is macro-enabled. Word opens a downloaded copy in Protected View, and the macro runs only after you choose Enable Editing and Enable Content. The macro is not digitally signed, and some corporate gateways block `.docm` files. Importing the untouched template reports a few warnings (its instruction headings and one blank-token marker); these are expected. The example file (templates/storyboard) is a corrected copy of the original reference template.
+- **Storyboard template (.docm):** it is macro-enabled. Word blocks macros in a downloaded file until you unblock it (right-click the file > Properties > Unblock) and then choose Enable Editing and Enable Content. The macro is not digitally signed, which is why Word treats it as untrusted, and some corporate gateways block `.docm` files. The template still imports without the macro. Importing the untouched template reports a few warnings (its instruction headings and one blank-token marker); these are expected. The example file (templates/storyboard) is a corrected copy of the original reference template.
 - **Packages enhanced by earlier builds** keep any defects those builds had until they are enhanced again.
 - **Projects live in your browser.** Clearing site data deletes them. Use Export Backup for a backup.
 
