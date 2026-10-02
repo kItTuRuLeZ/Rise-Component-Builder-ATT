@@ -172,6 +172,9 @@ export class StoryboardImportView {
               <span id="${item.id}-hint" class="sr-only">${escapeHTML(item.hint)}</span>
             `).join('')}
           </div>
+          <p id="sbi-macro-note" style="margin: 12px 0 0 0; font-size: 0.8125rem; color: #555;">
+            <strong>Using the macro template (.docm)?</strong> Word blocks macros in downloaded files. Before opening it, right-click the file in File Explorer, choose <strong>Properties</strong>, tick <strong>Unblock</strong> and press OK. Then open it and choose <strong>Enable Editing</strong> and <strong>Enable Content</strong>. The template imports fine without the macro.
+          </p>
         </div>
       </section>
 
