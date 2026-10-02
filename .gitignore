@@ -75,3 +75,4 @@ Upload/
 
 # design/ holds the *processed* brand spec that IS versioned (standards MD, token +
 # font CSS, the migration prompts, BRAND-AUDIT.md); the raw icon dump is not copied here.
+rise-component-builder-production.zip
