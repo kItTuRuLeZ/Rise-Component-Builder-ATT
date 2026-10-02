@@ -648,7 +648,11 @@ export function generateJS(config, instanceId) {
         var scorePercent = Math.round((totalRatingPoints / maxPossible) * 100);
 
         if (overallScoreEl) {
-          overallScoreEl.textContent = 'Overall Score: ' + scorePercent + '%';
+          // Partial results are supported (they can be printed), but are labelled as partial so a
+          // score over some of the competencies is never read as the overall result.
+          overallScoreEl.textContent = ratedCount === totalItems
+            ? 'Overall Score: ' + scorePercent + '%'
+            : 'Partial score: ' + scorePercent + '% (' + ratedCount + ' of ' + totalItems + ' rated)';
         }
 
         if (ratedCount === totalItems) {
@@ -665,20 +669,20 @@ export function generateJS(config, instanceId) {
 
       function renderDiagnostic(scorePercent) {
         var tier = 'Proficient Practitioner';
-        var desc = 'You demonstrate solid operational capability across evaluated enterprise competencies with balanced independent execution.';
+        var desc = 'Solid capability across the competencies you rated, with balanced independent execution.';
 
         if (scorePercent >= 85) {
           tier = 'Advanced Subject Matter Expert';
-          desc = 'Exceptional high-mastery performance across core engineering domains. You are well-positioned to lead complex architectures and mentor engineering teams.';
+          desc = 'Exceptional confidence across the competencies you rated. You are well placed to apply these skills independently, support colleagues and guide others in complex situations.';
         } else if (scorePercent >= 65) {
           tier = 'Proficient Practitioner';
-          desc = 'Solid operational capability with strong independent execution. Focus on targeted advanced topics to expand cross-domain mastery.';
+          desc = 'Solid capability with strong independent execution. Focus on targeted stretch areas to broaden your range across the competencies you rated.';
         } else if (scorePercent >= 45) {
           tier = 'Developing Specialist';
-          desc = 'Good foundational grasp of primary workflows. Recommended next steps include guided hands-on lab deployments to reinforce independent troubleshooting.';
+          desc = 'Good grasp of the core practices. Recommended next steps include guided practice on real work and peer feedback to build independent confidence.';
         } else {
           tier = 'Foundational Explorer';
-          desc = 'Initiating competency development. Prioritize fundamental architectural blueprints and foundational training modules.';
+          desc = 'You are at the start of building these competencies. Prioritize foundational learning and guided practice before taking on complex work alone.';
         }
 
         if (tierBadge) tierBadge.textContent = tier;
