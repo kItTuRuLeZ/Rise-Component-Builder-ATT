@@ -93,3 +93,81 @@ describe('confidence & skills self-assessment component', () => {
     expect(missingTitle.valid).toBe(false);
   });
 });
+
+// Audit 2026-09-30, section 2: PMI's project-management matrix ended with "lead complex architectures and
+// mentor engineering teams". The diagnostic is now worded for whatever competencies the author configures,
+// and a score over only some of them is labelled as partial. These tests run the component's real script.
+describe('confidence matrix: diagnostic wording and results', () => {
+  const BANNED = /engineer|architect|\blab\b|troubleshoot|enterprise|operational|blueprint|deployment/i;
+  const PRIORITISE = /Prioriti[sz]e foundational learning and guided practice/;
+
+  function mount(config = confidenceMatrix.defaultConfig) {
+    const html = confidenceMatrix.generateHTML(config, INSTANCE_ID);
+    const js = confidenceMatrix.generateJS(config, INSTANCE_ID);
+    const dom = new JSDOM(`<!doctype html><body>${html}<script>var viewedItems = new Set(); function updateProgress() {}\n${js}\ninitComponent();</script></body>`, { runScripts: 'dangerously' });
+    const doc = dom.window.document;
+    const rate = (item, value) => doc.querySelector(`.confidence-rating-btn[data-item-index="${item}"][data-rating-value="${value}"]`).click();
+    const text = id => doc.getElementById(`${INSTANCE_ID}-${id}`).textContent.trim();
+    return { doc, rate, text, panel: () => doc.getElementById(`${INSTANCE_ID}-diagnostic-panel`), print: () => doc.getElementById(`${INSTANCE_ID}-print-btn`) };
+  }
+  const rateAll = (m, values) => values.forEach((value, item) => m.rate(item, value));
+
+  test.each([
+    [[4, 4, 4, 4], 'Advanced Subject Matter Expert', 'Overall Score: 100%'],
+    [[3, 3, 3, 3], 'Proficient Practitioner', 'Overall Score: 75%'],
+    [[4, 3, 2, 1], 'Developing Specialist', 'Overall Score: 63%'],
+    [[1, 1, 1, 1], 'Foundational Explorer', 'Overall Score: 25%']
+  ])('ratings %j give the %s tier and the unchanged score', (values, tier, score) => {
+    const m = mount();
+    rateAll(m, values);
+    expect(m.panel().style.display).toBe('flex');
+    expect(m.text('tier-badge')).toBe(tier);
+    expect(m.text('overall-score')).toBe(score);
+  });
+
+  test('no tier\'s guidance names a discipline: nothing about engineering, architecture, labs or enterprises', () => {
+    for (const values of [[4, 4, 4, 4], [3, 3, 3, 3], [4, 3, 2, 1], [1, 1, 1, 1]]) {
+      const m = mount();
+      rateAll(m, values);
+      expect(m.text('tier-desc')).not.toMatch(BANNED);
+      expect(m.text('tier-desc').length).toBeGreaterThan(40);
+    }
+    // The competency titles are the author's content (AT&T's defaults are engineering topics on purpose),
+    // so scan the script with neutral titles: only the component's own wording is under test.
+    const neutral = { ...confidenceMatrix.defaultConfig, items: [{ title: 'Competency one', content: 'x' }, { title: 'Competency two', content: 'y' }] };
+    expect(confidenceMatrix.generateJS(neutral, INSTANCE_ID)).not.toMatch(BANNED);
+  });
+
+  test('the guidance fits any competency set the author configures, because it never names the domains', () => {
+    const finance = { ...confidenceMatrix.defaultConfig, items: [{ title: 'Budget forecasting', content: 'x' }, { title: 'Variance analysis', content: 'y' }] };
+    const m = mount(finance);
+    rateAll(m, [4, 4]);
+    expect(m.text('tier-desc')).toContain('competencies you rated');
+    expect(m.text('tier-desc')).not.toMatch(BANNED);
+  });
+
+  test('the lowest tier uses this edition\'s spelling', () => {
+    const m = mount();
+    rateAll(m, [1, 1, 1, 1]);
+    expect(m.text('tier-desc')).toMatch(PRIORITISE);
+  });
+
+  test('partial results are supported and labelled as partial, not as the overall result', () => {
+    const m = mount();
+    expect(m.print().disabled).toBe(true);
+    m.rate(0, 4);
+    m.rate(1, 2);
+    expect(m.text('overall-score')).toBe('Partial score: 75% (2 of 4 rated)');
+    expect(m.text('overall-score')).not.toMatch(/overall/i);
+    expect(m.print().disabled).toBe(false);          // printing a partial result remains possible
+    expect(m.panel().style.display).toBe('none');    // but the full diagnostic waits for every rating
+  });
+
+  test('completing the rating switches the label from partial to overall', () => {
+    const m = mount();
+    rateAll(m, [4, 4, 4]);
+    expect(m.text('overall-score')).toMatch(/^Partial score:/);
+    m.rate(3, 4);
+    expect(m.text('overall-score')).toBe('Overall Score: 100%');
+  });
+});
