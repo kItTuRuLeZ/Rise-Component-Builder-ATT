@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
 // Audit 2026-09-30, section 5, as a UAT tester experiences it: the import help names every
-// supported component, the template and field guide can be downloaded, and the example that is
+// supported component, the macro-enabled template and the example can be downloaded, and the example that is
 // downloaded imports as-is, keeping all 34 rows (26 Builder components + 8 Rise references).
 
 async function openImporter(page) {
@@ -32,37 +32,49 @@ test('the import help lists all 26 supported components, not four, and explains 
   await expect(importer).toContainText('does not create native Rise blocks');
 });
 
-test('the template and field-guide actions are real, named controls reachable by keyboard', async ({ page }) => {
+test('the template and example actions are real, named links; there is no field-guide download', async ({ page }) => {
   await openImporter(page);
   const importer = page.locator('#storyboard-import-workspace');
-  const blank = importer.getByRole('link', { name: /Download blank template/ });
+  const template = importer.getByRole('link', { name: /Download storyboard template with macro \(\.docm\)/ });
   const example = importer.getByRole('link', { name: /Download example with all components/ });
-  const guide = importer.getByRole('button', { name: /Download field guide/ });
-  await expect(blank).toBeVisible();
+  await expect(template).toBeVisible();
   await expect(example).toBeVisible();
-  await expect(guide).toBeVisible();
-  await guide.focus();
-  await expect(guide).toBeFocused();
-  await expect(blank).toHaveAttribute('download', '');
+  await template.focus();
+  await expect(template).toBeFocused();
+  await expect(template).toHaveAttribute('download', '');
+  await expect(importer.getByRole('button', { name: /field guide/i })).toHaveCount(0);
+  await expect(importer.getByRole('link', { name: /field guide/i })).toHaveCount(0);
+  await expect(importer.getByRole('link', { name: /blank template \(\.docx\)/i })).toHaveCount(0);
+  // The macro note is on screen (not screen-reader-only) and gives the Unblock step.
+  const note = importer.locator('#sbi-macro-note');
+  await expect(note).toBeVisible();
+  await expect(note).toContainText('Unblock');
+  await expect(note).toContainText('Enable Content');
 });
 
-test('the blank template downloads as a real .docx', async ({ page }) => {
+test('the storyboard template downloads as a real macro-enabled .docm (a ZIP with a VBA project)', async ({ page }) => {
   await openImporter(page);
-  const { name, bytes } = await download(page, page.locator('#sbi-download-blank'));
-  expect(name).toBe('Rise_Storyboard_Blank_Template.docx');
+  const { name, bytes } = await download(page, page.locator('#sbi-download-template'));
+  expect(name).toBe('Rise_Component_Storyboard_Template.docm');
   expect(bytes.length).toBeGreaterThan(10000);
-  expect(bytes.subarray(0, 2).toString()).toBe('PK'); // a .docx is a ZIP
+  expect(bytes.subarray(0, 2).toString()).toBe('PK');
+  expect(bytes.includes(Buffer.from('vbaProject.bin'))).toBe(true);
 });
 
-test('the field guide downloads, names every component and says what the importer does not do', async ({ page }) => {
+test('the storyboard file picker accepts both .docx and .docm', async ({ page }) => {
   await openImporter(page);
-  const { name, bytes } = await download(page, page.getByRole('button', { name: /Download field guide/ }));
-  expect(name).toBe('Rise-Storyboard-Field-Guide.md');
-  const text = bytes.toString('utf8');
-  expect(text).toContain('storyboard field guide');
-  expect(text).toContain('## Supported Builder components (26)');
-  for (const component of ['### Accordion', '### Interactive Gauge', '### Interactive Video', '### Policy & Alert Cards']) expect(text).toContain(component);
-  expect(text).toMatch(/does \*\*not\*\* author native Rise blocks/);
+  const accept = await page.locator('#sbi-file-input').getAttribute('accept');
+  expect(accept.split(',').map(value => value.trim())).toEqual(expect.arrayContaining(['.docx', '.docm']));
+});
+
+test('the downloaded .docm is uploaded as-is and read without blocking findings', async ({ page }) => {
+  await openImporter(page);
+  const { name, bytes } = await download(page, page.locator('#sbi-download-template'));
+  await page.locator('#sbi-file-input').setInputFiles({ name, mimeType: 'application/vnd.ms-word.document.macroEnabled.12', buffer: bytes });
+  const importer = page.locator('#storyboard-import-workspace');
+  await expect(importer.locator('#sbi-review-counts')).toBeVisible();
+  await expect(importer.locator('#sbi-review-counts')).toContainText('Builder component');
+  await expect(importer).not.toContainText('could not be read');
 });
 
 test('the example that is downloaded imports as-is: 26 Builder components + 8 Rise references, all 34 rows kept in order, build sheet keeps all 8', async ({ page }) => {

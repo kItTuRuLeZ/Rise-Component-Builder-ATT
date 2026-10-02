@@ -161,3 +161,19 @@ describe('Post-Publish editors', () => {
     names.forEach((name, index) => expect(name).toBe(`Definition for glossary entry ${index + 1}`));
   });
 });
+
+describe('toolbar ids are unique per editor', () => {
+  test('editors created without a controlId (Post-Publish) do not share "rt-color-indicator-undefined"', () => {
+    document.body.innerHTML = '';
+    for (let i = 0; i < 3; i += 1) document.body.appendChild(createRichTextEditor({ value: '<p>x</p>', ariaLabel: `Field ${i}`, onChange: () => {} }).element);
+    const ids = [...document.querySelectorAll('[id]')].map(node => node.id);
+    expect(ids.some(id => id.includes('undefined'))).toBe(false);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  test('an editor that has a controlId keeps the id derived from it', () => {
+    document.body.innerHTML = '';
+    document.body.appendChild(createRichTextEditor({ controlId: 'field-a', value: '', onChange: () => {} }).element);
+    expect(document.getElementById('rt-color-indicator-field-a')).not.toBeNull();
+  });
+});

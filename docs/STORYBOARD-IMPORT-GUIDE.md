@@ -148,18 +148,19 @@ video/captions field's cell. The importer keeps the filename as a note and creat
 media reference of the right kind; the developer attaches the real file after import, and
 Preflight blocks export until they do.
 
-## Templates and the field guide (downloaded from the import screen)
+## Templates (downloaded from the import screen)
 
 The **Import Storyboard** screen lists every supported component (generated from
-`SUPPORTED_COMPONENT_TYPES`, so it is never out of date) and offers three downloads:
+`SUPPORTED_COMPONENT_TYPES`, so it is never out of date) and offers two downloads:
 
 | Download | File | What it is |
 | --- | --- | --- |
-| Blank template | `templates/storyboard/Rise_Storyboard_Blank_Template.docx` | The empty storyboard to fill in. Until filled in, its own placeholders are reported (a missing section title, an unfilled outline row); nothing else is wrong with it. |
+| Storyboard template with macro | `templates/storyboard/Rise_Component_Storyboard_Template.docm` | The working storyboard template. Its Word macro (`RiseStoryboardTools`) inserts new component records. Word blocks macros in a downloaded file ("Microsoft has blocked macros from running because the source of this file is untrusted"). Before opening it, right-click the file > **Properties** > tick **Unblock**; then choose **Enable Editing** and **Enable Content**. The macro is unsigned, so IT can alternatively sign it or place the file in a Trusted Location. The template imports without the macro. The importer accepts the saved `.docm` as well as a `.docx`. It reads with no blocking findings; its instruction headings and one blank-token marker are reported as warnings. |
 | Example with all components | `templates/storyboard/Rise_Storyboard_All_Components_Example.docx` | A complete sample, one block for each of the 26 supported components plus 8 Rise references. It imports as-is: no blocking findings, one expected warning (an Interactive Video question marker imports only its correct answer). |
-| Field guide | generated in the browser (`js/storyboard-import/field-guide.js`) | Markdown covering the document layout, Rise references, media files, and for each component which fields exist, which are filled once or per item, and which are required. |
 
-The field guide is **derived from the importer, not written by hand**: the component list is
+The import screen no longer offers a field-guide download. `js/storyboard-import/field-guide.js` still
+generates one from the importer (it is **derived, not written by hand**) and drives the on-screen
+component list: the component list is
 `SUPPORTED_COMPONENT_TYPES`; the fields are `KNOWN_TEMPLATE_FIELDS`; once-versus-per-item is
 `isSharedTemplateField`; and *required* fields and minimum item counts are found by running each real
 mapper on an empty record and reading the findings it raises. A few rules that cannot be derived that
@@ -167,7 +168,7 @@ way (exactly one correct Multiple Choice answer, Interactive Video marker types)
 `COMPONENT_NOTES`.
 
 `templates/` is copied into `dist/` by `build.mjs`, and `tests/unit/storyboard-import/field-guide.test.js`
-imports both shipped files through the real parser and validator, so the templates cannot drift away
+imports the shipped files through the real parser and validator, so the templates cannot drift away
 from the importer.
 
 **What changed from the original reference template** (`SB Template/Rise_Storyboard_All_Components.docx`,

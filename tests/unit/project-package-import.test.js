@@ -59,7 +59,7 @@ describe('describeNonProjectZip: what a ZIP that is not a project backup is, and
     const message = kind(['index.html', 'assets/a.js']);
     expect(message).toContain('hosted web package');
     expect(message).toContain('not an editable project backup');
-    expect(message).toContain('Export Package');
+    expect(message).toContain('Export Backup');
   });
 
   test('a hosted package inside one folder is still recognised', () => {
@@ -75,7 +75,7 @@ describe('describeNonProjectZip: what a ZIP that is not a project backup is, and
   test('a course pack', () => {
     const message = kind(['manifest.json', 'accordion/index.html']);
     expect(message).toContain('course pack');
-    expect(message).toContain('Export Package');
+    expect(message).toContain('Export Backup');
   });
 
   test('anything else', () => {

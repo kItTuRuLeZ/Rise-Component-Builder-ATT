@@ -96,7 +96,7 @@ test('a hosted web-package ZIP is refused with a message that names what it is a
   await upload(page, 'hosted-component.zip', 'application/zip', Buffer.from(zip, 'base64'));
   await expect(toast(page)).toContainText('hosted web package');
   await expect(toast(page)).toContainText('not an editable project backup');
-  await expect(toast(page)).toContainText('Export Package');
+  await expect(toast(page)).toContainText('Export Backup');
   await expect(toast(page)).not.toContainText('not valid JSON');
   await expect(page.locator('.project-card')).toHaveCount(0);
 });

@@ -336,9 +336,9 @@ export function showPreExportReviewDialog(options, maybeOnProceed = null, maybeO
       <div class="modal-card" style="max-width: 640px;">
         <div class="modal-header">
           <div>
-            <h2 id="att-export-review-title" class="modal-title">Pre-Export Package Review</h2>
+            <h2 id="att-export-review-title" class="modal-title">Pre-Export Review: Hosted Package</h2>
             <p style="margin: 4px 0 0 0; font-size: 0.8125rem; color: var(--att-text-muted, #707780);">
-              Review package contents, QA findings, and readiness status before generating ZIP
+              Review package contents, QA findings, and readiness status before generating the hosted ZIP. This is a published copy, not a project backup: use Export Backup on the project to keep an editable copy.
             </p>
           </div>
           <button id="att-export-review-close-btn" class="project-menu-btn" aria-label="Close review dialog" type="button">

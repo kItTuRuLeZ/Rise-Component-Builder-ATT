@@ -5,6 +5,7 @@ import { createGlossaryEditor } from './editors/glossary-editor.js';
 import { createResourcesEditor } from './editors/resources-editor.js';
 import { createHelpEditor } from './editors/help-editor.js';
 import { createSettingsEditor } from './editors/settings-editor.js';
+import { keepFieldsLabelled } from './field-labels.js';
 import { generateSimulatorPreviewHTML } from './preview.js';
 import { validatePostPublishConfig } from './validator.js';
 import { planEnhancement } from './zip-enhancer.js';
@@ -307,6 +308,9 @@ export function createPostPublishWorkflow({ onBack = null } = {}) {
 
     const editorMount = document.createElement('div');
     editorMount.className = 'ppt-editor-mount-point';
+    // The editors' label/field pairs are not associated in their own markup; link them, and keep them
+    // linked as the lists are redrawn (see field-labels.js).
+    keepFieldsLabelled(editorMount);
 
     function renderEditorTab() {
       editorMount.innerHTML = '';
@@ -342,6 +346,7 @@ export function createPostPublishWorkflow({ onBack = null } = {}) {
     const box = document.createElement('div');
     box.className = 'ppt-step-panel';
     box.appendChild(createSettingsEditor(currentConfig, () => {}));
+    keepFieldsLabelled(box);
     stepContentContainer.appendChild(box);
   }
 

@@ -230,7 +230,7 @@ describe('Project Dashboard & Workspace Controller Tests', () => {
 
     const overlay = document.getElementById('att-export-review-modal-overlay');
     expect(overlay).not.toBeNull();
-    expect(overlay.innerHTML).toContain('Pre-Export Package Review');
+    expect(overlay.innerHTML).toContain('Pre-Export Review: Hosted Package');
     expect(overlay.innerHTML).toContain('Export Blocked');
 
     const proceedBtn = overlay.querySelector('#att-export-review-proceed-btn');

@@ -146,6 +146,7 @@ export function applyInlineStyle(property, value, editorEl) {
 }
 
 let labelIdCounter = 0;
+let editorInstanceCounter = 0;
 
 /**
  * Names a rich-text editor from its visible `<label>`.
@@ -196,6 +197,10 @@ export function createRichTextEditor({
   ariaLabel = '',
   onChange
 }) {
+  // Ids inside the toolbar are built from this. Editors created without a controlId (the Post-Publish
+  // editors) all produced "…-undefined", a duplicate id repeated on every such editor on the page.
+  editorInstanceCounter += 1;
+  const idSuffix = controlId || `rte-${editorInstanceCounter}`;
   const container = document.createElement('div');
   container.className = `rich-text-editor-container ${isSingleLine ? 'is-single-line' : ''}`;
 
@@ -833,7 +838,7 @@ export function createRichTextEditor({
     colorWrapper.className = 'rt-dropdown-wrapper';
     const colorBtn = createToolbarButton(
       'Text Color', 'Text Color',
-      '<span class="rt-btn-color-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16"></path><path d="m6 16 6-12 6 12"></path><path d="M8 12h8"></path></svg><span class="rt-color-bar" id="rt-color-indicator-' + controlId + '"></span></span>',
+      '<span class="rt-btn-color-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16"></path><path d="m6 16 6-12 6 12"></path><path d="M8 12h8"></path></svg><span class="rt-color-bar" id="rt-color-indicator-' + idSuffix + '"></span></span>',
       () => {
         if (activePopover && activePopover.dataset.popoverType === 'color') {
           closePopovers();
