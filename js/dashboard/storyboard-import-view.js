@@ -11,8 +11,7 @@ import { parseDocxToBlocks } from '../storyboard-import/docx-parser.js';
 import { extractStoryboard } from '../storyboard-import/storyboard-extract.js';
 import { validateStoryboard } from '../storyboard-import/validation.js';
 import { buildProjectFromStoryboard } from '../storyboard-import/build-project.js';
-import { downloadText } from '../storyboard-import/build-sheet.js';
-import { buildFieldGuideMarkdown, describeStoryboardCounts, getSupportedComponents } from '../storyboard-import/field-guide.js';
+import { describeStoryboardCounts, getSupportedComponents } from '../storyboard-import/field-guide.js';
 import { saveProject } from '../storage.js';
 import { EDITION } from '../client-isolation.js';
 import { escapeHTML } from '../utilities.js';
@@ -28,10 +27,10 @@ const CLIENT_LABEL = String(EDITION) === 'ATT' ? 'AT&T' : EDITION;
 // under a GitHub Pages sub-path as well as at a domain root.
 const TEMPLATE_DOWNLOADS = [
   {
-    id: 'sbi-download-blank',
-    href: './templates/storyboard/Rise_Storyboard_Blank_Template.docx',
-    label: 'Download blank template (.docx)',
-    hint: 'The empty storyboard to fill in.'
+    id: 'sbi-download-template',
+    href: './templates/storyboard/Rise_Component_Storyboard_Template.docm',
+    label: 'Download storyboard template with macro (.docm)',
+    hint: 'The working storyboard template. Its Word macro inserts new component records for you. Word will ask you to enable editing and then content before the macro can run.'
   },
   {
     id: 'sbi-download-example',
@@ -172,8 +171,6 @@ export class StoryboardImportView {
               <a id="${item.id}" class="btn btn-secondary" href="${item.href}" download aria-describedby="${item.id}-hint">${escapeHTML(item.label)}</a>
               <span id="${item.id}-hint" class="sr-only">${escapeHTML(item.hint)}</span>
             `).join('')}
-            <button type="button" id="sbi-download-guide" class="btn btn-secondary" aria-describedby="sbi-download-guide-hint">Download field guide (.md)</button>
-            <span id="sbi-download-guide-hint" class="sr-only">Every component's fields, which are required, and how to lay out the document.</span>
           </div>
         </div>
       </section>
@@ -193,11 +190,11 @@ export class StoryboardImportView {
       </section>
 
       <section class="dashboard-empty-state" style="border: 2px dashed var(--att-border, #CBD5E1); padding: 40px 24px;" aria-labelledby="sbi-upload-heading">
-        <h2 id="sbi-upload-heading" class="empty-state-title">2. Choose your storyboard .docx file</h2>
+        <h2 id="sbi-upload-heading" class="empty-state-title">2. Choose your storyboard file (.docx or .docm)</h2>
         <p class="empty-state-subtitle">The file is read in your browser and nothing is uploaded. You will review everything it found before a project is created.</p>
         <label class="btn btn-primary" style="margin-top: 12px; display: inline-flex; cursor: pointer;">
           <span>Choose File…</span>
-          <input type="file" id="sbi-file-input" accept=".docx" style="position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0;" />
+          <input type="file" id="sbi-file-input" accept=".docx,.docm" style="position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0;" />
         </label>
       </section>
     `;
@@ -325,10 +322,6 @@ export class StoryboardImportView {
     fileInput?.addEventListener('change', () => {
       const file = fileInput.files?.[0];
       if (file) this.handleFile(file);
-    });
-
-    this.container.querySelector('#sbi-download-guide')?.addEventListener('click', () => {
-      downloadText(buildFieldGuideMarkdown({ editionLabel: CLIENT_LABEL }), 'Rise-Storyboard-Field-Guide.md');
     });
 
     this.container.querySelector('#sbi-retry-btn')?.addEventListener('click', () => this.chooseAnotherFile());

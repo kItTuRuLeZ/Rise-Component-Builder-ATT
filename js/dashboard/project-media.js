@@ -111,7 +111,7 @@ export class ProjectMediaView {
             <div class="workspace-banner-info">
               <h1 class="workspace-title">Course Media Library</h1>
               <p class="workspace-desc">
-                Assets are stored in this browser on this device (IndexedDB). The library is <strong>shared by every project in this browser</strong>, not kept per course. <strong>Export JSON</strong> saves media references only, not the files; use <strong>Export Package</strong> (in the Open Project menu) or a course ZIP to carry the files themselves.
+                Assets are stored in this browser on this device (IndexedDB). The library is <strong>shared by every project in this browser</strong>, not kept per course. <strong>Export JSON (content only)</strong> saves media references only, not the files; use <strong>Export Backup (.rise-project.zip)</strong> (in the project menu) to carry the files themselves.
               </p>
               <div style="margin-top: 8px; font-size: 0.875rem; color: #555555; display: flex; gap: 16px;">
                 <span>Total Assets: <strong>${this.state.mediaList.length}</strong></span>

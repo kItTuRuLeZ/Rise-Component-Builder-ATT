@@ -14,7 +14,7 @@ import {
 import { showPromptDialog, showConfirmDialog, isolateModal } from './att-modal.js';
 import { showToast } from '../toast.js';
 import { attLogoSvg } from '../att-logos.js';
-import { importProjectPackage, isProjectPackageFile } from '../project-package.js';
+import { downloadProjectPackage, exportProjectPackage, importProjectPackage, isProjectPackageFile } from '../project-package.js';
 import { collectMediaReferences } from '../media.js';
 import { getMediaRecord } from '../media-storage.js';
 
@@ -552,7 +552,11 @@ export class DashboardView {
             </button>
             <button class="project-menu-item" data-action="export-json" data-id="${project.id}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Export JSON
+              Export JSON (content only)
+            </button>
+            <button class="project-menu-item" data-action="export-backup" data-id="${project.id}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Export Backup (.rise-project.zip)
             </button>
             <button class="project-menu-item text-danger" data-action="delete" data-id="${project.id}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -857,6 +861,9 @@ export class DashboardView {
         } else if (action === 'export-json') {
           this.state.activeMenuProjectId = null;
           this.triggerDownloadJson(id);
+        } else if (action === 'export-backup') {
+          this.state.activeMenuProjectId = null;
+          await this.triggerDownloadBackup(id);
         } else if (action === 'delete') {
           this.state.activeMenuProjectId = null;
           const current = getProject(id);
@@ -1089,6 +1096,21 @@ export class DashboardView {
       unsectionedComponentOrder: [],
       components: {}
     });
+  }
+
+  async triggerDownloadBackup(projectId) {
+    try {
+      const project = getProject(projectId);
+      if (!project) throw new Error('That project could not be found.');
+      const packaged = await exportProjectPackage(project);
+      downloadProjectPackage(project.name, packaged.blob);
+      showToast(packaged.missing.length
+        ? `Backup downloaded, but ${packaged.missing.length} referenced media file(s) were not in this browser and are not included: ${packaged.missing.slice(0, 3).join(', ')}.`
+        : 'Project backup downloaded (.rise-project.zip). It includes your media files and can be imported again.',
+      packaged.missing.length ? 'warning' : 'success', 6000);
+    } catch (error) {
+      showToast(`Backup failed: ${error.message}`, 'error', 6000);
+    }
   }
 
   triggerDownloadJson(projectId) {

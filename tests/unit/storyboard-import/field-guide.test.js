@@ -186,3 +186,16 @@ describe('the shipped blank template', () => {
     expect(findings.filter(f => f.severity === 'fatal').map(f => f.code).sort()).toEqual(['missing-section-title', 'unknown-outline-kind']);
   });
 });
+
+describe('the shipped macro-enabled template (.docm)', () => {
+  test('is a macro-enabled document whose body is read exactly like a .docx, with no blocking findings', async () => {
+    const buffer = readFileSync(join(templatesDir, 'Rise_Component_Storyboard_Template.docm'));
+    expect(buffer.subarray(0, 2).toString()).toBe('PK');
+    expect(buffer.includes(Buffer.from('word/vbaProject.bin'))).toBe(true);
+    const storyboard = await load('Rise_Component_Storyboard_Template.docm');
+    const { findings, mappedComponentsByBlockId } = validateStoryboard(storyboard);
+    expect(storyboard.sections.length).toBeGreaterThan(0);
+    expect(Object.keys(mappedComponentsByBlockId).length).toBeGreaterThan(0);
+    expect(findings.filter(f => f.severity === 'fatal')).toEqual([]);
+  });
+});

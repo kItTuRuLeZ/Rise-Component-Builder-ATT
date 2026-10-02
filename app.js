@@ -3167,16 +3167,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         try { duplicateProject(project.id); renderStoredProjects(); showToast('Project duplicated.', 'success'); }
         catch (error) { showToast(error.message, 'error'); }
       });
-      addAction('Export JSON', () => downloadProjectJson(project));
-      addAction('Export Package', async () => {
+      addAction('Export JSON (content only)', () => downloadProjectJson(project));
+      addAction('Export Backup (.rise-project.zip)', async () => {
         try {
           const packaged = await exportProjectPackage(project);
           downloadProjectPackage(project.name, packaged.blob);
           showToast(packaged.missing.length
-            ? `Package downloaded (${formatExportedFileSize(packaged.size)}), but ${packaged.missing.length} referenced file(s) were missing from local storage and could not be included.`
-            : `Portable project package downloaded (${formatExportedFileSize(packaged.size)}).`,
+            ? `Backup downloaded (${formatExportedFileSize(packaged.size)}), but ${packaged.missing.length} referenced file(s) were missing from local storage and could not be included.`
+            : `Project backup downloaded (${formatExportedFileSize(packaged.size)}). It includes your media files and can be imported again.`,
             packaged.missing.length ? 'warning' : 'success', 6000);
-        } catch (error) { showToast(`Package export failed: ${error.message}`, 'error', 6000); }
+        } catch (error) { showToast(`Backup failed: ${error.message}`, 'error', 6000); }
       });
       addAction('Delete', async () => {
         const confirmed = await openConfirmDialog({ title: 'Delete Project', message: `Delete “${project.name}”? This cannot be undone.`, confirmLabel: 'Delete', danger: true });
