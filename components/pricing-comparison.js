@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, richInline, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 export const id = 'pricing-comparison';
@@ -24,11 +24,12 @@ function parseFeatureWithTooltip(rawFeature) {
   const match = trimmed.match(/^(.*?)\s*\[info:\s*(.*?)\]$/i);
   if (match) {
     return {
-      text: match[1].trim(),
-      tooltip: match[2].trim()
+      text: richTextToPlain(match[1]),
+      tooltip: richTextToPlain(match[2])
     };
   }
-  return { text: rawFeature.trim(), tooltip: '' };
+  // Plain text on purpose: the rich-text editor stores "&amp;" and wrapper tags, and every use below escapes once.
+  return { text: richTextToPlain(rawFeature), tooltip: '' };
 }
 
 export function generateHTML(config, instanceId) {
@@ -51,7 +52,7 @@ export function generateHTML(config, instanceId) {
             <div class="matrix-cell matrix-feature-cell header" role="columnheader">Features</div>
             ${config.items.map(item => `
               <div class="matrix-cell matrix-tier-cell header ${item.highlighted ? 'highlighted' : ''}" role="columnheader">
-                <strong>${escapeHTML(item.title || 'Plan')}</strong>
+                <strong>${richInline(item.title, 'Plan')}</strong>
                 ${item.highlighted ? '<span class="matrix-badge">Popular</span>' : ''}
               </div>
             `).join('')}
@@ -82,7 +83,7 @@ export function generateHTML(config, instanceId) {
         <div class="pricing-card-item ${item.highlighted ? 'premium-highlight' : ''}" id="${instanceId}-card-${idx}">
           ${item.highlighted ? '<div class="popular-ribbon">Recommended</div>' : ''}
           <div class="pricing-tier-header">
-            <h4>${escapeHTML(item.title || 'Service Plan')}</h4>
+            <h4>${richInline(item.title, 'Service Plan')}</h4>
           </div>
           <div class="pricing-features-list">
             ${(item.content || '').split('•').map(feat => {

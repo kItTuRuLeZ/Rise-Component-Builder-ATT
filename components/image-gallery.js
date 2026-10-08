@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeURL } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeURL, richInline, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 export const id = 'image-gallery';
@@ -34,11 +34,11 @@ export function generateHTML(config, instanceId) {
         ${config.items.map((item, idx) => {
           const safeSrc = sanitizeURL(item.content, { allowRelative: true, allowDataImage: true });
           return `
-          <button type="button" class="gallery-item-card" data-cat="${escapeAttribute(item.category || '')}" data-img="${escapeAttribute(safeSrc)}" data-caption="${escapeAttribute(item.caption || item.title || `Image ${idx + 1}`)}" data-alt="${item.decorative ? '' : escapeAttribute(item.altText || '')}" aria-haspopup="dialog" aria-controls="${instanceId}-gallery-lightbox" aria-label="Open image: ${escapeAttribute(item.title || `Image ${idx + 1}`)}">
+          <button type="button" class="gallery-item-card" data-cat="${escapeAttribute(item.category || '')}" data-img="${escapeAttribute(safeSrc)}" data-caption="${escapeAttribute(richTextToPlain(item.caption) || richTextToPlain(item.title) || `Image ${idx + 1}`)}" data-alt="${item.decorative ? '' : escapeAttribute(item.altText || '')}" aria-haspopup="dialog" aria-controls="${instanceId}-gallery-lightbox" aria-label="Open image: ${escapeAttribute(richTextToPlain(item.title) || `Image ${idx + 1}`)}">
             <img src="${escapeAttribute(safeSrc)}" alt="${item.decorative ? '' : escapeAttribute(item.altText || '')}" ${item.decorative ? 'aria-hidden="true"' : ''} style="object-fit:${item.imageFit === 'contain' ? 'contain' : 'cover'};">
             <div class="gallery-caption-overlay">
-              ${item.category ? `<span class="gallery-cat-tag">${escapeHTML(item.category)}</span>` : ''}
-              <span>${escapeHTML(item.title || 'View Layout')}</span>
+              ${item.category ? `<span class="gallery-cat-tag">${richInline(item.category)}</span>` : ''}
+              <span>${richInline(item.title, 'View Layout')}</span>
             </div>
           </button>
         `;

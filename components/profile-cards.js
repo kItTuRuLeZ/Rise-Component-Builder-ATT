@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeRichText, richInline, isRichTextEmpty, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 export const id = 'profile-cards';
@@ -34,22 +34,22 @@ export function generateHTML(config, instanceId) {
   return `
     <div class="profiles-grid" id="${instanceId}">
       ${config.items.map((item, idx) => {
-        const roleHtml = (item.roleTag || '').trim() ? `<span class="profile-role-badge">${escapeHTML(item.roleTag)}</span>` : '';
+        const roleHtml = !isRichTextEmpty(item.roleTag) ? `<span class="profile-role-badge">${richInline(item.roleTag)}</span>` : '';
         const quoteHtml = (item.quote || '').trim() ? `<blockquote class="profile-pull-quote">&ldquo;${escapeHTML(item.quote)}&rdquo;</blockquote>` : '';
-        const contactHtml = (item.contactUrl || '').trim() ? `
-          <a href="${escapeAttribute(item.contactUrl)}" target="_blank" rel="noopener noreferrer" class="profile-contact-link" onclick="event.stopPropagation();">
-            ${getAttIconSvg('open-new', { width: 14, height: 14, ariaHidden: true })} ${escapeHTML(item.contactLabel || 'Connect')}
+        const contactHtml = !isRichTextEmpty(item.contactUrl) ? `
+          <a href="${escapeAttribute(richTextToPlain(item.contactUrl))}" target="_blank" rel="noopener noreferrer" class="profile-contact-link" onclick="event.stopPropagation();">
+            ${getAttIconSvg('open-new', { width: 14, height: 14, ariaHidden: true })} ${richInline(item.contactLabel, 'Connect')}
           </a>
         ` : '';
 
         return `
-        <div class="profile-card-item" id="${instanceId}-card-${idx}" data-idx="${idx}" tabindex="0" role="${enableModal ? 'button' : 'article'}" aria-haspopup="${enableModal ? 'dialog' : 'false'}" aria-label="Profile of ${escapeAttribute(item.title || 'Expert')}">
+        <div class="profile-card-item" id="${instanceId}-card-${idx}" data-idx="${idx}" tabindex="0" role="${enableModal ? 'button' : 'article'}" aria-haspopup="${enableModal ? 'dialog' : 'false'}" aria-label="Profile of ${escapeAttribute(richTextToPlain(item.title) || 'Expert')}">
           <div class="profile-avatar-circle ${item.imageCrop === 'square' ? 'square' : ''}">
             ${item.image ? `<img src="${escapeAttribute(item.image)}" alt="${item.decorative ? '' : escapeAttribute(item.altText || '')}" ${item.decorative ? 'aria-hidden="true"' : ''}>` : getAttIconSvg('person', { width: 24, height: 24, ariaHidden: true })}
           </div>
           <div class="profile-card-content">
             <div class="profile-header-meta">
-              <h4>${escapeHTML(item.title || 'Expert Name')}</h4>
+              <h4>${richInline(item.title, 'Expert Name')}</h4>
               ${roleHtml}
             </div>
             <p>${sanitizeRichText(item.content || 'Professional background summary bio.')}</p>

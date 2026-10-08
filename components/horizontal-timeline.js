@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeHTML, escapeAttribute, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, sanitizeRichText, isRichTextEmpty, richTextToPlain, richInline } from '../js/utilities.js';
 import { combineValidationResults } from '../js/validation-utils.js';
 import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/item-media.js';
 
@@ -29,7 +29,7 @@ export function generateHTML(config, instanceId) {
       <div class="timeline-nodes-row" role="tablist" aria-label="Timeline steps">
         ${config.items.map((item, idx) => `
           <div class="timeline-node ${idx === 0 ? 'active' : ''}" id="${instanceId}-timeline-tab-${idx}" data-idx="${idx}" role="tab" tabindex="${idx === 0 ? '0' : '-1'}" aria-selected="${idx === 0}" aria-controls="${instanceId}-timeline-slide-${idx}">
-            <div class="node-marker">${(item.markerLabel || '').trim() ? `<span class="node-marker-label" aria-hidden="true">${escapeHTML(String(item.markerLabel).trim())}</span>` : ''}</div>
+            <div class="node-marker">${!isRichTextEmpty(item.markerLabel) ? `<span class="node-marker-label" aria-hidden="true">${richInline(item.markerLabel)}</span>` : ''}</div>
             <span class="node-label">${item.title ? sanitizeRichText(item.title) : 'Step'}</span>
           </div>
         `).join('')}
@@ -40,7 +40,7 @@ export function generateHTML(config, instanceId) {
           const hasImage = Boolean((item.image || '').trim());
           const imageHtml = hasImage ? `
             <div class="timeline-slide-media">
-              <button type="button" class="timeline-media-popup-btn" data-img-src="${escapeAttribute(item.image)}" data-img-alt="${escapeAttribute(item.imageAlt || item.title || 'Milestone image')}" aria-label="View enlarged image for ${escapeAttribute(item.title || 'step')}">
+              <button type="button" class="timeline-media-popup-btn" data-img-src="${escapeAttribute(item.image)}" data-img-alt="${escapeAttribute(item.imageAlt || item.title || 'Milestone image')}" aria-label="View enlarged image for ${escapeAttribute(richTextToPlain(item.title) || 'step')}">
                 <img src="${escapeAttribute(item.image)}" alt="${escapeAttribute(item.imageAlt || item.title || 'Milestone image')}" class="timeline-slide-thumb" loading="lazy">
                 <span class="timeline-media-zoom-hint" aria-hidden="true">Enlarge</span>
               </button>

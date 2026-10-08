@@ -35,7 +35,10 @@ export function validateSchemaField(field, value, items = []) {
   }
   if (field.type === 'color' && value && !/^#[0-9a-f]{6}$/i.test(String(value))) errors.push(`${field.label} must be a six-digit hexadecimal color.`);
   if (field.maxLength && String(value).length > field.maxLength) errors.push(`${field.label} must be ${field.maxLength} characters or fewer.`);
-  if (field.pattern && !new RegExp(field.pattern).test(String(value))) errors.push(field.patternMessage || `${field.label} has an invalid format.`);
+  const patternSubject = ['text', 'richtext'].includes(field.type)
+    ? String(value).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim()
+    : String(value);
+  if (field.pattern && !new RegExp(field.pattern, field.patternFlags || '').test(patternSubject)) errors.push(field.patternMessage || `${field.label} has an invalid format.`);
   return errors;
 }
 

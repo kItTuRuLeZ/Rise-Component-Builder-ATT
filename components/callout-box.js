@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, sanitizeRichText, richInline, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 /**
@@ -70,17 +70,16 @@ export function generateHTML(config, instanceId) {
   const itemsHtml = items.map((item, idx) => {
     const tone = ['info', 'warning', 'primary', 'tip', 'security'].includes(item.tone) ? item.tone : 'info';
     const iconSvg = ICONS[tone] || ICONS.info;
-    const badgeText = item.badgeLabel || tone.toUpperCase();
 
     return `
-      <div class="callout-item-card tone-${tone}" id="${instanceId}-item-${idx}" role="region" aria-label="${escapeAttribute(item.title || `Callout ${idx + 1}`)}">
+      <div class="callout-item-card tone-${tone}" id="${instanceId}-item-${idx}" role="region" aria-label="${escapeAttribute(richTextToPlain(item.title) || `Callout ${idx + 1}`)}">
         <div class="callout-item-header">
           <div class="callout-item-icon tone-${tone}">
             ${iconSvg}
           </div>
           <div class="callout-item-meta">
-            <span class="callout-item-badge tone-${tone}">${escapeHTML(badgeText)}</span>
-            <h4 class="callout-item-title">${escapeHTML(item.title || '')}</h4>
+            <span class="callout-item-badge tone-${tone}">${richInline(item.badgeLabel, tone.toUpperCase())}</span>
+            <h4 class="callout-item-title">${richInline(item.title, '')}</h4>
           </div>
         </div>
         <div class="callout-item-body">
@@ -103,7 +102,7 @@ export function generateHTML(config, instanceId) {
 
   return `
     <div class="callout-matrix-card" id="${instanceId}-matrix-card">
-      ${config.title ? `<h3 class="callout-title">${escapeHTML(config.title)}</h3>` : ''}
+      ${config.title ? `<h3 class="callout-title">${richInline(config.title)}</h3>` : ''}
       ${config.content ? `<p class="callout-description">${sanitizeRichText(config.content)}</p>` : ''}
       <div class="callout-matrix-grid layout-${layout}" id="${instanceId}-grid">
         ${itemsHtml}

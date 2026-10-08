@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeRichText, richInline } from '../js/utilities.js';
 import { validateScenarioBranching, combineValidationResults } from '../js/validation-utils.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
@@ -36,7 +36,6 @@ export function generateHTML(config, instanceId) {
 
   const q = config.items[0] || { title: 'Dialogue prompt', content: 'What should we do?', speaker: 'Chris (Team Lead)', emotion: 'neutral' };
   const choices = config.items.slice(1);
-  const speakerName = q.speaker || 'Chris (Team Lead)';
   const initialEmotion = q.emotion || 'neutral';
 
   return `
@@ -59,7 +58,7 @@ export function generateHTML(config, instanceId) {
         </div>
         <div class="scenario-bubble">
           <div class="scenario-speaker-row">
-            <span class="speaker-name" id="${instanceId}-speaker-name">${escapeHTML(speakerName)}</span>
+            <span class="speaker-name" id="${instanceId}-speaker-name">${richInline(q.speaker, 'Chris (Team Lead)')}</span>
             <span class="scenario-emotion-badge" id="${instanceId}-emotion-badge">${escapeHTML(initialEmotion)}</span>
           </div>
           <div class="speech-text" id="${instanceId}-scenario-speech">${sanitizeRichText(q.title)}</div>
@@ -69,7 +68,7 @@ export function generateHTML(config, instanceId) {
       <div class="scenario-choices-list" id="${instanceId}-scenario-choices-box">
         ${choices.map((ch, idx) => `
           <button type="button" class="scenario-choice-btn" data-choice-idx="${idx}" data-feedback="${escapeAttribute(ch.content || '')}" data-points="${Number(ch.points) || 0}" data-emotion="${escapeAttribute(ch.emotion || (ch.points > 0 ? 'happy' : 'concerned'))}">
-            <span class="choice-text">${escapeHTML(ch.title || 'Choice Option')}</span>
+            <span class="choice-text">${richInline(ch.title, 'Choice Option')}</span>
             ${showMeter && ch.points ? `<span class="choice-points-badge ${ch.points > 0 ? 'pos' : 'neg'}">${ch.points > 0 ? '+' : ''}${ch.points} pts</span>` : ''}
           </button>
         `).join('')}

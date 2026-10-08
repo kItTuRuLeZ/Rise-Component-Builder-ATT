@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeRichText, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 import { combineValidationResults } from '../js/validation-utils.js';
 import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/item-media.js';
@@ -68,7 +68,7 @@ function renderStep(item, index, instanceId, opts) {
     </div>`;
   }
 
-  return `<div class="timeline-step${locked ? ' locked' : ''}" role="listitem" tabindex="0" data-idx="${index}"${categoryAttr} id="${instanceId}-step-${index}" aria-label="Step ${stepNum}: ${escapeAttribute(item.title || 'Step Title')}" aria-pressed="false" ${locked ? `aria-disabled="true" aria-describedby="${instanceId}-step-lock-note-${index}"` : ''}>
+  return `<div class="timeline-step${locked ? ' locked' : ''}" role="listitem" tabindex="0" data-idx="${index}"${categoryAttr} id="${instanceId}-step-${index}" aria-label="Step ${stepNum}: ${escapeAttribute(richTextToPlain(item.title) || 'Step Title')}" aria-pressed="false" ${locked ? `aria-disabled="true" aria-describedby="${instanceId}-step-lock-note-${index}"` : ''}>
     <div class="step-marker" aria-hidden="true"><span class="step-num">${stepNum}</span></div>
     <div class="step-card">
       <h4>${lockIconSlot}${item.title ? sanitizeRichText(item.title) : 'Step Title'}${categoryBadge}${visitedBadge}</h4>

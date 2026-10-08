@@ -1,6 +1,6 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
 import { isEmpty } from '../js/field-validation.js';
-import { escapeAttribute, escapeHTML, normalizeDelimitedLines } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, normalizeDelimitedLines, richTextToPlain, richInline, isRichTextEmpty } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 export const id = 'audio-player';
@@ -123,8 +123,7 @@ export function parseTakeaways(raw) {
 export function generateHTML(config, instanceId) {
   const item = config.items[0] || {};
   const src = item.content || '';
-  const title = item.title || 'Instructional Audio Segment';
-  const seriesLabel = item.seriesLabel || '';
+  const seriesLabel = isRichTextEmpty(item.seriesLabel) ? '' : item.seriesLabel;
   const description = item.description || '';
   const plainTranscript = item.transcript || '';
   const mode = ['compact', 'podcast'].includes(config.presentationMode) ? config.presentationMode : 'learning';
@@ -147,8 +146,8 @@ export function generateHTML(config, instanceId) {
         ${renderCustomItemArtwork(item, '<svg width="20" height="20" viewBox="0 0 96 96" fill="currentColor" aria-hidden="true"><path class="aud-art-accent" d="M31 16.4C32.5 17.7 34.1 18.8 35.8 19.6 38.6 21 41.7 21.9 44.8 22.1L44.9 20.1C42 19.9 39.2 19.2 36.6 17.9 34.3 16.8 32.3 15.3 30.6 13.4L29 11.5 29 43.5C27.3 41.4 24.5 40 21.5 40 16.3 40 12 44 12 49 12 54 16.3 58 21.5 58 26.7 58 31 54 31 49L31 16.4ZM21.5 56C17.4 56 14 52.9 14 49 14 45.1 17.4 42 21.5 42 25.6 42 29 45.1 29 49 29 52.9 25.6 56 21.5 56Z"/><path d="M70.3 21.8C66.3 19.8 62.8 17.1 59.7 13.9L58 12 58 66C55.4 61.8 50.7 59 45.2 59 37 59 30.4 65.3 30.4 73 30.4 80.7 37 87 45.2 87 53.4 87 60 80.7 60 73L60 17C62.8 19.7 66 21.9 69.4 23.6 74.2 26 79.3 27.4 84.7 27.8L84.8 25.8C79.8 25.5 74.9 24.1 70.3 21.8ZM45.2 85C38.1 85 32.4 79.6 32.4 73 32.4 66.4 38.1 61 45.2 61 52.3 61 58 66.4 58 73 58 79.6 52.3 85 45.2 85Z"/></svg>')}
       </div>
       <div class="aud-identity-text">
-        ${!isCompact && seriesLabel ? `<p class="aud-series-label">${escapeHTML(seriesLabel)}</p>` : ''}
-        <h3 class="aud-title">${escapeHTML(title)}</h3>
+        ${!isCompact && seriesLabel ? `<p class="aud-series-label">${richInline(seriesLabel)}</p>` : ''}
+        <h3 class="aud-title">${richInline(item.title, 'Instructional Audio Segment')}</h3>
         ${!isCompact && description ? `<p class="aud-description">${escapeHTML(description)}</p>` : ''}
       </div>
     </div>`;
@@ -196,7 +195,7 @@ export function generateHTML(config, instanceId) {
         <ul class="aud-chapter-list" id="${instanceId}-chapter-list">
           ${chapters.map((chapter, i) => `
             <li>
-              <button type="button" class="aud-chapter-item" data-idx="${i}" data-time="${chapter.timestamp}" aria-label="Jump to chapter: ${escapeAttribute(chapter.title)}, ${escapeAttribute(formatSecondsLabel(chapter.timestamp))}">
+              <button type="button" class="aud-chapter-item" data-idx="${i}" data-time="${chapter.timestamp}" aria-label="Jump to chapter: ${escapeAttribute(richTextToPlain(chapter.title))}, ${escapeAttribute(formatSecondsLabel(chapter.timestamp))}">
                 <span class="aud-chapter-time">${escapeHTML(formatSecondsLabel(chapter.timestamp))}</span>
                 <span class="aud-chapter-title">${escapeHTML(chapter.title)}</span>
                 ${chapter.description ? `<span class="aud-chapter-desc">${escapeHTML(chapter.description)}</span>` : ''}

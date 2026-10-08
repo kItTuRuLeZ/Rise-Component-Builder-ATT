@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, serializeForInlineScript } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, serializeForInlineScript, richInline } from '../js/utilities.js';
 import { combineValidationResults } from '../js/validation-utils.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
@@ -55,7 +55,7 @@ export function generateHTML(config, instanceId) {
             <div class="drag-handle-row">
               <div class="drag-handle" aria-hidden="true">${arrowsIcon}</div>
               <div class="drag-text-wrap">
-                <div class="drag-text" id="${instanceId}-sort-label-${idx}">${escapeHTML(item.title || 'Sorting Card')}</div>
+                <div class="drag-text" id="${instanceId}-sort-label-${idx}">${richInline(item.title, 'Sorting Card')}</div>
                 ${item.content ? `<div class="drag-sub">${escapeHTML(item.content)}</div>` : ''}
               </div>
             </div>

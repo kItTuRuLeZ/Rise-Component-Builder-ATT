@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeHTML, sanitizeRichText } from '../js/utilities.js';
+import { escapeHTML, sanitizeRichText, richInline } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 /**
@@ -71,10 +71,10 @@ export function generateHTML(config, instanceId) {
       <div class="confidence-item-row" id="${instanceId}-item-${idx}" data-item-index="${idx}">
         <div class="confidence-item-info">
           <div class="confidence-item-meta">
-            ${item.category ? `<span class="confidence-category-badge">${escapeHTML(item.category)}</span>` : ''}
+            ${item.category ? `<span class="confidence-category-badge">${richInline(item.category)}</span>` : ''}
             <span class="confidence-item-num">Competency ${idx + 1} of ${total}</span>
           </div>
-          <h4 class="confidence-item-title" id="${instanceId}-title-${idx}">${escapeHTML(item.title || `Competency ${idx + 1}`)}</h4>
+          <h4 class="confidence-item-title" id="${instanceId}-title-${idx}">${richInline(item.title, `Competency ${idx + 1}`)}</h4>
           <div class="confidence-item-desc">${sanitizeRichText(item.content || '')}</div>
         </div>
         <div class="confidence-rating-group" role="radiogroup" aria-labelledby="${instanceId}-title-${idx}" id="${radioGroupId}">
@@ -103,7 +103,7 @@ export function generateHTML(config, instanceId) {
       ${config.title ? `
         <div class="confidence-header">
           <div class="confidence-header-icon">${assessmentIcon}</div>
-          <h3 class="confidence-title">${escapeHTML(config.title)}</h3>
+          <h3 class="confidence-title">${richInline(config.title)}</h3>
         </div>
       ` : ''}
       ${config.content ? `<p class="confidence-instructions">${sanitizeRichText(config.content)}</p>` : ''}

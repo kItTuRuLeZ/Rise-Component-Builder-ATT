@@ -2030,9 +2030,11 @@ a {
 .preflight-issue.is-warning { border-left-color: var(--warning); }
 .preflight-issue.is-recommendation { border-left-color: var(--border-color); }
 
-.preflight-issue-text { display: flex; flex-direction: column; gap: 2px; }
-.preflight-issue-title { font-weight: 700; color: var(--text-main); }
-.preflight-issue-message { color: var(--text-muted); }
+/* min-width: 0 lets the text column shrink beside the Go to field button, so a long URL wraps inside the card
+   instead of pushing past it and adding a horizontal scrollbar. */
+.preflight-issue-text { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.preflight-issue-title { font-weight: 700; color: var(--text-main); overflow-wrap: anywhere; }
+.preflight-issue-message { color: var(--text-muted); overflow-wrap: anywhere; }
 
 .preflight-issue-jump {
   flex-shrink: 0;
@@ -2069,6 +2071,9 @@ a {
   flex: 1;
   overflow-y: auto;
   padding-right: 4px;
+  /* Rich-text toolbars carry z-index: 5. Without their own stacking context they compete with the preview
+     panel beside this one, so a toolbar could paint over it while the panel scrolled. */
+  isolation: isolate;
 }
 
 .editor-tabs {

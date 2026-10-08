@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeHTML, sanitizeRichText, serializeForInlineScript } from '../js/utilities.js';
+import { escapeHTML, sanitizeRichText, serializeForInlineScript, richInline } from '../js/utilities.js';
 import { validateQuizAnswers, combineValidationResults } from '../js/validation-utils.js';
 
 /**
@@ -59,7 +59,7 @@ export function generateHTML(config, instanceId) {
   const hintText = escapeHTML(config.mcHintText || '');
   return `<div class="quiz-block">
     <div class="quiz-options" role="radiogroup" aria-label="Answer choices">${config.items.map((item, index) => `
-    <div class="quiz-option" role="radio" tabindex="${index === 0 ? '0' : '-1'}" aria-checked="false" data-idx="${index}"><div class="option-check-circle" aria-hidden="true"></div><div class="option-text">${item.label ? sanitizeRichText(item.label) : escapeHTML(item.title || 'Option Label')}</div><span class="option-correct-flag" hidden> — Correct answer</span></div>`).join('')}</div>
+    <div class="quiz-option" role="radio" tabindex="${index === 0 ? '0' : '-1'}" aria-checked="false" data-idx="${index}"><div class="option-check-circle" aria-hidden="true"></div><div class="option-text">${item.label ? sanitizeRichText(item.label) : richInline(item.title, 'Option Label')}</div><span class="option-correct-flag" hidden> — Correct answer</span></div>`).join('')}</div>
     ${confidenceMode ? `
     <div class="quiz-confidence-block">
       <div class="quiz-confidence-label" id="${instanceId}-confidence-label">How confident are you in this answer?</div>

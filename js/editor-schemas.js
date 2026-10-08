@@ -141,8 +141,8 @@ export const editorSchemas = {
       field('title', 'Button Label', 'text', { required: true, default: 'New Resource' }),
       field('content', 'Destination URL', 'url', { required: true, default: 'https://' }),
       field('category', 'Resource Category (Optional)', 'text', { required: false, default: '', maxLength: 40 }),
-      field('fileType', 'File Type (e.g., PDF, DOCX, ZIP)', 'text', { required: false, default: '', maxLength: 10 }),
-      field('fileSize', 'File Size (e.g., 2.4 MB)', 'text', { required: false, default: '', maxLength: 15 }),
+      field('fileType', 'File Type (e.g., PDF, DOCX, ZIP)', 'text', { required: false, default: '', maxLength: 10, pattern: '^[A-Za-z0-9]{1,10}$', patternMessage: 'File Type uses letters and numbers only, for example PDF, DOCX or ZIP.' }),
+      field('fileSize', 'File Size (e.g., 2.4 MB)', 'text', { required: false, default: '', maxLength: 15, patternFlags: 'i', pattern: '^\\d+(\\.\\d+)?\\s?(?:B|KB|MB|GB|TB)$', patternMessage: 'File Size is a number followed by a unit, for example 2.4 MB, 850 KB or 1 GB.' }),
       field('styleVariant', 'Button Style Variant', 'select', {
         default: 'primary',
         options: [

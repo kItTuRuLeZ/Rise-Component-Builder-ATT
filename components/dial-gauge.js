@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeRichText, richInline, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 /**
@@ -83,7 +83,7 @@ export function generateHTML(config, instanceId) {
         data-target-value="${targetVal}"
         data-item-index="${idx}"
         aria-pressed="${isSelected ? 'true' : 'false'}">
-        <span class="dial-preset-label">${escapeHTML(item.title || `Tier ${idx + 1}`)}</span>
+        <span class="dial-preset-label">${richInline(item.title, `Tier ${idx + 1}`)}</span>
         <span class="dial-preset-val">${targetVal} ${escapeHTML(unit)}</span>
       </button>
     `;
@@ -102,7 +102,7 @@ export function generateHTML(config, instanceId) {
       ${config.title ? `
         <div class="dial-header">
           <div class="dial-header-icon">${meterIcon}</div>
-          <h3 class="dial-title">${escapeHTML(config.title)}</h3>
+          <h3 class="dial-title">${richInline(config.title)}</h3>
         </div>
       ` : ''}
       ${config.content ? `<p class="dial-description">${sanitizeRichText(config.content)}</p>` : ''}
@@ -146,7 +146,7 @@ export function generateHTML(config, instanceId) {
                 aria-valuenow="${initialVal}"
                 aria-valuemin="${minVal}"
                 aria-valuemax="${maxVal}"
-                aria-valuetext="${initialVal} ${escapeAttribute(unit)}, ${escapeAttribute(activeItem.title || '')}"
+                aria-valuetext="${initialVal} ${escapeAttribute(unit)}, ${escapeAttribute(richTextToPlain(activeItem.title) || '')}"
                 aria-label="Metric dial value slider">
             </div>
             <div class="dial-direct-input-wrap">
@@ -171,10 +171,10 @@ export function generateHTML(config, instanceId) {
 
         <div class="dial-insight-panel" id="${instanceId}-insight" aria-live="polite">
           <div class="dial-insight-badge" id="${instanceId}-insight-badge">
-            ${escapeHTML(activeItem.badgeLabel || 'Active Status')}
+            ${richInline(activeItem.badgeLabel, 'Active Status')}
           </div>
           <h4 class="dial-insight-title" id="${instanceId}-insight-title">
-            ${escapeHTML(activeItem.title || '')}
+            ${richInline(activeItem.title, '')}
           </h4>
           <div class="dial-insight-body" id="${instanceId}-insight-body">
             ${sanitizeRichText(activeItem.content || '')}
