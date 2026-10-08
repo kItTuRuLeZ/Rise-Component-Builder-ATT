@@ -252,6 +252,13 @@ export function sanitizeInlineStyle(styleText) {
   return safeStyles.join('; ');
 }
 
+// An attribute string is hostile when it carries an event handler, an id or a name. Only attribute names
+// count: the text inside a quoted value (a link such as ".../page?id=5" or "?online=1") is not an attribute.
+function hasHostileAttributeName(attrString) {
+  const namesOnly = String(attrString).replace(/(["'])[\s\S]*?\1/g, '""');
+  return /(?:\bon\w+\s*=|\bid\s*=|\bname\s*=)/i.test(namesOnly);
+}
+
 export function sanitizeRichText(value) {
   const input = String(value ?? '');
   const allowedSimpleTags = new Set([
@@ -303,7 +310,7 @@ export function sanitizeRichText(value) {
     const anchorMatch = /^<\s*a\b([^>]*)>$/i.exec(tag);
     if (anchorMatch) {
       const attrString = anchorMatch[1];
-      const hasHostileAttr = /(?:\bon\w+\s*=|\bid\s*=|\bname\s*=)/i.test(attrString);
+      const hasHostileAttr = hasHostileAttributeName(attrString);
       if (hasHostileAttr) {
         output += escapeHTML(decodeEntities(tag));
       } else {
@@ -332,7 +339,7 @@ export function sanitizeRichText(value) {
       const tagName = openMatch[1].toLowerCase();
       if (allowedSimpleTags.has(tagName)) {
         const attrString = openMatch[2] || '';
-        const hasHostileAttr = /(?:\bon\w+\s*=|\bjavascript:|\bvbscript:|\bid\s*=|\bname\s*=)/i.test(attrString);
+        const hasHostileAttr = hasHostileAttributeName(attrString) || /(?:\bjavascript:|\bvbscript:)/i.test(attrString);
         if (hasHostileAttr) {
           output += escapeHTML(decodeEntities(tag));
         } else if (tagName === 'br') {
