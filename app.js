@@ -3728,14 +3728,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         : 'Paste directly into a Code > Add code block in Articulate Rise.';
     }
 
+    // A ZIP cannot report completion to Rise (the same rule that disables its download button), so
+    // when completion tracking is on it must not be the recommended format even if media is present.
+    const zipCannotReportCompletion = Boolean(checkCompletionExportFormatIssue(appState.config, 'rise-zip'));
+    const recommendZip = hasMedia && !zipCannotReportCompletion;
+
     if (riseCard && zipCard) {
-      riseCard.classList.toggle('is-recommended', !hasMedia);
-      zipCard.classList.toggle('is-recommended', hasMedia);
+      riseCard.classList.toggle('is-recommended', !recommendZip);
+      zipCard.classList.toggle('is-recommended', recommendZip);
     }
 
     if (hasMedia && pasteWarningBox) {
       pasteWarningBox.hidden = false;
-      pasteWarningBox.textContent = 'Media elements detected in this component. The Web Package ZIP is recommended for optimal loading performance.';
+      pasteWarningBox.textContent = zipCannotReportCompletion
+        ? 'Media elements detected in this component. Because it reports completion to Rise, use the Rise Code Block (Copy for Rise): the Web Package ZIP cannot report completion.'
+        : 'Media elements detected in this component. The Web Package ZIP loads faster with media. Copy for Rise also works and gives the same result in Rise.';
     }
   }
 

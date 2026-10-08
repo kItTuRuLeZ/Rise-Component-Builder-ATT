@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText, sanitizeURL, serializeForInlineScript } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeRichText, sanitizeURL, serializeForInlineScript, richInline } from '../js/utilities.js';
 import { combineValidationResults } from '../js/validation-utils.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
@@ -163,7 +163,7 @@ export function generateHTML(config, instanceId) {
 
   return `
     <div class="iv-block">
-      <h3 class="iv-title">${escapeHTML(config.title || 'Interactive Video')}</h3>
+      <h3 class="iv-title">${richInline(config.title, 'Interactive Video')}</h3>
       ${config.introduction ? `<div class="iv-introduction">${sanitizeRichText(config.introduction)}</div>` : ''}
       <div class="iv-video-wrapper">
         ${videoSrc ? `<video id="${instanceId}-video" class="iv-video" controls preload="metadata" playsinline ${posterSrc ? `poster="${escapeAttribute(posterSrc)}"` : ''} ${posterAlt ? `aria-label="${posterAlt}"` : ''}>

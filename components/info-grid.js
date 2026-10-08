@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeCSSColor, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, sanitizeCSSColor, sanitizeRichText, richInline, isRichTextEmpty } from '../js/utilities.js';
 
 export const id = 'info-grid';
 export const name = 'Multi-Column Info Grid';
@@ -46,12 +46,12 @@ export function generateHTML(config) {
     <div class="info-grid-container">
       ${config.items.map((item) => {
         const accentColor = item.accentColor ? sanitizeCSSColor(item.accentColor, '') : '';
-        const badgeHtml = (item.badgeLabel || '').trim() ? `<span class="info-grid-badge">${escapeHTML(item.badgeLabel)}</span>` : '';
-        const subtitleHtml = (item.subtitle || '').trim() ? `<span class="info-grid-subtitle">${escapeHTML(item.subtitle)}</span>` : '';
-        const metricHtml = (item.metricValue || '').trim() ? `
+        const badgeHtml = !isRichTextEmpty(item.badgeLabel) ? `<span class="info-grid-badge">${richInline(item.badgeLabel)}</span>` : '';
+        const subtitleHtml = !isRichTextEmpty(item.subtitle) ? `<span class="info-grid-subtitle">${richInline(item.subtitle)}</span>` : '';
+        const metricHtml = !isRichTextEmpty(item.metricValue) ? `
           <div class="info-grid-metric-box">
-            <span class="info-grid-metric-val">${escapeHTML(item.metricValue)}</span>
-            ${(item.metricLabel || '').trim() ? `<span class="info-grid-metric-lbl">${escapeHTML(item.metricLabel)}</span>` : ''}
+            <span class="info-grid-metric-val">${richInline(item.metricValue)}</span>
+            ${!isRichTextEmpty(item.metricLabel) ? `<span class="info-grid-metric-lbl">${richInline(item.metricLabel)}</span>` : ''}
           </div>
         ` : '';
 
@@ -64,7 +64,7 @@ export function generateHTML(config) {
             ${badgeHtml}
           </div>
           ${subtitleHtml}
-          <h4>${escapeHTML(item.title || 'Feature Key')}</h4>
+          <h4>${richInline(item.title, 'Feature Key')}</h4>
           ${metricHtml}
           <p>${sanitizeRichText(item.content || 'Description layout parameters.')}</p>
         </div>

@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeURL } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeURL, richInline, isRichTextEmpty } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 export const id = 'button-list';
@@ -20,22 +20,22 @@ const searchIcon = getAttIconSvg('search', { width: 14, height: 14, ariaHidden: 
 
 function renderButton(item, idx) {
   const url = sanitizeURL(item.content, { allowRelative: true }) || '#';
-  const isDownload = Boolean(item.fileType || item.fileSize);
+  const isDownload = !isRichTextEmpty(item.fileType) || !isRichTextEmpty(item.fileSize);
   const icon = isDownload ? downloadIcon : openNewIcon;
   const variant = ['secondary', 'outline'].includes(item.styleVariant) ? item.styleVariant : 'primary';
   const categoryAttr = item.category ? ` data-category="${escapeAttribute(item.category)}"` : '';
 
   const metaPills = isDownload ? `
     <span class="btn-meta-pills">
-      ${item.fileType ? `<span class="btn-meta-pill file-type">${escapeHTML(item.fileType)}</span>` : ''}
-      ${item.fileSize ? `<span class="btn-meta-pill file-size">${escapeHTML(item.fileSize)}</span>` : ''}
+      ${!isRichTextEmpty(item.fileType) ? `<span class="btn-meta-pill file-type">${richInline(item.fileType)}</span>` : ''}
+      ${!isRichTextEmpty(item.fileSize) ? `<span class="btn-meta-pill file-size">${richInline(item.fileSize)}</span>` : ''}
     </span>
   ` : '';
 
   return `
     <a href="${escapeAttribute(url)}" target="_blank" rel="noopener noreferrer" class="link-button-item${variant !== 'primary' ? ` variant-${variant}` : ''}" data-idx="${idx}"${categoryAttr}>
       <span class="btn-label-wrap">
-        <span class="btn-title">${escapeHTML(item.title || 'Launch Link')}</span>
+        <span class="btn-title">${richInline(item.title, 'Launch Link')}</span>
         ${metaPills}
       </span>
       <span class="btn-icon-wrap" aria-hidden="true">${icon}</span>

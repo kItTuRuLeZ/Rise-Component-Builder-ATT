@@ -360,7 +360,51 @@ export function sanitizeRichText(value) {
     return `<li style="${styleAttr}"><span style="${styleAttr}">${innerContent}</span></li>`;
   });
 
-  return output;
+  // A rich-text editor that has been cleared leaves "<br>" or "<p><br></p>" behind. That is not
+  // content: treat it as empty so optional fields collapse and "a || fallback" works.
+  return isRichTextEmpty(output) ? '' : output;
+}
+
+/**
+ * Visible text of a rich-text value: tags removed, entities decoded, whitespace collapsed.
+ * Escaped markup the author typed ("&lt;b&gt;") stays as the literal text they typed.
+ * @param {unknown} value
+ */
+export function richTextToPlain(value) {
+  const withoutTags = String(value ?? '')
+    .replace(/<\/(?:p|div|li|h[1-6]|blockquote|pre)\s*>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]*>/g, '');
+  return decodeEntities(withoutTags).replace(/[\s\u00a0]+/g, ' ').trim();
+}
+
+/**
+ * True when a rich-text value shows nothing: no visible text and no divider.
+ * @param {unknown} value
+ */
+export function isRichTextEmpty(value) {
+  const html = String(value ?? '');
+  return !/<hr\b/i.test(html) && richTextToPlain(html) === '';
+}
+
+/**
+ * Renders a value from a single-line editor inside running markup (a heading, a button label, a badge).
+ * Those editors store sanitised HTML, so the value must not be escaped a second time: that printed the
+ * author's bold/italic as "<b>" and a typed "&" as "&amp;". Block wrappers and line breaks are flattened
+ * to keep it on one line, and an empty value uses `fallback` (which is escaped, as plain text).
+ * @param {unknown} value
+ * @param {string} [fallback]
+ */
+export function richInline(value, fallback = '') {
+  const clean = sanitizeRichText(value);
+  if (!clean) return escapeHTML(fallback);
+  return clean
+    .replace(/<\/(?:p|div|h[1-6]|blockquote|pre)>/gi, ' ')
+    .replace(/<(?:p|div|h[1-6]|blockquote|pre)(?:\s[^>]*)?>/gi, '')
+    .replace(/<\/?(?:ul|ol|li)(?:\s[^>]*)?>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 }
 
 export function serializeForInlineScript(value) {
@@ -501,6 +545,9 @@ export function sanitizePreviewConfig(config, componentId) {
   };
   result.items = (Array.isArray(config.items) ? config.items : []).map(item => {
     const safeItem = { ...item };
+    // A category is only a grouping/filter label. Its single-line editor stores HTML (and "<br>" once cleared),
+    // which must not become a group named "<br>" or leak markup into a filter chip and its data attribute.
+    if (item.category !== undefined) safeItem.category = richTextToPlain(item.category);
     if (contentURLTypes[componentId]) safeItem.content = sanitizeURL(item.content, contentURLTypes[componentId]);
     else safeItem.content = sanitizeRichText(item.content);
     if (componentId === 'multiple-choice' || componentId === 'multiple-select') safeItem.label = sanitizeRichText(item.label);

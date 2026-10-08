@@ -1,4 +1,4 @@
-import { sanitizePreviewConfig, sanitizeRichText, serializeForInlineScript } from './utilities.js';
+import { sanitizePreviewConfig, richTextToPlain, sanitizeRichText, serializeForInlineScript } from './utilities.js';
 import { resolveMediaReferencesForPreview } from './media-storage.js';
 import { applyThemeToConfig, getBuiltInTheme, resolveThemeTokens } from './themes.js';
 import { renderCompletionTrackerHTML, renderSharedA11yScript, renderShell } from './export-shell.js';
@@ -143,7 +143,7 @@ ${ATT_TOKENS_CSS}`;
     instanceId,
     trackCompletion: c.trackCompletion,
     totalItems: trackableCount,
-    completionMessage: serializeForInlineScript(c.completionMsg || 'Activity complete!')
+    completionMessage: serializeForInlineScript(richTextToPlain(c.completionMsg) || 'Activity complete!')
   });
   // The completion adapter (js/completion.js) is only shipped when completion tracking
   // is actually on — an author who leaves it off gets no messaging code, no 'message'

@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeCSSColor, sanitizeRichText, sanitizeURL } from '../js/utilities.js';
+import { escapeAttribute, sanitizeCSSColor, sanitizeRichText, sanitizeURL, richInline, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 /**
@@ -105,25 +105,25 @@ export function generateHTML(config, instanceId) {
   const afterSrc = sanitizeURL(item.afterImage, { allowDataImage: true, allowBlob: true, allowRelative: true });
 
   const beforeMedia = beforeSrc
-    ? `<img src="${escapeAttribute(beforeSrc)}" alt="${escapeAttribute(item.beforeAltText || beforeLabel)}" class="comparison-img">`
+    ? `<img src="${escapeAttribute(beforeSrc)}" alt="${escapeAttribute(item.beforeAltText || richTextToPlain(beforeLabel))}" class="comparison-img">`
     : renderSchematicBeforeSvg();
 
   const afterMedia = afterSrc
-    ? `<img src="${escapeAttribute(afterSrc)}" alt="${escapeAttribute(item.afterAltText || afterLabel)}" class="comparison-img">`
+    ? `<img src="${escapeAttribute(afterSrc)}" alt="${escapeAttribute(item.afterAltText || richTextToPlain(afterLabel))}" class="comparison-img">`
     : renderSchematicAfterSvg();
 
   return `
     <div class="comparison-slider-card ${isVertical ? 'orientation-vertical' : 'orientation-horizontal'}" id="${instanceId}-slider-card" style="--slider-pos: ${initialPos}%;">
-      ${config.title ? `<h3 class="comparison-title">${escapeHTML(config.title)}</h3>` : ''}
+      ${config.title ? `<h3 class="comparison-title">${richInline(config.title)}</h3>` : ''}
       ${config.content ? `<p class="comparison-description">${sanitizeRichText(config.content)}</p>` : ''}
       <div class="comparison-stage" id="${instanceId}-stage" role="region" aria-label="Before and after visual comparison" style="--comparison-aspect-ratio: ${aspectCss}; --comparison-img-fit: ${imageFit}; --comparison-stage-bg: ${stageBgColor};">
         <div class="comparison-pane pane-after">
           ${afterMedia}
-          ${showLabels ? `<span class="comparison-badge badge-after">${escapeHTML(afterLabel)}</span>` : ''}
+          ${showLabels ? `<span class="comparison-badge badge-after">${richInline(item.afterLabel, 'After')}</span>` : ''}
         </div>
         <div class="comparison-pane pane-before" id="${instanceId}-pane-before">
           ${beforeMedia}
-          ${showLabels ? `<span class="comparison-badge badge-before">${escapeHTML(beforeLabel)}</span>` : ''}
+          ${showLabels ? `<span class="comparison-badge badge-before">${richInline(item.beforeLabel, 'Before')}</span>` : ''}
         </div>
         <div class="comparison-divider-line" id="${instanceId}-divider">
           <button type="button" class="comparison-handle" id="${instanceId}-handle"

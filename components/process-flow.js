@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeHTML, escapeAttribute, sanitizeRichText } from '../js/utilities.js';
+import { escapeHTML, escapeAttribute, sanitizeRichText, richInline, richTextToPlain } from '../js/utilities.js';
 import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/item-media.js';
 
 export const id = 'process-flow';
@@ -29,7 +29,7 @@ export function generateHTML(config, instanceId) {
         <span class="step-badge" aria-live="polite" aria-atomic="true">Step <span id="${instanceId}-current-process-num">1</span> of ${total}</span>
         <nav class="process-dots" aria-label="Process step navigation">
           ${config.items.map((item, idx) => `
-            <button type="button" class="p-dot ${idx === 0 ? 'active' : ''}" id="${instanceId}-dot-${idx}" data-idx="${idx}" aria-label="Go to Step ${idx + 1}: ${escapeAttribute(item.title || 'Step')}" ${!clickableNav && idx > 0 ? 'disabled' : ''}>
+            <button type="button" class="p-dot ${idx === 0 ? 'active' : ''}" id="${instanceId}-dot-${idx}" data-idx="${idx}" aria-label="Go to Step ${idx + 1}: ${escapeAttribute(richTextToPlain(item.title) || 'Step')}" ${!clickableNav && idx > 0 ? 'disabled' : ''}>
               <span class="p-dot-num">${idx + 1}</span>
               ${showBadges ? `<span class="p-dot-check" id="${instanceId}-dot-check-${idx}" hidden aria-hidden="true">&#10003;</span>` : ''}
             </button>
@@ -51,7 +51,7 @@ export function generateHTML(config, instanceId) {
           ${config.items.map((item, idx) => `
             <button type="button" class="process-breadcrumb-item ${idx === 0 ? 'active' : ''}" id="${instanceId}-crumb-${idx}" data-idx="${idx}" role="tab" aria-selected="${idx === 0}">
               <span class="crumb-num">${idx + 1}.</span>
-              <span class="crumb-title">${escapeHTML(item.title || 'Step ' + (idx + 1))}</span>
+              <span class="crumb-title">${richInline(item.title, 'Step ' + (idx + 1))}</span>
             </button>
           `).join('')}
         </div>
@@ -92,7 +92,7 @@ export function generateHTML(config, instanceId) {
 
           return `
           <div class="process-slide ${idx === 0 ? 'active' : ''}" id="${instanceId}-process-slide-${idx}" role="group" aria-roledescription="step" aria-label="Step ${idx + 1} of ${total}" tabindex="-1" ${idx === 0 ? '' : 'hidden'}>
-            <h3>${escapeHTML(item.title || 'Step Headline')}</h3>
+            <h3>${richInline(item.title, 'Step Headline')}</h3>
             ${durationLine}
             <div class="process-slide-body">${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, idx)}</div>
             ${branchControlsHtml}
@@ -109,7 +109,7 @@ export function generateHTML(config, instanceId) {
                 <div class="process-summary-item" id="${instanceId}-summary-item-${idx}">
                   <div class="summary-check-icon">&#10003;</div>
                   <div class="summary-item-content">
-                    <strong>Step ${idx + 1}: ${escapeHTML(item.title || 'Step')}</strong>
+                    <strong>Step ${idx + 1}: ${richInline(item.title, 'Step')}</strong>
                     <p>${escapeHTML((item.content || '').replace(/<[^>]*>/g, '').substring(0, 120))}${item.content && item.content.length > 120 ? '...' : ''}</p>
                   </div>
                 </div>

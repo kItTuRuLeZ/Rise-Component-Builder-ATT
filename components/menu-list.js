@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeRichText, richInline, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 export const id = 'menu-list';
@@ -70,8 +70,8 @@ export function generateHTML(config, instanceId) {
       ${quickJumpNav}
       <div class="menu-drawer-list" id="${instanceId}-list">
         ${items.map((item, idx) => {
-          const cat = (item.category || '').trim();
-          const badge = (item.badge || '').trim();
+          const cat = richTextToPlain(item.category);
+          const badge = richTextToPlain(item.badge);
           const letter = (item.title || 'A').trim().charAt(0).toUpperCase();
           const numLabel = idx < 9 ? `0${idx + 1}` : `${idx + 1}`;
           return `
@@ -80,7 +80,7 @@ export function generateHTML(config, instanceId) {
                 <div class="menu-item-left">
                   <span class="menu-num">${numLabel}</span>
                   <div class="menu-title-wrap">
-                    <span class="menu-title">${escapeHTML(item.title || 'Lesson Segment')}</span>
+                    <span class="menu-title">${richInline(item.title, 'Lesson Segment')}</span>
                     ${badge ? `<span class="menu-badge">${escapeHTML(badge)}</span>` : ''}
                     ${cat ? `<span class="menu-category-tag">${escapeHTML(cat)}</span>` : ''}
                   </div>

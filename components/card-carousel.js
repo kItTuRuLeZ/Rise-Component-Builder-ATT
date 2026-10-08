@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText } from '../js/utilities.js';
+import { escapeAttribute, sanitizeRichText, richInline, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 /**
@@ -79,7 +79,7 @@ export function generateHTML(config, instanceId) {
         <div class="carousel-card-inner">
           ${item.category ? `
             <div class="carousel-card-category">
-              <span class="carousel-category-badge">${escapeHTML(item.category)}</span>
+              <span class="carousel-category-badge">${richInline(item.category)}</span>
             </div>
           ` : ''}
           ${item.image ? `
@@ -87,12 +87,12 @@ export function generateHTML(config, instanceId) {
               <img src="${escapeAttribute(item.image)}" alt="${escapeAttribute(item.altText || item.title || '')}" class="carousel-card-image">
             </div>
           ` : ''}
-          <h4 class="carousel-card-title">${escapeHTML(item.title || `Card ${idx + 1}`)}</h4>
+          <h4 class="carousel-card-title">${richInline(item.title, `Card ${idx + 1}`)}</h4>
           <div class="carousel-card-body">${sanitizeRichText(item.content || '')}</div>
           ${item.buttonLabel ? `
             <div class="carousel-card-actions">
               <a href="${escapeAttribute(item.buttonUrl || '#')}" class="carousel-card-btn" ${item.buttonUrl ? 'target="_blank" rel="noopener noreferrer"' : ''}>
-                <span>${escapeHTML(item.buttonLabel)}</span>
+                <span>${richInline(item.buttonLabel)}</span>
               </a>
             </div>
           ` : ''}
@@ -125,12 +125,12 @@ export function generateHTML(config, instanceId) {
       ${config.title ? `
         <div class="carousel-header">
           <div class="carousel-header-icon">${cardsIcon}</div>
-          <h3 class="carousel-title">${escapeHTML(config.title)}</h3>
+          <h3 class="carousel-title">${richInline(config.title)}</h3>
         </div>
       ` : ''}
       ${config.content ? `<p class="carousel-description">${sanitizeRichText(config.content)}</p>` : ''}
 
-      <div class="carousel-stage-container" id="${instanceId}-stage" role="region" aria-roledescription="carousel" aria-label="${escapeAttribute(config.title || 'Card Carousel')}">
+      <div class="carousel-stage-container" id="${instanceId}-stage" role="region" aria-roledescription="carousel" aria-label="${escapeAttribute(richTextToPlain(config.title) || 'Card Carousel')}">
         <div class="carousel-track-wrapper" id="${instanceId}-track-wrapper" tabindex="0" aria-label="Swipeable card carousel track">
           <div class="carousel-track" id="${instanceId}-track" style="transform: translateX(0%);">
             ${slidesHtml}

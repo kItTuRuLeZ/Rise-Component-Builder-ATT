@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, richInline, richTextToPlain } from '../js/utilities.js';
 import { validateHotspotCoordinates, combineValidationResults } from '../js/validation-utils.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
@@ -136,7 +136,7 @@ export function generateHTML(config, instanceId) {
     <div class="hotspots-container" data-callout-mode="${calloutMode}" data-zoom-enabled="${enableZoomPan}" id="${instanceId}">
       ${(config.title || config.content) ? `
         <div class="hotspot-header">
-          ${config.title ? `<h3 class="hotspot-title">${escapeHTML(config.title)}</h3>` : ''}
+          ${config.title ? `<h3 class="hotspot-title">${richInline(config.title)}</h3>` : ''}
           ${config.content ? `<div class="hotspot-instructions">${config.content}</div>` : ''}
         </div>
       ` : ''}
@@ -192,7 +192,7 @@ export function generateHTML(config, instanceId) {
               const alignClass = xVal < 25 ? 'align-left' : (xVal > 75 ? 'align-right' : 'align-center');
               return `
                 <div class="hotspot-point" style="left: ${item.x || '50'}%; top: ${item.y || '50'}%;">
-                  <button type="button" class="hotspot-pin${isIcon ? ' has-vector-icon' : ''}" data-idx="${idx}" aria-expanded="false" aria-controls="${instanceId}-callout-${idx}" aria-label="Hotspot ${idx + 1}: ${escapeAttribute(item.title || 'Indicator')}">
+                  <button type="button" class="hotspot-pin${isIcon ? ' has-vector-icon' : ''}" data-idx="${idx}" aria-expanded="false" aria-controls="${instanceId}-callout-${idx}" aria-label="Hotspot ${idx + 1}: ${escapeAttribute(richTextToPlain(item.title) || 'Indicator')}">
                     <span class="pulse" aria-hidden="true"></span>
                     <span class="pin-body" aria-hidden="true">
                       ${markerLabel}
@@ -204,7 +204,7 @@ export function generateHTML(config, instanceId) {
                     <div class="hotspot-tooltip ${placementClass} ${alignClass}" id="${instanceId}-callout-${idx}" role="region" aria-label="Hotspot details" aria-hidden="true">
                       <div class="hotspot-callout-header">
                         <span class="hotspot-callout-tag">Marker ${idx + 1}</span>
-                        <h4 class="hotspot-callout-title">${escapeHTML(item.title || 'Indicator')}</h4>
+                        <h4 class="hotspot-callout-title">${richInline(item.title, 'Indicator')}</h4>
                       </div>
                       <div class="hotspot-callout-content">${item.content || 'Details...'}</div>
                       ${audioSource ? `

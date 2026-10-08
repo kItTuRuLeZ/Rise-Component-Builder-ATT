@@ -1,6 +1,6 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
 import { isEmpty } from '../js/field-validation.js';
-import { escapeAttribute, escapeHTML, normalizeDelimitedLines } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, normalizeDelimitedLines, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
 export const id = 'video-frame';
@@ -148,7 +148,7 @@ export function generateHTML(config, instanceId) {
         <ul class="video-chapter-list" id="${instanceId}-chapter-list">
           ${chapters.map((chapter, i) => `
             <li>
-              <button type="button" class="video-chapter-item" data-idx="${i}" data-time="${chapter.timestamp}" aria-label="Jump to chapter: ${escapeAttribute(chapter.title)}, ${escapeAttribute(formatSecondsLabel(chapter.timestamp))}">
+              <button type="button" class="video-chapter-item" data-idx="${i}" data-time="${chapter.timestamp}" aria-label="Jump to chapter: ${escapeAttribute(richTextToPlain(chapter.title))}, ${escapeAttribute(formatSecondsLabel(chapter.timestamp))}">
                 <span class="video-chapter-time">${escapeHTML(formatSecondsLabel(chapter.timestamp))}</span>
                 <span class="video-chapter-title">${escapeHTML(chapter.title)}</span>
                 ${chapter.description ? `<span class="video-chapter-desc">${escapeHTML(chapter.description)}</span>` : ''}
@@ -206,7 +206,7 @@ export function generateHTML(config, instanceId) {
       data-takeaways-visibility="${takeawaysVisibility}"
       data-takeaways-count="${takeaways.length}">
       <div class="video-wrapper">
-        <video id="${instanceId}-html5-video-element" poster="${escapeAttribute(poster)}" width="100%" height="auto" controls aria-label="${escapeAttribute(title)}" ${describePoster ? `aria-describedby="${instanceId}-poster-desc"` : ''}>
+        <video id="${instanceId}-html5-video-element" poster="${escapeAttribute(poster)}" width="100%" height="auto" controls aria-label="${escapeAttribute(richTextToPlain(title))}" ${describePoster ? `aria-describedby="${instanceId}-poster-desc"` : ''}>
           <source src="${escapeAttribute(src)}" type="video/mp4">
           ${captionsUrl ? `<track kind="captions" src="${escapeAttribute(captionsUrl)}" srclang="en" label="English" default>` : ''}
         </video>

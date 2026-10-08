@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeAttribute, escapeHTML, sanitizeRichText, sanitizeURL } from '../js/utilities.js';
+import { escapeAttribute, escapeHTML, sanitizeRichText, sanitizeURL, richInline, richTextToPlain } from '../js/utilities.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia, isItemMediaActive } from '../js/item-media.js';
 
@@ -84,14 +84,14 @@ export function generateHTML(config, instanceId) {
       const cardCategory = (card.front.category || '').trim();
       const hasMedia = isItemMediaActive(card.front.media) || isItemMediaActive(card.back.media);
       return `
-      <div class="flip-card${hasMedia ? ' has-media' : ''}" role="button" tabindex="0" aria-expanded="false" aria-controls="${instanceId}-flip-card-back-${index}" aria-label="Reveal ${escapeAttribute(backLabel)} of ${escapeAttribute(card.front.title || 'Flip card')}" data-idx="${index}" ${cardCategory ? `data-category="${escapeAttribute(cardCategory)}"` : ''}>
+      <div class="flip-card${hasMedia ? ' has-media' : ''}" role="button" tabindex="0" aria-expanded="false" aria-controls="${instanceId}-flip-card-back-${index}" aria-label="Reveal ${escapeAttribute(backLabel)} of ${escapeAttribute(richTextToPlain(card.front.title) || 'Flip card')}" data-idx="${index}" ${cardCategory ? `data-category="${escapeAttribute(cardCategory)}"` : ''}>
         <div class="flip-card-inner">
         <div class="flip-card-front" id="${instanceId}-flip-card-front-${index}" aria-hidden="false">
           ${studyMode ? '<span class="flip-status-badge" data-role="status-badge" hidden></span>' : ''}
-          <div class="card-icon-badge">${frontArtwork}</div><h3>${escapeHTML(card.front.title || 'Front Title')}</h3>${wrapItemMediaContent(card.front.media, `<p>${sanitizeRichText(card.front.content || 'Click to reveal definition.')}</p>`, instanceId, index * 2)}
+          <div class="card-icon-badge">${frontArtwork}</div><h3>${richInline(card.front.title, 'Front Title')}</h3>${wrapItemMediaContent(card.front.media, `<p>${sanitizeRichText(card.front.content || 'Click to reveal definition.')}</p>`, instanceId, index * 2)}
         </div>
         <div class="flip-card-back" id="${instanceId}-flip-card-back-${index}" aria-hidden="true">
-          ${backArtwork ? `<div class="card-icon-badge">${backArtwork}</div>` : ''}<h3>${escapeHTML(card.back.title || 'Back Title')}</h3>${wrapItemMediaContent(card.back.media, `<p>${sanitizeRichText(card.back.content || 'Back description content goes here.')}</p>`, instanceId, index * 2 + 1)}
+          ${backArtwork ? `<div class="card-icon-badge">${backArtwork}</div>` : ''}<h3>${richInline(card.back.title, 'Back Title')}</h3>${wrapItemMediaContent(card.back.media, `<p>${sanitizeRichText(card.back.content || 'Back description content goes here.')}</p>`, instanceId, index * 2 + 1)}
           ${studyMode ? `
             <div class="flip-classify-row">
               <button type="button" class="flip-classify-btn flip-know-btn" data-classify="know" tabindex="-1" aria-pressed="false">${knowIcon}I know this</button>

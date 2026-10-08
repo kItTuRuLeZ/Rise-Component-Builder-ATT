@@ -1,5 +1,5 @@
 import { getEditorSchema } from '../js/editor-schemas.js';
-import { escapeHTML, sanitizeRichText, serializeForInlineScript } from '../js/utilities.js';
+import { escapeHTML, sanitizeRichText, serializeForInlineScript, richInline } from '../js/utilities.js';
 import { validateQuizAnswers, combineValidationResults } from '../js/validation-utils.js';
 import { getAttIconSvg } from '../js/att-icons.js';
 
@@ -48,7 +48,7 @@ export function generateHTML(config, instanceId) {
           <div class="quiz-option" role="checkbox" tabindex="${index === 0 ? '0' : '-1'}" aria-checked="false" data-idx="${index}" id="${instanceId}-opt-${index}">
             <div class="option-check-square" aria-hidden="true"></div>
             <div class="option-text-wrap">
-              <div class="option-text">${item.label ? sanitizeRichText(item.label) : escapeHTML(item.title || 'Option Label')}</div>
+              <div class="option-text">${item.label ? sanitizeRichText(item.label) : richInline(item.title, 'Option Label')}</div>
               <div class="option-remediation" id="${instanceId}-remed-${index}" style="display:none;" aria-live="polite"></div>
             </div>
           </div>
