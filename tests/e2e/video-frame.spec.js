@@ -185,7 +185,7 @@ test.describe('Video Embed: synchronized transcript', () => {
     await expect(panel).toBeHidden();
     await toggle.click();
     await expect(panel).toBeVisible();
-    await expect(toggle).toHaveText('Hide Transcript');
+    await expect(toggle).toHaveText('Hide transcript');
   });
 
   test('clicking a transcript segment seeks the video to its start time', async ({ page }) => {

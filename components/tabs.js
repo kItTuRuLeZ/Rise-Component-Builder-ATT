@@ -68,7 +68,7 @@ export function generateHTML(config, instanceId) {
 
   const toolbar = (showProgress || allowReset || compareMode || autoAdvance) ? `
     <div class="tabs-toolbar">
-      ${compareMode ? '<button type="button" class="tabs-toolbar-btn tabs-compare-toggle-btn" aria-pressed="false">Compare Sections</button>' : ''}
+      ${compareMode ? '<button type="button" class="tabs-toolbar-btn tabs-compare-toggle-btn" aria-pressed="false">Compare sections</button>' : ''}
       ${autoAdvance ? `<button type="button" class="tabs-toolbar-btn tabs-autoadvance-btn" aria-label="Auto-advance tabs" aria-pressed="false">${playIcon}${pauseIcon}<span class="tabs-autoadvance-label">Auto-Play (${autoAdvanceDelay}s)</span></button>` : ''}
       ${allowReset ? '<button type="button" class="tabs-toolbar-btn tabs-reset-btn">Reset</button>' : ''}
       ${showProgress ? `<span class="tabs-progress-text" id="${instanceId}-tabs-progress" role="status" aria-live="polite">0 of ${total} explored</span>` : ''}
@@ -288,8 +288,7 @@ export function generateCSS() {
     .tab-visited-badge {
       font-size: var(--att-fs-eyebrow, 12px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 8px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--border-color);

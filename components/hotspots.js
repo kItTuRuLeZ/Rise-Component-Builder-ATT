@@ -146,8 +146,8 @@ export function generateHTML(config, instanceId) {
           <div class="hotspot-progress-hud" role="status" aria-live="polite">
             <span class="hotspot-progress-icon">${discoveryIcon}</span>
             <div class="hotspot-progress-text">
-              <span class="hotspot-progress-label">Exploration Progress:</span>
-              <span class="hotspot-progress-counter"><strong class="hotspot-visited-count">0</strong> of ${items.length} Discovered (<span class="hotspot-visited-pct">0%</span>)</span>
+              <span class="hotspot-progress-label">Exploration progress:</span>
+              <span class="hotspot-progress-counter"><strong class="hotspot-visited-count">0</strong> of ${items.length} discovered (<span class="hotspot-visited-pct">0%</span>)</span>
             </div>
             <div class="hotspot-progress-track" aria-hidden="true">
               <div class="hotspot-progress-fill" style="width: 0%;"></div>
@@ -160,7 +160,7 @@ export function generateHTML(config, instanceId) {
             <button type="button" class="hotspot-zoom-btn btn-zoom-in" title="Zoom In (Ctrl++)" aria-label="Zoom in">
               ${zoomInIcon}
             </button>
-            <span class="hotspot-zoom-level" aria-live="polite" title="Current Zoom Scale">100%</span>
+            <span class="hotspot-zoom-level" aria-live="polite" title="Current zoom scale">100%</span>
             <button type="button" class="hotspot-zoom-btn btn-zoom-out" title="Zoom Out (Ctrl+-)" aria-label="Zoom out" disabled>
               ${zoomOutIcon}
             </button>
@@ -210,12 +210,12 @@ export function generateHTML(config, instanceId) {
                       ${audioSource ? `
                         <div class="hotspot-audio-narration">
                           <div class="hotspot-audio-label">
-                            ${audioNarrationIcon} <span>Audio Narration</span>
+                            ${audioNarrationIcon} <span>Audio narration</span>
                           </div>
                           <audio class="hotspot-audio-elem" src="${escapeAttribute(audioSource)}" preload="none" controls></audio>
                           ${item.audioTranscript ? `
                             <details class="hotspot-audio-transcript">
-                              <summary>Read Audio Transcript</summary>
+                              <summary>Read audio transcript</summary>
                               <div class="transcript-body">${escapeHTML(item.audioTranscript)}</div>
                             </details>
                           ` : ''}
@@ -231,9 +231,9 @@ export function generateHTML(config, instanceId) {
 
         ${calloutMode === 'drawer' ? `
           <div class="hotspot-drawer-backdrop" aria-hidden="true"></div>
-          <aside class="hotspot-drawer" id="${instanceId}-drawer" role="dialog" aria-modal="false" aria-label="Hotspot Details" aria-hidden="true">
+          <aside class="hotspot-drawer" id="${instanceId}-drawer" role="dialog" aria-modal="false" aria-label="Hotspot details" aria-hidden="true">
             <div class="hotspot-drawer-header">
-              <span class="hotspot-drawer-badge">Marker Details</span>
+              <span class="hotspot-drawer-badge">Marker details</span>
               <h4 class="hotspot-drawer-title" id="${instanceId}-drawer-title">Select a Marker</h4>
               <button type="button" class="hotspot-drawer-close" aria-label="Close details panel">
                 ${closeIcon}
@@ -250,13 +250,13 @@ export function generateHTML(config, instanceId) {
             <div class="hotspot-modal" id="${instanceId}-modal" role="dialog" aria-modal="true" aria-labelledby="${instanceId}-modal-title" aria-hidden="true">
               <div class="hotspot-modal-header">
                 <div class="hotspot-modal-badge-wrapper">
-                  <span class="hotspot-modal-badge" id="${instanceId}-modal-badge">Marker Detail</span>
+                  <span class="hotspot-modal-badge" id="${instanceId}-modal-badge">Marker detail</span>
                 </div>
                 <button type="button" class="hotspot-modal-close" aria-label="Close dialog">
                   ${closeIcon}
                 </button>
               </div>
-              <h3 class="hotspot-modal-title" id="${instanceId}-modal-title">Marker Title</h3>
+              <h3 class="hotspot-modal-title" id="${instanceId}-modal-title">Marker title</h3>
               <div class="hotspot-modal-body" id="${instanceId}-modal-body"></div>
             </div>
           </div>
@@ -351,7 +351,7 @@ export function generateCSS() {
 
     .hotspot-progress-fill {
       height: 100%;
-      background-color: var(--primary);
+      background-color: var(--accent);
       border-radius: var(--att-radius-full, 9999px);
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -677,9 +677,8 @@ export function generateCSS() {
     .hotspot-callout-tag {
       font-size: var(--att-fs-caption, 0.75rem);
       font-weight: var(--att-fw-semibold, 600);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--att-blue-300, #00C9FF);
+      letter-spacing: normal;
+      color: var(--att-blue, #009FDB);
     }
 
     .hotspot-callout-title {
@@ -698,7 +697,7 @@ export function generateCSS() {
 
     .hotspot-callout-content p { margin: 0; }
 
-    /* Audio Narration Widget */
+    /* Audio narration Widget */
     .hotspot-audio-narration {
       margin-top: var(--att-space-2, 8px);
       padding-top: var(--att-space-2, 8px);
@@ -714,7 +713,7 @@ export function generateCSS() {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: var(--att-blue-300, #00C9FF);
+      color: var(--att-blue, #009FDB);
     }
 
     .hotspot-audio-elem {
@@ -733,7 +732,7 @@ export function generateCSS() {
     .hotspot-audio-transcript summary {
       cursor: pointer;
       font-weight: var(--att-fw-semibold, 600);
-      color: var(--att-blue-300, #00C9FF);
+      color: var(--att-blue, #009FDB);
     }
 
     .hotspot-audio-transcript .transcript-body {
@@ -781,8 +780,7 @@ export function generateCSS() {
       font-size: var(--att-fs-caption, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
       color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
     }
 
     .hotspot-drawer-title {
@@ -905,8 +903,7 @@ export function generateCSS() {
       font-size: var(--att-fs-caption, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
       color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       background-color: var(--bg-body);
       padding: 4px 10px;
       border-radius: var(--att-radius-full, 9999px);
@@ -1135,7 +1132,7 @@ export function generateJS() {
       function extractCalloutData(pin) {
         var parent = pin.parentElement;
         var tt = parent ? parent.querySelector('.hotspot-tooltip') : null;
-        var title = pin.getAttribute('aria-label') || 'Marker Details';
+        var title = pin.getAttribute('aria-label') || 'Marker details';
         var titleEl = tt ? tt.querySelector('.hotspot-callout-title') : null;
         if (titleEl) title = titleEl.textContent;
         var contentEl = tt ? tt.querySelector('.hotspot-callout-content') : null;

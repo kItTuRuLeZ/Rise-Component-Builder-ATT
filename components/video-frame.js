@@ -135,7 +135,7 @@ export function generateHTML(config, instanceId) {
     ? `<div class="video-resume-prompt" id="${instanceId}-resume-prompt" hidden>
         <span class="video-resume-text" id="${instanceId}-resume-text"></span>
         <button type="button" class="video-resume-btn" id="${instanceId}-resume-btn">Resume</button>
-        <button type="button" class="video-restart-choice-btn" id="${instanceId}-restart-choice-btn">Start Over</button>
+        <button type="button" class="video-restart-choice-btn" id="${instanceId}-restart-choice-btn">Start over</button>
       </div>`
     : '';
 
@@ -165,7 +165,7 @@ export function generateHTML(config, instanceId) {
   const transcriptBlock = hasTranscript
     ? `<div class="video-transcript-section">
         <button type="button" class="video-transcript-toggle" id="${instanceId}-transcript-toggle" aria-expanded="false" aria-controls="${instanceId}-transcript-panel">
-          ${transcriptIcon}<span>Show Transcript</span>
+          ${transcriptIcon}<span>Show transcript</span>
         </button>
         <div class="video-transcript-panel" id="${instanceId}-transcript-panel" hidden>
           ${segments.length ? `
@@ -190,7 +190,7 @@ export function generateHTML(config, instanceId) {
 
   const takeawaysBlock = takeaways.length
     ? `<div class="video-takeaways-panel">
-        <h4 class="video-section-heading video-takeaways-heading">${takeawaysIcon}<span>Key Takeaways</span></h4>
+        <h4 class="video-section-heading video-takeaways-heading">${takeawaysIcon}<span>Key takeaways</span></h4>
         ${takeawaysVisibility === 'afterCompletion' ? `<p class="video-takeaways-locked-msg" id="${instanceId}-takeaways-locked">Complete the video to reveal key takeaways.</p>` : ''}
         <ul class="video-takeaways-list" id="${instanceId}-takeaways-list" ${takeawaysVisibility === 'afterCompletion' ? 'hidden' : ''}>
           ${takeaways.map(takeaway => `<li>${escapeHTML(takeaway)}</li>`).join('')}
@@ -485,8 +485,7 @@ export function generateCSS() {
     .video-section-heading {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--text-muted);
     }
     .video-chapter-nav { border-top: var(--border-style); padding-top: 10px; }
@@ -977,7 +976,7 @@ export function generateJS(config, instanceId) {
           transcriptToggle.setAttribute('aria-expanded', String(!expanded));
           transcriptPanel.hidden = expanded;
           var label = transcriptToggle.querySelector('span');
-          if (label) label.textContent = expanded ? 'Show Transcript' : 'Hide Transcript';
+          if (label) label.textContent = expanded ? 'Show transcript' : 'Hide transcript';
         });
       }
 

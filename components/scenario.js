@@ -43,7 +43,7 @@ export function generateHTML(config, instanceId) {
       ${showMeter ? `
         <div class="scenario-meter-card" id="${instanceId}-meter-card">
           <div class="scenario-meter-header">
-            <span class="scenario-meter-label">Decision Impact Score</span>
+            <span class="scenario-meter-label">Decision impact score</span>
             <span class="scenario-meter-val" id="${instanceId}-meter-val">50 / 100</span>
           </div>
           <div class="scenario-meter-bar-track">
@@ -59,7 +59,7 @@ export function generateHTML(config, instanceId) {
         <div class="scenario-bubble">
           <div class="scenario-speaker-row">
             <span class="speaker-name" id="${instanceId}-speaker-name">${richInline(q.speaker, 'Chris (Team Lead)')}</span>
-            <span class="scenario-emotion-badge" id="${instanceId}-emotion-badge">${escapeHTML(initialEmotion)}</span>
+            <span class="scenario-emotion-badge" id="${instanceId}-emotion-badge">${escapeHTML(initialEmotion.charAt(0).toUpperCase() + initialEmotion.slice(1))}</span>
           </div>
           <div class="speech-text" id="${instanceId}-scenario-speech">${sanitizeRichText(q.title)}</div>
         </div>
@@ -68,7 +68,7 @@ export function generateHTML(config, instanceId) {
       <div class="scenario-choices-list" id="${instanceId}-scenario-choices-box">
         ${choices.map((ch, idx) => `
           <button type="button" class="scenario-choice-btn" data-choice-idx="${idx}" data-feedback="${escapeAttribute(ch.content || '')}" data-points="${Number(ch.points) || 0}" data-emotion="${escapeAttribute(ch.emotion || (ch.points > 0 ? 'happy' : 'concerned'))}">
-            <span class="choice-text">${richInline(ch.title, 'Choice Option')}</span>
+            <span class="choice-text">${richInline(ch.title, 'Choice option')}</span>
             ${showMeter && ch.points ? `<span class="choice-points-badge ${ch.points > 0 ? 'pos' : 'neg'}">${ch.points > 0 ? '+' : ''}${ch.points} pts</span>` : ''}
           </button>
         `).join('')}
@@ -78,14 +78,14 @@ export function generateHTML(config, instanceId) {
 
       ${showHistory ? `
         <div class="scenario-history-box" id="${instanceId}-history-box" hidden>
-          <h4 class="scenario-history-title">Dialogue History Log</h4>
+          <h4 class="scenario-history-title">Dialogue history log</h4>
           <div class="scenario-history-list" id="${instanceId}-history-list"></div>
         </div>
       ` : ''}
 
       <div class="scenario-footer-row">
-        ${showHistory ? `<button type="button" class="scenario-history-toggle-btn" id="${instanceId}-history-toggle" aria-expanded="false">View Dialogue History</button>` : ''}
-        ${allowReset ? `<button type="button" class="scenario-reset-btn" id="${instanceId}-reset-btn">Restart Scenario</button>` : ''}
+        ${showHistory ? `<button type="button" class="scenario-history-toggle-btn" id="${instanceId}-history-toggle" aria-expanded="false">View dialogue history</button>` : ''}
+        ${allowReset ? `<button type="button" class="scenario-reset-btn" id="${instanceId}-reset-btn">Restart scenario</button>` : ''}
       </div>
     </div>
   `;
@@ -119,8 +119,7 @@ export function generateCSS() {
       font-size: var(--att-fs-eyebrow, 12px);
       font-weight: 700;
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
     }
     .scenario-meter-val {
       font-size: 13px;
@@ -135,7 +134,7 @@ export function generateCSS() {
     }
     .scenario-meter-bar-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
+      background: var(--accent);
       transition: width 0.4s ease;
     }
     .scenario-avatar-row {
@@ -200,8 +199,7 @@ export function generateCSS() {
     .scenario-emotion-badge {
       font-size: var(--att-fs-eyebrow, 11px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 8px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--border-color);
@@ -367,7 +365,7 @@ export function generateJS(config, instanceId) {
 
       var emotionBadge = document.getElementById('${instanceId}-emotion-badge');
       if (emotionBadge && emotion) {
-        emotionBadge.textContent = emotion;
+        emotionBadge.textContent = String(emotion).charAt(0).toUpperCase() + String(emotion).slice(1);
       }
 
       if (points) updateScore(points);
@@ -389,7 +387,7 @@ export function generateJS(config, instanceId) {
       var speech = document.getElementById('${instanceId}-scenario-speech');
       if (speech) speech.innerHTML = initialPrompt;
       var emotionBadge = document.getElementById('${instanceId}-emotion-badge');
-      if (emotionBadge) emotionBadge.textContent = initialEmotion;
+      if (emotionBadge) emotionBadge.textContent = String(initialEmotion).charAt(0).toUpperCase() + String(initialEmotion).slice(1);
       var feedbackCard = document.getElementById('${instanceId}-scenario-feedback-card');
       if (feedbackCard) feedbackCard.style.display = 'none';
       var historyList = document.getElementById('${instanceId}-history-list');
@@ -423,7 +421,7 @@ export function generateJS(config, instanceId) {
           var isExpanded = historyToggle.getAttribute('aria-expanded') === 'true';
           historyToggle.setAttribute('aria-expanded', String(!isExpanded));
           historyBox.hidden = isExpanded;
-          historyToggle.textContent = isExpanded ? 'View Dialogue History' : 'Hide Dialogue History';
+          historyToggle.textContent = isExpanded ? 'View dialogue history' : 'Hide dialogue history';
         });
       }
     }`;

@@ -49,7 +49,7 @@ export function generateHTML(config, instanceId) {
           </div>
           <div class="profile-card-content">
             <div class="profile-header-meta">
-              <h4>${richInline(item.title, 'Expert Name')}</h4>
+              <h4>${richInline(item.title, 'Expert name')}</h4>
               ${roleHtml}
             </div>
             <p>${sanitizeRichText(item.content || 'Professional background summary bio.')}</p>
@@ -65,7 +65,7 @@ export function generateHTML(config, instanceId) {
 
       <!-- Modal Bio Drawer -->
       ${enableModal ? `
-        <div class="profile-modal-backdrop" id="${instanceId}-modal" hidden role="dialog" aria-modal="true" aria-label="Profile Bio Detail">
+        <div class="profile-modal-backdrop" id="${instanceId}-modal" hidden role="dialog" aria-modal="true" aria-label="Profile bio detail">
           <div class="profile-modal-overlay"></div>
           <div class="profile-modal-drawer">
             <button type="button" class="profile-modal-close-btn" aria-label="Close bio">&times;</button>
@@ -153,8 +153,7 @@ export function generateCSS() {
       background-color: rgba(0, 87, 184, 0.08);
       padding: 2px 8px;
       border-radius: var(--att-radius-pill, 999px);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
     }
     .profile-card-content p {
       font-size: var(--att-fs-body-sm, 0.875rem);
@@ -275,7 +274,7 @@ export function generateJS(config, instanceId) {
 
         var role = p.roleTag ? '<span class="profile-role-badge">' + p.roleTag + '</span>' : '';
         var quote = p.quote ? '<blockquote class="profile-pull-quote" style="margin:12px 0;">&ldquo;' + p.quote + '&rdquo;</blockquote>' : '';
-        var contact = p.contactUrl ? '<div style="margin-top:16px;"><a href="' + p.contactUrl + '" target="_blank" rel="noopener noreferrer" class="profile-contact-link">' + (p.contactLabel || 'Connect Direct') + ' &rarr;</a></div>' : '';
+        var contact = p.contactUrl ? '<div style="margin-top:16px;"><a href="' + p.contactUrl + '" target="_blank" rel="noopener noreferrer" class="profile-contact-link">' + (p.contactLabel || 'Connect direct') + ' &rarr;</a></div>' : '';
 
         modalBody.innerHTML = '<div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">' + avatarHtml + '<div><h3 style="margin:0 0 4px 0;font-size:1.25rem;">' + (p.title || 'Expert') + '</h3>' + role + '</div></div>' +
           '<div style="font-size:1rem;line-height:1.5;color:var(--text-muted);">' + (p.content || '') + '</div>' + quote + contact;

@@ -52,7 +52,7 @@ export function generateHTML(config, instanceId) {
             <div class="timeline-slide-layout ${hasImage ? 'has-media' : ''}">
               ${imageHtml}
               <div class="timeline-slide-text">
-                <h4>${item.title ? sanitizeRichText(item.title) : 'Phase Header'}</h4>
+                <h4>${item.title ? sanitizeRichText(item.title) : 'Phase header'}</h4>
                 ${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, idx)}
               </div>
             </div>

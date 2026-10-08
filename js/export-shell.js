@@ -64,9 +64,8 @@ export const BASE_RESET_CSS = `
     .block-label {
       font-size: 19px;
       font-weight: 700;
-      letter-spacing: 0.6px;
+      letter-spacing: normal;
       color: var(--accent);
-      text-transform: uppercase;
       margin-bottom: 4px;
       white-space: pre-line;
     }
@@ -98,9 +97,8 @@ export const BASE_RESET_CSS = `
     .block-header.header-editorial .block-label {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-w-bold, 700);
-      letter-spacing: var(--att-ls-eyebrow, 0.08em);
+      letter-spacing: normal;
       color: var(--att-cobalt, #00388F);
-      text-transform: uppercase;
       margin-bottom: 8px;
     }
 
@@ -132,7 +130,7 @@ export const BASE_RESET_CSS = `
     .block-context-band {
       background-color: var(--att-grey-1, #F3F4F5);
       border-top: 2px solid var(--att-blue, #009FDB);
-      border-radius: 0 0 var(--att-radius-md, 12px) var(--att-radius-md, 12px);
+      border-radius: var(--att-radius-md, 12px);
       padding: calc(14px * var(--spacing-scale)) calc(18px * var(--spacing-scale));
       margin-bottom: calc(24px * var(--spacing-scale));
       color: var(--att-text, #000000);
@@ -442,7 +440,7 @@ export function renderCompletionTrackerHTML(instanceId, trackCompletion) {
   return `
     <div class="completion-tracker" aria-labelledby="${instanceId}-completion-label">
         <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:600;">
-          <span id="${instanceId}-completion-label">Progress Completion</span>
+          <span id="${instanceId}-completion-label">Progress completion</span>
           <span id="${instanceId}-completion-text" aria-hidden="true">0%</span>
         </div>
         <div class="progress-bar-container" id="${instanceId}-progress-bar" role="progressbar" aria-labelledby="${instanceId}-completion-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 percent complete">

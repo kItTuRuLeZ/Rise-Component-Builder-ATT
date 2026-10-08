@@ -136,7 +136,7 @@ export function generateHTML(config, instanceId) {
     </div>` : '';
 
   const checkpointRibbonBlock = orderedMarkers.length ? `
-    <div class="iv-checkpoint-ribbon" id="${instanceId}-checkpoint-ribbon" role="region" aria-label="Interactive Checkpoints">
+    <div class="iv-checkpoint-ribbon" id="${instanceId}-checkpoint-ribbon" role="region" aria-label="Interactive checkpoints">
       <span class="iv-ribbon-label">Checkpoints:</span>
       <div class="iv-ribbon-chips">
         ${orderedMarkers.map(({ item, originalIndex }) => {
@@ -155,7 +155,7 @@ export function generateHTML(config, instanceId) {
     </div>` : '';
 
   const restartBlock = config.allowRestart && videoSrc
-    ? `<button type="button" class="iv-restart-btn" id="${instanceId}-restart-btn">Restart Video</button>` : '';
+    ? `<button type="button" class="iv-restart-btn" id="${instanceId}-restart-btn">Restart video</button>` : '';
 
   const transcriptBlock = config.transcript
     ? `<details class="iv-transcript"><summary>Transcript</summary><div class="iv-transcript-body">${sanitizeRichText(config.transcript)}</div></details>`
@@ -243,8 +243,7 @@ export function generateCSS() {
     .iv-ribbon-label {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--text-muted);
       flex-shrink: 0;
     }
@@ -291,7 +290,6 @@ export function generateCSS() {
     .iv-chip-type {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
       padding: 1px 6px;
       border-radius: 4px;
       background-color: var(--border-color);
@@ -337,8 +335,7 @@ export function generateCSS() {
     .iv-panel-type-label {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       /* --text-muted (matching .iv-marker-nav-title/.iv-marker-type-label below), not
          --accent: at this size/weight, the AT&T brand blue only reaches ~3:1 contrast on
          a white card background — short of WCAG AA's 4.5:1 for non-large text, caught by
@@ -514,8 +511,7 @@ export function generateCSS() {
     .iv-marker-nav-title {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--text-muted);
       margin-bottom: 10px;
     }
@@ -560,8 +556,7 @@ export function generateCSS() {
     .iv-marker-state-badge {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 10px;
       border-radius: var(--att-radius-pill, 999px);
       flex-shrink: 0;
@@ -625,8 +620,7 @@ export function generateCSS() {
     .iv-marker-type-label {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       color: var(--text-muted);
       flex-shrink: 0;
     }
@@ -641,8 +635,7 @@ export function generateCSS() {
     .iv-marker-required-badge {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 10px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--border-color);

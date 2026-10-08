@@ -224,9 +224,8 @@
     .block-label {
       font-size: 19px;
       font-weight: 700;
-      letter-spacing: 0.6px;
+      letter-spacing: normal;
       color: var(--accent);
-      text-transform: uppercase;
       margin-bottom: 4px;
       white-space: pre-line;
     }
@@ -258,9 +257,8 @@
     .block-header.header-editorial .block-label {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-w-bold, 700);
-      letter-spacing: var(--att-ls-eyebrow, 0.08em);
+      letter-spacing: normal;
       color: var(--att-cobalt, #00388F);
-      text-transform: uppercase;
       margin-bottom: 8px;
     }
 
@@ -292,7 +290,7 @@
     .block-context-band {
       background-color: var(--att-grey-1, #F3F4F5);
       border-top: 2px solid var(--att-blue, #009FDB);
-      border-radius: 0 0 var(--att-radius-md, 12px) var(--att-radius-md, 12px);
+      border-radius: var(--att-radius-md, 12px);
       padding: calc(14px * var(--spacing-scale)) calc(18px * var(--spacing-scale));
       margin-bottom: calc(24px * var(--spacing-scale));
       color: var(--att-text, #000000);
@@ -675,7 +673,7 @@
     <div class="quiz-option" role="radio" tabindex="-1" aria-checked="false" data-idx="1"><div class="option-check-circle" aria-hidden="true"></div><div class="option-text">Option B</div><span class="option-correct-flag" hidden> — Correct answer</span></div>
     <div class="quiz-option" role="radio" tabindex="-1" aria-checked="false" data-idx="2"><div class="option-check-circle" aria-hidden="true"></div><div class="option-text">Option C</div><span class="option-correct-flag" hidden> — Correct answer</span></div></div>
     
-    <button class="quiz-submit-btn" type="button">Submit Answer</button>
+    <button class="quiz-submit-btn" type="button">Submit answer</button>
     <div class="quiz-hint" id="rcb-fixture-multiple-choice-quiz-hint" role="status" aria-live="polite" hidden><strong>Hint:</strong> </div>
     <div id="rcb-fixture-multiple-choice-quiz-feedback-box" class="quiz-feedback" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" style="display:none;"></div>
     
@@ -685,7 +683,7 @@
     
     <div class="completion-tracker" aria-labelledby="rcb-fixture-multiple-choice-completion-label">
         <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:600;">
-          <span id="rcb-fixture-multiple-choice-completion-label">Progress Completion</span>
+          <span id="rcb-fixture-multiple-choice-completion-label">Progress completion</span>
           <span id="rcb-fixture-multiple-choice-completion-text" aria-hidden="true">0%</span>
         </div>
         <div class="progress-bar-container" id="rcb-fixture-multiple-choice-progress-bar" role="progressbar" aria-labelledby="rcb-fixture-multiple-choice-completion-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 percent complete">

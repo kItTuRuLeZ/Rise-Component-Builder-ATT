@@ -233,8 +233,7 @@ export function generateCSS() {
       right: 10px;
       font-size: var(--att-fs-eyebrow, 12px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 10px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--border-color);

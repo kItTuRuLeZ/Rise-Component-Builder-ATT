@@ -113,10 +113,10 @@ describe('confidence matrix: diagnostic wording and results', () => {
   const rateAll = (m, values) => values.forEach((value, item) => m.rate(item, value));
 
   test.each([
-    [[4, 4, 4, 4], 'Advanced Subject Matter Expert', 'Overall Score: 100%'],
-    [[3, 3, 3, 3], 'Proficient Practitioner', 'Overall Score: 75%'],
-    [[4, 3, 2, 1], 'Developing Specialist', 'Overall Score: 63%'],
-    [[1, 1, 1, 1], 'Foundational Explorer', 'Overall Score: 25%']
+    [[4, 4, 4, 4], 'Advanced subject matter expert', 'Overall Score: 100%'],
+    [[3, 3, 3, 3], 'Proficient practitioner', 'Overall Score: 75%'],
+    [[4, 3, 2, 1], 'Developing specialist', 'Overall Score: 63%'],
+    [[1, 1, 1, 1], 'Foundational explorer', 'Overall Score: 25%']
   ])('ratings %j give the %s tier and the unchanged score', (values, tier, score) => {
     const m = mount();
     rateAll(m, values);

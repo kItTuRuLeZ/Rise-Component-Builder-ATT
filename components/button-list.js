@@ -35,7 +35,7 @@ function renderButton(item, idx) {
   return `
     <a href="${escapeAttribute(url)}" target="_blank" rel="noopener noreferrer" class="link-button-item${variant !== 'primary' ? ` variant-${variant}` : ''}" data-idx="${idx}"${categoryAttr}>
       <span class="btn-label-wrap">
-        <span class="btn-title">${richInline(item.title, 'Launch Link')}</span>
+        <span class="btn-title">${richInline(item.title, 'Launch link')}</span>
         ${metaPills}
       </span>
       <span class="btn-icon-wrap" aria-hidden="true">${icon}</span>
@@ -80,7 +80,7 @@ export function generateHTML(config, instanceId) {
     if (uncategorized.length) {
       buttonsContent += `
         <div class="button-group-section" data-group-category="General">
-          <h4 class="button-group-title">Other Resources</h4>
+          <h4 class="button-group-title">Other resources</h4>
           <div class="buttons-container">
             ${uncategorized.map(entry => renderButton(entry.it, entry.idx)).join('')}
           </div>
@@ -157,8 +157,7 @@ export function generateCSS() {
     .button-group-title {
       font-size: var(--att-fs-body-sm, 14px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--text-muted);
       margin: 0 0 4px 4px;
     }
@@ -232,8 +231,7 @@ export function generateCSS() {
     .btn-meta-pill {
       font-size: var(--att-fs-eyebrow, 11px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: normal;
       padding: 2px 6px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: rgba(255, 255, 255, 0.25);

@@ -19,7 +19,7 @@ test('clearing a Button List title falls back to the default label instead of pr
   await title.fill('Temporary');
   await title.fill('');
   const preview = page.frameLocator('#live-preview-iframe');
-  await expect(preview.locator('.btn-title').first()).toHaveText('Launch Link');
+  await expect(preview.locator('.btn-title').first()).toHaveText('Launch link');
   await expect(preview.locator('body')).not.toContainText('<br>');
 });
 

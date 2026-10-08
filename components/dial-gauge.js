@@ -171,7 +171,7 @@ export function generateHTML(config, instanceId) {
 
         <div class="dial-insight-panel" id="${instanceId}-insight" aria-live="polite">
           <div class="dial-insight-badge" id="${instanceId}-insight-badge">
-            ${richInline(activeItem.badgeLabel, 'Active Status')}
+            ${richInline(activeItem.badgeLabel, 'Active status')}
           </div>
           <h4 class="dial-insight-title" id="${instanceId}-insight-title">
             ${richInline(activeItem.title, '')}
@@ -447,8 +447,7 @@ export function generateCSS() {
       color: #FFFFFF;
       font-size: var(--att-fs-xs, 0.8125rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: normal;
     }
     .dial-insight-title {
       font-size: var(--att-fs-h3, 1.25rem);

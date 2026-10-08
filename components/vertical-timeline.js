@@ -60,7 +60,7 @@ function renderStep(item, index, instanceId, opts) {
       <div class="step-marker" aria-hidden="true"><span class="step-num">${stepNum}</span></div>
       <div class="step-card">
         <button type="button" class="step-toggle-btn" id="${instanceId}-step-toggle-${index}" aria-expanded="false" aria-controls="${instanceId}-step-body-${index}" ${locked ? `aria-disabled="true" aria-describedby="${instanceId}-step-lock-note-${index}"` : ''}>
-          ${lockIconSlot}<h4>${item.title ? sanitizeRichText(item.title) : 'Step Title'}</h4>${categoryBadge}${visitedBadge}
+          ${lockIconSlot}<h4>${item.title ? sanitizeRichText(item.title) : 'Step title'}</h4>${categoryBadge}${visitedBadge}
         </button>
         <div class="step-body" id="${instanceId}-step-body-${index}" hidden>${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, index)}</div>
         ${lockNote}
@@ -68,10 +68,10 @@ function renderStep(item, index, instanceId, opts) {
     </div>`;
   }
 
-  return `<div class="timeline-step${locked ? ' locked' : ''}" role="listitem" tabindex="0" data-idx="${index}"${categoryAttr} id="${instanceId}-step-${index}" aria-label="Step ${stepNum}: ${escapeAttribute(richTextToPlain(item.title) || 'Step Title')}" aria-pressed="false" ${locked ? `aria-disabled="true" aria-describedby="${instanceId}-step-lock-note-${index}"` : ''}>
+  return `<div class="timeline-step${locked ? ' locked' : ''}" role="listitem" tabindex="0" data-idx="${index}"${categoryAttr} id="${instanceId}-step-${index}" aria-label="Step ${stepNum}: ${escapeAttribute(richTextToPlain(item.title) || 'Step title')}" aria-pressed="false" ${locked ? `aria-disabled="true" aria-describedby="${instanceId}-step-lock-note-${index}"` : ''}>
     <div class="step-marker" aria-hidden="true"><span class="step-num">${stepNum}</span></div>
     <div class="step-card">
-      <h4>${lockIconSlot}${item.title ? sanitizeRichText(item.title) : 'Step Title'}${categoryBadge}${visitedBadge}</h4>
+      <h4>${lockIconSlot}${item.title ? sanitizeRichText(item.title) : 'Step title'}${categoryBadge}${visitedBadge}</h4>
       ${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, index)}
       ${lockNote}
     </div>
@@ -288,8 +288,7 @@ export function generateCSS() {
     .step-category-badge {
       font-size: var(--att-fs-eyebrow, 12px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 10px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--border-color);

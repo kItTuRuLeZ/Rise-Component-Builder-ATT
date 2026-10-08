@@ -105,7 +105,7 @@ export function generateHTML(config, instanceId) {
           </div>
         `;
       }).join('')}
-      ${!instantValidation ? `<button type="button" class="quiz-submit-btn" id="${instanceId}-check-btn">Check Answers</button>` : ''}
+      ${!instantValidation ? `<button type="button" class="quiz-submit-btn" id="${instanceId}-check-btn">Check answers</button>` : ''}
       <div id="${instanceId}-blank-feedback-box" class="quiz-feedback" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" style="display:none;"></div>
     </div>
   `;

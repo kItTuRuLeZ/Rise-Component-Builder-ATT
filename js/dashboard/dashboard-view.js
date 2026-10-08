@@ -1030,7 +1030,7 @@ export class DashboardView {
           title: 'Optical Safety & Compliance',
           description: 'Test your understanding of laser safety standards and optical field splicing protocols.',
           mcQuestionPrompt: 'Which optical test must be completed and certified before connecting customer terminal equipment to a newly spliced fiber run?',
-          mcSubmitButtonText: 'Submit Answer',
+          mcSubmitButtonText: 'Submit answer',
           mcMaxAttempts: 1,
           mcConfidenceMode: false,
           items: [
