@@ -1,7 +1,7 @@
 // @vitest-environment node
 //
 // 27 September 2026 functional audit, section 3: "AT&T and PMI run under different paths on
-// the same kittu-rulz.github.io origin. Projects and IndexedDB media are shared across the
+// the same kitturulez.github.io origin. Projects and IndexedDB media are shared across the
 // editions." This file proves, against the real storage module (not a mock), that:
 //   - going forward, this edition reads/writes its own namespaced localStorage keys;
 //   - a legacy project or draft this edition can confidently attribute to itself (by

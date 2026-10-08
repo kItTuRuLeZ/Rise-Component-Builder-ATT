@@ -4,7 +4,7 @@
 
 Act as a senior front-end engineer, interaction designer, accessibility specialist, and QA engineer. Audit and improve the existing **Rise Component Builder – AT&T** repository without replacing its architecture or breaking any existing component, project-storage, preview, preset, export, or completion-tracking behavior.
 
-Live reference: https://kittu-rulz.github.io/Rise-Component-Builder-ATT/
+Live reference: https://kitturulez.github.io/Rise-Component-Builder-ATT/
 
 Current audited build: `v2.2.0+20260910.1431`
 

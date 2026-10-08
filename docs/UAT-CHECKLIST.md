@@ -1,6 +1,6 @@
 # AT&T edition: UAT checklist and known limitations
 
-**Site:** https://kittu-rulz.github.io/Rise-Component-Builder-ATT/
+**Site:** https://kitturulez.github.io/Rise-Component-Builder-ATT/
 **Scope of this build:** the storyboard importer, course outline, component editing, preview, QA, export, project backup/restore, and the Post-Publish Toolkit. Full-course SCORM export and any Word add-in are **not** part of this build.
 
 ## Before you start
@@ -9,6 +9,7 @@
 2. Check the version badge at the top of the page. It should read `v3.0.0` with today's build date and time. Note it in every report.
 3. Use a desktop browser (Chrome, Edge, Firefox or Safari). Note which one you used.
 4. Work on a **test project**, not production content. Projects are stored in your browser only.
+5. **The site address changed in October 2026** (it is now on `kitturulez.github.io`). The old `kittu-rulz.github.io` links no longer open. Projects are stored per web address, so projects saved at the old address do not appear here. Re-create them, or import a `.json` or `.rise-project.zip` backup if you exported one.
 
 ## Checklist
 
