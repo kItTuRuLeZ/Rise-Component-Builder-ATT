@@ -64,6 +64,7 @@ Mark each line Pass / Fail. For a Fail, write what you did, what you expected, w
 ## Known limitations (not defects to report)
 
 - **Not tested by the development team, so please test and report:** embedding in a real Rise 360 course; Rise Continue-block completion; LMS behaviour; physical phones and tablets; real Safari file uploads; a full manual screen-reader pass; real Post-Publish packages other than the one used in testing.
+- **Some websites will not open from a link inside a component in Rise.** Rise runs a code block in a sandboxed frame (`allow-forms allow-popups allow-same-origin allow-scripts`) that does not let a link's new tab leave the sandbox. Most sites open normally, but a few refuse to load in that restricted tab and show "refused to connect" (for example `https://www.google.com`). The link is correct and works outside Rise. For such a site, put the link in a native Rise text or button block instead.
 - **Automated checks are not a certificate.** Preflight and QA are automated rules. They do not prove WCAG conformance or Rise compatibility.
 - **Interactive Video multiple-choice markers** import only the correct answer from a storyboard. Add the wrong options in the Builder.
 - **External audio and video links:** chapter timestamps cannot be checked against their length, and Preflight says "unverified". Upload the file to have it checked.
