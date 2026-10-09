@@ -2167,6 +2167,10 @@ a {
   transition: all var(--transition-fast);
 }
 
+.completion-mode-card[hidden] {
+  display: none;
+}
+
 .completion-mode-card:hover {
   border-color: var(--primary);
   background-color: var(--primary-light);

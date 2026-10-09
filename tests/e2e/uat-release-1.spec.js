@@ -75,3 +75,27 @@ test('the link popup opens above the editors below it, not underneath their tool
     expect(topmostIsPopup, `popup is covered at ${Math.round(fraction * 100)}% of its height`).toBe(true);
   }
 });
+
+test('the Completion tab offers only the completion mode that applies to the component', async ({ page }) => {
+  await page.goto('/?catalog');
+  await page.locator('.nav-item[data-category="interactive"]').click();
+  await page.locator('.component-select-card').filter({ hasText: 'Accordion' }).click();
+  await page.locator('.editor-tab[data-tab="completion"]').click();
+  await expect(page.locator('label[for="completion-mode-all-items"]')).toBeVisible();
+  await expect(page.locator('label[for="completion-mode-interaction-success"]')).toBeHidden();
+
+  await page.goto('/?catalog');
+  await page.locator('.nav-item[data-category="knowledge"]').click();
+  await page.locator('.component-select-card').filter({ hasText: 'Multiple Choice' }).click();
+  await page.locator('.editor-tab[data-tab="completion"]').click();
+  await expect(page.locator('label[for="completion-mode-interaction-success"]')).toBeVisible();
+  await expect(page.locator('label[for="completion-mode-all-items"]')).toBeHidden();
+  await expect(page.locator('label[for="completion-mode-interaction-success"]')).toContainText('answer correctly');
+});
+
+test('a newly chosen block starts with a sentence-case label, not an upper-case one', async ({ page }) => {
+  await page.goto('/?catalog');
+  await page.locator('.nav-item[data-category="interactive"]').click();
+  await page.locator('.component-select-card').filter({ hasText: 'Horizontal Tabs' }).click();
+  await expect(page.frameLocator('#live-preview-iframe').locator('.block-label')).toHaveText('Horizontal tabs');
+});

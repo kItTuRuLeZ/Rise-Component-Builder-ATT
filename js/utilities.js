@@ -414,6 +414,19 @@ export function richInline(value, fallback = '') {
     .trim();
 }
 
+/**
+ * A heading or label in sentence case: the first word capitalised, later words lower case, acronyms (AT&T, KPI) left alone.
+ * @param {unknown} text
+ */
+export function toSentenceCase(text) {
+  const words = String(text ?? '').trim().split(/\s+/).filter(Boolean);
+  return words.map((word, index) => {
+    if (/^[A-Z0-9&]{2,}$/.test(word)) return word;
+    if (index === 0) return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    return word.toLowerCase();
+  }).join(' ');
+}
+
 export function serializeForInlineScript(value) {
   return JSON.stringify(value)
     .replace(/</g, '\\u003C')

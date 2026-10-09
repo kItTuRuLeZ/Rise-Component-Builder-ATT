@@ -184,3 +184,42 @@ test.describe('Tabs', () => {
     expect(await style()).toBe(before);
   });
 });
+
+test.describe('Profile Cards', () => {
+  const people = [
+    { title: 'Ana Rivera', roleTag: 'Designer', content: '<p>' + 'A long biography sentence. '.repeat(30) + '</p>', quote: '', contactUrl: '', contactLabel: '' },
+    { title: 'Bo Chen', roleTag: 'Engineer', content: '<p>Short bio.</p>', quote: '', contactUrl: '', contactLabel: '' }
+  ];
+
+  test('with the bio popup on, the card shows a short summary and the popup shows the whole bio', async ({ page }) => {
+    await open(page, await exportedHtml(page, 'profile-cards', { profileEnableModal: true }, people));
+    const cardText = page.locator('.profile-card-item').first().locator('.profile-card-bio');
+    const clamped = await cardText.evaluate(el => ({ box: el.getBoundingClientRect().height, full: el.scrollHeight }));
+    expect(clamped.full).toBeGreaterThan(clamped.box + 10); // the card cuts the bio short
+    await expect(page.locator('.profile-view-bio-hint').first()).toHaveText('View full bio →');
+    await page.locator('.profile-card-item').first().click();
+    const modalBody = page.locator('.profile-modal-body');
+    await expect(modalBody).toBeVisible();
+    expect((await modalBody.innerText()).length).toBeGreaterThan(500); // the popup carries the entire bio
+  });
+
+  test('with the popup off and no tracking, a card is plain content: no pointer, no hover, not a tab stop', async ({ page }) => {
+    await open(page, await exportedHtml(page, 'profile-cards', { profileEnableModal: false, trackCompletion: false }, people));
+    const card = page.locator('.profile-card-item').first();
+    expect(await card.evaluate(el => getComputedStyle(el).cursor)).not.toBe('pointer');
+    expect(await card.getAttribute('tabindex')).toBeNull();
+    const before = await card.evaluate(el => getComputedStyle(el).borderColor);
+    await card.hover();
+    expect(await card.evaluate(el => getComputedStyle(el).borderColor)).toBe(before);
+  });
+
+  test('with the popup off but completion tracking on, a card still records that it was explored', async ({ page }) => {
+    await open(page, await exportedHtml(page, 'profile-cards', { profileEnableModal: false, trackCompletion: true }, people));
+    const card = page.locator('.profile-card-item').first();
+    expect(await card.evaluate(el => getComputedStyle(el).cursor)).toBe('pointer');
+    await card.click();
+    await expect(page.locator('[id$="-completion-text"]')).toHaveText('50%');
+    await card.click(); // a second click must not undo it
+    await expect(card).toHaveClass(/active/);
+  });
+});

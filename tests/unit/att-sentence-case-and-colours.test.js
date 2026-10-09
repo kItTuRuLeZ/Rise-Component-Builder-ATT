@@ -54,3 +54,18 @@ describe('Scenario emotion badge', () => {
     expect(badge.textContent).toBe('Thinking');
   });
 });
+
+import { toSentenceCase } from '../../js/utilities.js';
+
+describe('toSentenceCase (the default block label)', () => {
+  test.each([
+    ['Horizontal Tabs', 'Horizontal tabs'],
+    ['Quick Link Buttons', 'Quick link buttons'],
+    ['AT&T Interactive Block', 'AT&T interactive block'],
+    ['multiple choice', 'Multiple choice'],
+    ['Callout & Alert Matrix', 'Callout & alert matrix'],
+    ['', '']
+  ])('%j becomes %j', (input, expected) => {
+    expect(toSentenceCase(input)).toBe(expected);
+  });
+});

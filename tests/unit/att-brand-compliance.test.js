@@ -120,7 +120,7 @@ describe('AT&T brand: clickable elements use Cobalt (--primary), not AT&T Blue (
 
   test('hovered/selected profile card is Cobalt, not AT&T Blue (the card is a clickable control)', () => {
     const css = profileCards.generateCSS();
-    expect(css).toMatch(/\.profile-card-item:hover\s*{[^}]*border-color:\s*var\(--primary\)/);
+    expect(css).toMatch(/\.profile-card-item:not\(\.is-static\):hover\s*{[^}]*border-color:\s*var\(--primary\)/);
   });
 
   test('selected info-grid card uses a Cobalt border, not an AT&T-Blue tint fill', () => {

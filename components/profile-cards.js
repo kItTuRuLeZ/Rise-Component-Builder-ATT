@@ -30,6 +30,8 @@ export const editorSchema = getEditorSchema(id);
 
 export function generateHTML(config, instanceId) {
   const enableModal = config.profileEnableModal !== false;
+  const interactive = enableModal || config.trackCompletion === true;
+  const cardClass = `profile-card-item${enableModal ? ' has-modal' : ''}${interactive ? '' : ' is-static'}`;
 
   return `
     <div class="profiles-grid" id="${instanceId}">
@@ -43,7 +45,7 @@ export function generateHTML(config, instanceId) {
         ` : '';
 
         return `
-        <div class="profile-card-item" id="${instanceId}-card-${idx}" data-idx="${idx}" tabindex="0" role="${enableModal ? 'button' : 'article'}" aria-haspopup="${enableModal ? 'dialog' : 'false'}" aria-label="Profile of ${escapeAttribute(richTextToPlain(item.title) || 'Expert')}">
+        <div class="${cardClass}" id="${instanceId}-card-${idx}" data-idx="${idx}"${interactive ? ' tabindex="0"' : ''} role="${enableModal ? 'button' : 'article'}" aria-haspopup="${enableModal ? 'dialog' : 'false'}" aria-label="Profile of ${escapeAttribute(richTextToPlain(item.title) || 'Expert')}">
           <div class="profile-avatar-circle ${item.imageCrop === 'square' ? 'square' : ''}">
             ${item.image ? `<img src="${escapeAttribute(item.image)}" alt="${item.decorative ? '' : escapeAttribute(item.altText || '')}" ${item.decorative ? 'aria-hidden="true"' : ''}>` : getAttIconSvg('person', { width: 24, height: 24, ariaHidden: true })}
           </div>
@@ -52,11 +54,11 @@ export function generateHTML(config, instanceId) {
               <h4>${richInline(item.title, 'Expert name')}</h4>
               ${roleHtml}
             </div>
-            <p>${sanitizeRichText(item.content || 'Professional background summary bio.')}</p>
+            <div class="profile-card-bio">${sanitizeRichText(item.content || 'Professional background summary bio.')}</div>
             ${quoteHtml}
             <div class="profile-actions-row">
               ${contactHtml}
-              ${enableModal ? `<span class="profile-view-bio-hint" aria-hidden="true">View Full Bio &rarr;</span>` : ''}
+              ${enableModal ? `<span class="profile-view-bio-hint" aria-hidden="true">View full bio &rarr;</span>` : ''}
             </div>
           </div>
         </div>
@@ -95,14 +97,25 @@ export function generateCSS() {
       gap: var(--att-space-4, 16px);
       align-items: flex-start;
       transition: all 0.2s ease;
+    }
+    /* Only a card that does something looks like a button. */
+    .profile-card-item:not(.is-static) {
       cursor: pointer;
     }
-    .profile-card-item:hover {
+    .profile-card-item:not(.is-static):hover {
       border-color: var(--primary);
       box-shadow: var(--att-shadow-2, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
     }
-    .profile-card-item:active {
+    .profile-card-item:not(.is-static):active {
       transform: scale(0.98);
+    }
+    /* With the full bio one click away, the card shows a short summary rather than the whole bio. */
+    .profile-card-item.has-modal .profile-card-bio {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      overflow: hidden;
     }
     .profile-card-item:focus-visible {
       outline: 3px solid var(--att-cobalt, var(--primary));
@@ -155,7 +168,8 @@ export function generateCSS() {
       border-radius: var(--att-radius-pill, 999px);
       letter-spacing: normal;
     }
-    .profile-card-content p {
+    .profile-card-content p,
+    .profile-card-bio {
       font-size: var(--att-fs-body-sm, 0.875rem);
       color: var(--text-muted);
       line-height: var(--att-lh-body, 1.5);
@@ -291,11 +305,11 @@ export function generateJS(config, instanceId) {
         }
       }
 
-      container.querySelectorAll('.profile-card-item').forEach(function(card) {
+      container.querySelectorAll('.profile-card-item:not(.is-static)').forEach(function(card) {
         var idx = parseInt(card.getAttribute('data-idx'), 10);
         card.addEventListener('click', function() {
           lastFocus = card;
-          card.classList.toggle('active');
+          card.classList.add('active');
           viewedItems.add(idx);
           updateProgress();
           if (${enableModal}) openModal(idx);
