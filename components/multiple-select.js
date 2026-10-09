@@ -270,7 +270,7 @@ export function generateJS(config, instanceId) {
       }
     }
 
-    function concludeMultiQuiz() {
+    function concludeMultiQuiz(wasCorrect) {
       quizConcluded = true;
       document.querySelectorAll('.quiz-option').forEach(function(el) {
         el.setAttribute('aria-disabled', 'true');
@@ -278,7 +278,7 @@ export function generateJS(config, instanceId) {
       var submitBtn = document.getElementById('${instanceId}-submit-btn');
       if (submitBtn) submitBtn.setAttribute('aria-disabled', 'true');
       var resetBtn = document.getElementById('${instanceId}-reset-btn');
-      if (resetBtn) resetBtn.style.display = 'inline-flex';
+      if (resetBtn && !wasCorrect) resetBtn.style.display = 'inline-flex';
     }
 
     function showRemediationHints() {
@@ -335,7 +335,7 @@ export function generateJS(config, instanceId) {
         feedback.innerHTML = '<strong>Correct!</strong> You identified all the correct options.';
         if (finalExplanationHtml) feedback.innerHTML += '<span class="quiz-feedback-explanation">' + finalExplanationHtml + '</span>';
         showRemediationHints();
-        concludeMultiQuiz();
+        concludeMultiQuiz(true);
         updateTrackerComplete();
       } else if (attemptsUsed < maxAttempts) {
         var remaining = maxAttempts - attemptsUsed;

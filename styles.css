@@ -5377,6 +5377,17 @@ input[type="number"]:focus::-webkit-inner-spin-button {
   box-shadow: 0 0 0 3px rgba(0, 159, 219, 0.15);
 }
 
+/* Each toolbar sits at z-index 5 in its own stacking context, so the toolbars of the editors BELOW this one painted over its
+   open link / colour / alignment popup. The editor being used is lifted above its neighbours; each rule stands alone so an
+   older browser that lacks :has() still gets the :focus-within one. */
+.rich-text-editor-container:focus-within {
+  z-index: 50;
+}
+
+.rich-text-editor-container:has(.rt-popover) {
+  z-index: 50;
+}
+
 .has-error .rich-text-editor-container {
   border-color: var(--danger);
 }

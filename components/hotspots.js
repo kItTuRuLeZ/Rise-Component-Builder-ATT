@@ -200,8 +200,8 @@ export function generateHTML(config, instanceId) {
                     <span class="pin-visited-check" aria-hidden="true">${checkSmallIcon}</span>
                   </button>
 
-                  ${calloutMode === 'tooltip' ? `
-                    <div class="hotspot-tooltip ${placementClass} ${alignClass}" id="${instanceId}-callout-${idx}" role="region" aria-label="Hotspot details" aria-hidden="true">
+                  ${`
+                    <div class="hotspot-tooltip ${placementClass} ${alignClass}${calloutMode === 'tooltip' ? '' : ' hotspot-callout-source'}" id="${instanceId}-callout-${idx}" role="region" aria-label="Hotspot details" aria-hidden="true"${calloutMode === 'tooltip' ? '' : ' hidden'}>
                       <div class="hotspot-callout-header">
                         <span class="hotspot-callout-tag">Marker ${idx + 1}</span>
                         <h4 class="hotspot-callout-title">${richInline(item.title, 'Indicator')}</h4>
@@ -222,7 +222,7 @@ export function generateHTML(config, instanceId) {
                         </div>
                       ` : ''}
                     </div>
-                  ` : ''}
+                  `}
                 </div>
               `;
             }).join('')}
@@ -697,6 +697,9 @@ export function generateCSS() {
 
     .hotspot-callout-content p { margin: 0; }
 
+    /* The drawer and modal copy a marker's text and audio out of this block; it is never shown itself. */
+    .hotspot-callout-source { display: none !important; }
+
     /* Audio narration Widget */
     .hotspot-audio-narration {
       margin-top: var(--att-space-2, 8px);
@@ -978,7 +981,7 @@ export function generateCSS() {
   `;
 }
 
-export function generateJS() {
+export function generateJS(config = {}) {
   // Must define initComponent() — the shared export bootstrap (js/export-shell.js
   // #BOOTSTRAP_JS) calls it once the DOM is ready. A bare IIFE here throws
   // "initComponent is not defined" in every standalone export.
@@ -988,6 +991,7 @@ export function generateJS() {
       if (!container) return;
 
       var calloutMode = container.getAttribute('data-callout-mode') || 'tooltip';
+      var autoplayAudio = ${config.autoplayAudio === true};
       var zoomEnabled = container.getAttribute('data-zoom-enabled') !== 'false';
       var pins = container.querySelectorAll('.hotspot-pin');
       var totalItems = pins.length;
@@ -1192,7 +1196,7 @@ export function generateJS() {
 
               announce(tooltip.textContent.trim());
               var audio = tooltip.querySelector('audio');
-              if (audio) { audio.currentTime = 0; audio.play().catch(function() {}); }
+              if (audio && autoplayAudio) { audio.currentTime = 0; audio.play().catch(function() {}); }
             }
           } else if (calloutMode === 'drawer' && drawer) {
             drawer.classList.add('is-open');
@@ -1201,7 +1205,7 @@ export function generateJS() {
             if (drawerBody) {
               drawerBody.innerHTML = '<div>' + data.content + '</div>' + data.audioHTML;
               var dAudio = drawerBody.querySelector('audio');
-              if (dAudio) { dAudio.currentTime = 0; dAudio.play().catch(function() {}); }
+              if (dAudio && autoplayAudio) { dAudio.currentTime = 0; dAudio.play().catch(function() {}); }
             }
             announce('Opened details for ' + data.title);
           } else if (calloutMode === 'modal' && modalBackdrop) {
@@ -1213,7 +1217,7 @@ export function generateJS() {
             if (modalBody) {
               modalBody.innerHTML = '<div>' + data.content + '</div>' + data.audioHTML;
               var mAudio = modalBody.querySelector('audio');
-              if (mAudio) { mAudio.currentTime = 0; mAudio.play().catch(function() {}); }
+              if (mAudio && autoplayAudio) { mAudio.currentTime = 0; mAudio.play().catch(function() {}); }
             }
             announce('Opened dialog for ' + data.title);
             if (modalClose) modalClose.focus();

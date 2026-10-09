@@ -775,6 +775,9 @@
 
     .hotspot-callout-content p { margin: 0; }
 
+    /* The drawer and modal copy a marker's text and audio out of this block; it is never shown itself. */
+    .hotspot-callout-source { display: none !important; }
+
     /* Audio narration Widget */
     .hotspot-audio-narration {
       margin-top: var(--att-space-2, 8px);
@@ -1103,6 +1106,23 @@
       transition: width 0.3s ease;
     }
 
+    .completion-reset-btn {
+      margin-top: 12px;
+      padding: 8px 18px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--bg-card);
+      border: 1px solid var(--primary);
+      border-radius: var(--button-radius, 999px);
+      cursor: pointer;
+    }
+
+    .completion-reset-btn:hover { background: var(--primary-tint, transparent); }
+
+    .completion-reset-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
     .completion-success-message {
       margin: 12px 0 0;
       font-size: 13px;
@@ -1271,6 +1291,7 @@
           <div class="progress-fill" id="rcb-fixture-hotspots-progress-fill"></div>
         </div>
         <p id="rcb-fixture-hotspots-completion-message" class="completion-success-message" hidden></p>
+        
       </div>
     <div id="rcb-fixture-hotspots-interaction-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
   </main>
@@ -1303,6 +1324,13 @@
     // exactly once per completed state — see RiseComponentCompletion.notifyComplete().
     function evaluateComponentCompletion(percent) {
       if (percent < 100) return;
+      // The shared Start over button (Completion tab, "Allow learner to reset / restart"). Reloading the
+      // block returns every component to its starting state; the host keeps any completion it already has.
+      var resetBtn = document.getElementById('rcb-fixture-hotspots-completion-reset');
+      if (resetBtn && resetBtn.hidden) {
+        resetBtn.hidden = false;
+        resetBtn.addEventListener('click', function() { window.location.reload(); });
+      }
       if (typeof RiseComponentCompletion === 'undefined' || RiseComponentCompletion.hasCompleted()) return;
       announce(completionMessage);
       var messageEl = document.getElementById('rcb-fixture-hotspots-completion-message');
@@ -1376,6 +1404,7 @@
       if (!container) return;
 
       var calloutMode = container.getAttribute('data-callout-mode') || 'tooltip';
+      var autoplayAudio = false;
       var zoomEnabled = container.getAttribute('data-zoom-enabled') !== 'false';
       var pins = container.querySelectorAll('.hotspot-pin');
       var totalItems = pins.length;
@@ -1580,7 +1609,7 @@
 
               announce(tooltip.textContent.trim());
               var audio = tooltip.querySelector('audio');
-              if (audio) { audio.currentTime = 0; audio.play().catch(function() {}); }
+              if (audio && autoplayAudio) { audio.currentTime = 0; audio.play().catch(function() {}); }
             }
           } else if (calloutMode === 'drawer' && drawer) {
             drawer.classList.add('is-open');
@@ -1589,7 +1618,7 @@
             if (drawerBody) {
               drawerBody.innerHTML = '<div>' + data.content + '</div>' + data.audioHTML;
               var dAudio = drawerBody.querySelector('audio');
-              if (dAudio) { dAudio.currentTime = 0; dAudio.play().catch(function() {}); }
+              if (dAudio && autoplayAudio) { dAudio.currentTime = 0; dAudio.play().catch(function() {}); }
             }
             announce('Opened details for ' + data.title);
           } else if (calloutMode === 'modal' && modalBackdrop) {
@@ -1601,7 +1630,7 @@
             if (modalBody) {
               modalBody.innerHTML = '<div>' + data.content + '</div>' + data.audioHTML;
               var mAudio = modalBody.querySelector('audio');
-              if (mAudio) { mAudio.currentTime = 0; mAudio.play().catch(function() {}); }
+              if (mAudio && autoplayAudio) { mAudio.currentTime = 0; mAudio.play().catch(function() {}); }
             }
             announce('Opened dialog for ' + data.title);
             if (modalClose) modalClose.focus();

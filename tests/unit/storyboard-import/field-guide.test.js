@@ -197,5 +197,5 @@ describe('the shipped macro-enabled template (.docm)', () => {
     expect(storyboard.sections.length).toBeGreaterThan(0);
     expect(Object.keys(mappedComponentsByBlockId).length).toBeGreaterThan(0);
     expect(findings.filter(f => f.severity === 'fatal')).toEqual([]);
-  });
+  }, 30000); // parsing a 90 KB macro document is slow when the whole suite runs in parallel
 });

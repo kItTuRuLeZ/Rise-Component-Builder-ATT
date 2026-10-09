@@ -36,10 +36,15 @@ function getInstanceId(appState) {
 // How many distinct interactions count toward 100% completion, per component shape.
 // This only sizes the shared completion tracker; it carries no component-specific
 // markup/CSS/JS of its own.
+// Components that already offer their own reset or restart control. The Completion tab's
+// "Allow learner to reset / restart after completion" option adds a shared Start over button
+// to every other component (it used to be read by Sorting Activity alone).
+const SELF_RESETTING_COMPONENTS = new Set(['sorting-activity', 'scenario', 'multiple-choice', 'multiple-select', 'interactive-video']);
+
 function getTrackableCount(compId, itemCount) {
   if (compId === 'flip-cards') return Math.max(Math.ceil(itemCount / 2), 1);
   if (compId === 'scenario') return Math.max(itemCount - 1, 1);
-  if (['audio-player', 'video-frame', 'fill-blank'].includes(compId)) return 1;
+  if (['audio-player', 'video-frame'].includes(compId)) return 1;
   return Math.max(itemCount, 1);
 }
 
@@ -167,7 +172,7 @@ ${ATT_TOKENS_CSS}`;
     blockDesc: sanitizeRichText(c.blockDesc || ''),
     blockHeadingLevel: c.blockHeadingLevel,
     componentHTML: entry.generateHTML(c, instanceId),
-    completionTrackerHTML: renderCompletionTrackerHTML(instanceId, c.trackCompletion),
+    completionTrackerHTML: renderCompletionTrackerHTML(instanceId, c.trackCompletion, Boolean(c.allowReset) && !SELF_RESETTING_COMPONENTS.has(compId)),
     sharedA11yScript,
     componentJS: entry.generateJS(c, instanceId),
     blockBackgroundImage: c.blockBackgroundImage,

@@ -384,7 +384,7 @@ export function generateJS(config, instanceId) {
       });
     }
 
-    function concludeQuiz() {
+    function concludeQuiz(wasCorrect) {
       quizConcluded = true;
       document.querySelectorAll('.quiz-option, .quiz-confidence-option').forEach(function(el) {
         el.setAttribute('aria-disabled', 'true');
@@ -393,7 +393,7 @@ export function generateJS(config, instanceId) {
       var submitBtn = document.querySelector('.quiz-submit-btn');
       if (submitBtn) submitBtn.setAttribute('aria-disabled', 'true');
       var resetBtn = document.querySelector('.quiz-reset-btn');
-      if (resetBtn) resetBtn.hidden = false;
+      if (resetBtn && !wasCorrect) resetBtn.hidden = false;
     }
 
     function submitQuiz() {
@@ -432,7 +432,7 @@ export function generateJS(config, instanceId) {
           feedback.innerHTML += '<span class="quiz-feedback-explanation">' + finalExplanationHtml + '</span>';
         }
         if (hint) hint.hidden = true;
-        concludeQuiz();
+        concludeQuiz(true);
         updateTrackerComplete();
       } else if (attemptsUsed < maxAttempts) {
         var remaining = maxAttempts - attemptsUsed;

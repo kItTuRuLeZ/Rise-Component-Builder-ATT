@@ -237,6 +237,23 @@ export const SHARED_A11Y_CSS = `
       transition: width 0.3s ease;
     }
 
+    .completion-reset-btn {
+      margin-top: 12px;
+      padding: 8px 18px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--bg-card);
+      border: 1px solid var(--primary);
+      border-radius: var(--button-radius, 999px);
+      cursor: pointer;
+    }
+
+    .completion-reset-btn:hover { background: var(--primary-tint, transparent); }
+
+    .completion-reset-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
     .completion-success-message {
       margin: 12px 0 0;
       font-size: 13px;
@@ -302,6 +319,13 @@ export function renderSharedA11yScript({ instanceId, trackCompletion, totalItems
     // exactly once per completed state — see RiseComponentCompletion.notifyComplete().
     function evaluateComponentCompletion(percent) {
       if (percent < 100) return;
+      // The shared Start over button (Completion tab, "Allow learner to reset / restart"). Reloading the
+      // block returns every component to its starting state; the host keeps any completion it already has.
+      var resetBtn = document.getElementById('${instanceId}-completion-reset');
+      if (resetBtn && resetBtn.hidden) {
+        resetBtn.hidden = false;
+        resetBtn.addEventListener('click', function() { window.location.reload(); });
+      }
       if (typeof RiseComponentCompletion === 'undefined' || RiseComponentCompletion.hasCompleted()) return;
       announce(completionMessage);
       var messageEl = document.getElementById('${instanceId}-completion-message');
@@ -435,7 +459,7 @@ ${BOOTSTRAP_JS}
 `;
 }
 
-export function renderCompletionTrackerHTML(instanceId, trackCompletion) {
+export function renderCompletionTrackerHTML(instanceId, trackCompletion, allowReset = false) {
   if (!trackCompletion) return '';
   return `
     <div class="completion-tracker" aria-labelledby="${instanceId}-completion-label">
@@ -447,5 +471,6 @@ export function renderCompletionTrackerHTML(instanceId, trackCompletion) {
           <div class="progress-fill" id="${instanceId}-progress-fill"></div>
         </div>
         <p id="${instanceId}-completion-message" class="completion-success-message" hidden></p>
+        ${allowReset ? `<button type="button" class="completion-reset-btn" id="${instanceId}-completion-reset" hidden>Start over</button>` : ''}
       </div>`;
 }
