@@ -759,7 +759,10 @@ export function generateCSS() {
       box-shadow: -4px 0 16px rgba(0,0,0,0.15);
       z-index: 40;
       transform: translateX(100%);
-      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      /* Closed means gone: off to the side is not enough when the page is wider than the block (the panel showed beside it),
+         and a closed drawer's content must not be reachable by Tab or a screen reader. Visibility flips after the slide. */
+      visibility: hidden;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.28s;
       display: flex;
       flex-direction: column;
       padding: var(--att-space-5, 20px);
@@ -768,6 +771,8 @@ export function generateCSS() {
 
     .hotspot-drawer.is-open {
       transform: translateX(0);
+      visibility: visible;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
     }
 
     .hotspot-drawer-header {

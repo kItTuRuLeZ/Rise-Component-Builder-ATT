@@ -2130,7 +2130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     previewViewport.classList.remove(...deviceModeClasses);
     previewViewport.classList.add(device);
-    previewWidthLabel.textContent = getDeviceWidthLabel(device, COMPONENT_MAX_WIDTH);
+    previewWidthLabel.textContent = getDeviceWidthLabel(device, COMPONENT_MAX_WIDTH, isLandscapeOrientation);
 
     if (btnPreviewOrientation) {
       const isMobileOrTablet = device === 'tablet' || device === 'mobile-lg' || device === 'mobile';
@@ -2148,6 +2148,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       isLandscapeOrientation = !isLandscapeOrientation;
       btnPreviewOrientation.classList.toggle('active', isLandscapeOrientation);
       previewViewport.classList.toggle('landscape', isLandscapeOrientation);
+      const activeDevice = deviceModeClasses.find(name => previewViewport.classList.contains(name)) || 'desktop';
+      previewWidthLabel.textContent = getDeviceWidthLabel(activeDevice, COMPONENT_MAX_WIDTH, isLandscapeOrientation);
       showToast(isLandscapeOrientation ? 'Orientation: Landscape' : 'Orientation: Portrait', 'info', 1500);
       updateLivePreview();
     });

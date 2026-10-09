@@ -223,3 +223,53 @@ test.describe('Profile Cards', () => {
     await expect(card).toHaveClass(/active/);
   });
 });
+
+test.describe('Hotspots drawer, landscape preview and background-image header', () => {
+  const markers = [
+    { title: 'Hub', content: '<p>Hub details.</p>', x: '30', y: '40', markerType: 'number', audioSourceType: 'url', audioUrl: '', audioTranscript: '' },
+    { title: 'Edge', content: '<p>Edge details.</p>', x: '60', y: '60', markerType: 'number', audioSourceType: 'url', audioUrl: '', audioTranscript: '' }
+  ];
+
+  test('a closed drawer is not visible beside the block, and opens and closes properly', async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 800 }); // wider than the block, where the closed drawer used to show
+    await open(page, await exportedHtml(page, 'hotspots', { calloutMode: 'drawer' }, markers));
+    const drawer = page.locator('.hotspot-drawer');
+    await expect(drawer).toBeHidden();
+    await page.locator('.hotspot-pin').first().click();
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toContainText('Hub details.');
+    await page.locator('.hotspot-drawer-close').click();
+    await expect(drawer).toBeHidden();
+  });
+
+  test('Landscape changes the simulated device: wider and shorter, and the width label follows', async ({ page }) => {
+    await page.setViewportSize({ width: 2600, height: 1200 }); // wide enough that the preview panel does not clamp the device
+    await page.goto('/?catalog');
+    await page.locator('.nav-item[data-category="interactive"]').click();
+    await page.locator('.component-select-card').filter({ hasText: 'Hotspots' }).click();
+    await expect(page.locator('#editor-state')).toBeVisible();
+    await page.locator('[data-device="tablet"]').click();
+    const box = async () => page.locator('#preview-viewport').boundingBox();
+    const portrait = await box();
+    expect(Math.round(portrait.width)).toBe(768);
+    await page.locator('#btn-preview-orientation').click();
+    const landscape = await box();
+    expect(Math.round(landscape.width)).toBe(1024);
+    expect(landscape.height).toBeLessThan(portrait.height);
+    await expect(page.locator('#preview-width-label')).toHaveText('1024px');
+    await page.locator('#btn-preview-orientation').click();
+    expect(Math.round((await box()).width)).toBe(768);
+    await expect(page.locator('#preview-width-label')).toHaveText('768px');
+  });
+
+  test('with a background image the label, headline and text sit on a solid card; without one nothing changes', async ({ page }) => {
+    await open(page, await exportedHtml(page, 'accordion', { blockBackgroundImage: 'https://example.org/photo.jpg' }));
+    const header = page.locator('.block-header');
+    await expect(header).toHaveClass(/has-backing/);
+    expect(await header.evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+    expect(await header.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft))).toBeGreaterThan(10);
+
+    await open(page, await exportedHtml(page, 'accordion', {}));
+    await expect(page.locator('.block-header')).not.toHaveClass(/has-backing/);
+  });
+});

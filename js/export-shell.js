@@ -61,6 +61,14 @@ export const BASE_RESET_CSS = `
       text-align: left;
     }
 
+    /* Over a background photo the label, headline and text sit on a solid card, so they stay readable on any image. */
+    .block-header.has-backing {
+      background-color: var(--bg-card);
+      border-radius: var(--att-radius-md, 12px);
+      padding: calc(16px * var(--spacing-scale)) calc(20px * var(--spacing-scale));
+      box-shadow: var(--att-shadow-1, 0 1px 2px rgba(0, 0, 0, 0.06));
+    }
+
     .block-label {
       font-size: 19px;
       font-weight: 700;
@@ -405,7 +413,7 @@ export function renderShell({
   const cyanRuleHtml = (isEditorial && headerCyanRule) ? '\n      <div class="header-cyan-rule" aria-hidden="true"></div>' : '';
   const blockLabelHtml = blockLabel ? `\n      <div class="block-label">${blockLabel}</div>` : '';
   const blockDescHtml = blockDesc ? `\n      <div class="block-desc">${blockDesc}</div>` : '';
-  const headerClass = isEditorial ? 'block-header header-editorial' : 'block-header header-minimal';
+  const headerClass = `${isEditorial ? 'block-header header-editorial' : 'block-header header-minimal'}${blockBackgroundImage ? ' has-backing' : ''}`;
 
   const headerHtml = (blockLabel || blockHeadline || blockDesc) ? `
     <div class="${headerClass}">${blockLabelHtml}

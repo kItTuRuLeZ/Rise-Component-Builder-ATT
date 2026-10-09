@@ -3007,6 +3007,22 @@ input[type="number"]:focus::-webkit-inner-spin-button {
   height: 80%;
 }
 
+/* The same devices turned on their side (the Portrait / Landscape button). Widths match js/device-preview.js. */
+.preview-viewport-wrapper.tablet.landscape {
+  width: 1024px;
+  height: 75%;
+}
+
+.preview-viewport-wrapper.mobile-lg.landscape {
+  width: 932px;
+  height: 60%;
+}
+
+.preview-viewport-wrapper.mobile.landscape {
+  width: 667px;
+  height: 60%;
+}
+
 .emulated-rise-header {
   background-color: var(--bg-app);
   border-bottom: 1px solid var(--border-color);
