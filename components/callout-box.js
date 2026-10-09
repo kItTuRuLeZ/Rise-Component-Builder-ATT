@@ -231,8 +231,7 @@ export function generateCSS() {
       border-radius: 9999px;
       font-size: var(--att-fs-xs, 0.8125rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: normal;
       background-color: var(--bg-body, #F3F4F5);
       color: var(--text-muted, #4B5563);
     }

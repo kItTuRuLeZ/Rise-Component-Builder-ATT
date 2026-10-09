@@ -12,7 +12,7 @@ const CROSS_ICON = getAttIconSvg('close-circle-filled', { width: 14, height: 14,
  * @property {Array<{label: string, content: string, correct: boolean, remediation?: string}>} items - Array of answer options
  * @property {boolean} [msPartialScoring] - Enables partial credit score calculations and badges
  * @property {number} [msMaxAttempts] - Maximum attempts before question concludes
- * @property {boolean} [msAllowReset] - Shows a Try Again action once concluded
+ * @property {boolean} [msAllowReset] - Shows a Try again action once concluded
  * @property {string} [msFinalExplanation] - Detailed explanation displayed once concluded
  * @property {string} [msSubmitButtonText] - Custom submit button label
  */
@@ -27,7 +27,7 @@ export const defaultConfig = {
   msMaxAttempts: 1,
   msAllowReset: false,
   msFinalExplanation: '',
-  msSubmitButtonText: 'Submit Answer',
+  msSubmitButtonText: 'Submit answer',
   items: [
     { label: 'Improves long-term retention', content: 'Spaced, bite-sized review strengthens recall.', correct: true, remediation: 'Recall improves significantly with spaced repetition.' },
     { label: 'Supports mobile learning', content: 'Short segments fit naturally into mobile sessions.', correct: true, remediation: 'Mobile compatibility requires concise learning chunks.' },
@@ -39,7 +39,7 @@ export const editorSchema = getEditorSchema(id);
 
 export function generateHTML(config, instanceId) {
   const allowReset = config.msAllowReset === true;
-  const submitText = config.msSubmitButtonText || 'Submit Answer';
+  const submitText = config.msSubmitButtonText || 'Submit answer';
 
   return `
     <div class="quiz-block quiz-multi" id="${instanceId}-block">
@@ -48,7 +48,7 @@ export function generateHTML(config, instanceId) {
           <div class="quiz-option" role="checkbox" tabindex="${index === 0 ? '0' : '-1'}" aria-checked="false" data-idx="${index}" id="${instanceId}-opt-${index}">
             <div class="option-check-square" aria-hidden="true"></div>
             <div class="option-text-wrap">
-              <div class="option-text">${item.label ? sanitizeRichText(item.label) : richInline(item.title, 'Option Label')}</div>
+              <div class="option-text">${item.label ? sanitizeRichText(item.label) : richInline(item.title, 'Option label')}</div>
               <div class="option-remediation" id="${instanceId}-remed-${index}" style="display:none;" aria-live="polite"></div>
             </div>
           </div>
@@ -56,7 +56,7 @@ export function generateHTML(config, instanceId) {
       </div>
       <div class="quiz-actions-row">
         <button class="quiz-submit-btn" type="button" data-quiz-mode="multi" id="${instanceId}-submit-btn">${escapeHTML(submitText)}</button>
-        ${allowReset ? `<button type="button" class="quiz-reset-btn" id="${instanceId}-reset-btn" style="display:none;">Try Again</button>` : ''}
+        ${allowReset ? `<button type="button" class="quiz-reset-btn" id="${instanceId}-reset-btn" style="display:none;">Try again</button>` : ''}
       </div>
       <div id="${instanceId}-quiz-feedback-box" class="quiz-feedback" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" style="display:none;"></div>
     </div>
@@ -270,7 +270,7 @@ export function generateJS(config, instanceId) {
       }
     }
 
-    function concludeMultiQuiz() {
+    function concludeMultiQuiz(wasCorrect) {
       quizConcluded = true;
       document.querySelectorAll('.quiz-option').forEach(function(el) {
         el.setAttribute('aria-disabled', 'true');
@@ -278,7 +278,7 @@ export function generateJS(config, instanceId) {
       var submitBtn = document.getElementById('${instanceId}-submit-btn');
       if (submitBtn) submitBtn.setAttribute('aria-disabled', 'true');
       var resetBtn = document.getElementById('${instanceId}-reset-btn');
-      if (resetBtn) resetBtn.style.display = 'inline-flex';
+      if (resetBtn && !wasCorrect) resetBtn.style.display = 'inline-flex';
     }
 
     function showRemediationHints() {
@@ -335,7 +335,7 @@ export function generateJS(config, instanceId) {
         feedback.innerHTML = '<strong>Correct!</strong> You identified all the correct options.';
         if (finalExplanationHtml) feedback.innerHTML += '<span class="quiz-feedback-explanation">' + finalExplanationHtml + '</span>';
         showRemediationHints();
-        concludeMultiQuiz();
+        concludeMultiQuiz(true);
         updateTrackerComplete();
       } else if (attemptsUsed < maxAttempts) {
         var remaining = maxAttempts - attemptsUsed;

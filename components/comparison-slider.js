@@ -216,8 +216,7 @@ export function generateCSS() {
       position: absolute;
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       padding: 6px 14px;
       border-radius: var(--att-radius-pill, 999px);
       z-index: 5;

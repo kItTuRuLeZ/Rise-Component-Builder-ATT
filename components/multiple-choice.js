@@ -15,9 +15,9 @@ import { validateQuizAnswers, combineValidationResults } from '../js/validation-
  * @property {boolean} [mcShowCorrectAfterFinal] - Reveals the correct option after the final attempt
  * @property {string} [mcHintText] - Hint shown after an incorrect attempt, if attempts remain
  * @property {string} [mcFinalExplanation] - Explanation shown once the question concludes
- * @property {boolean} [mcAllowReset] - Shows a "Try Again" action once concluded
+ * @property {boolean} [mcAllowReset] - Shows a "Try again" action once concluded
  * @property {boolean} [mcShowResultSummary] - Shows a confidence + correctness interpretation once concluded
- * @property {string} [mcSubmitButtonText] - Custom label for the submit button (default "Submit Answer")
+ * @property {string} [mcSubmitButtonText] - Custom label for the submit button (default "Submit answer")
  */
 
 export const id = 'multiple-choice';
@@ -40,7 +40,7 @@ export const defaultConfig = {
   mcFinalExplanation: '',
   mcAllowReset: false,
   mcShowResultSummary: false,
-  mcSubmitButtonText: 'Submit Answer',
+  mcSubmitButtonText: 'Submit answer',
   items: [
     { label: 'Option A (Correct)', content: 'Micro-learning helps memory retention.', correct: true },
     { label: 'Option B', content: 'Courses must be at least 1 hour long.', correct: false },
@@ -59,7 +59,7 @@ export function generateHTML(config, instanceId) {
   const hintText = escapeHTML(config.mcHintText || '');
   return `<div class="quiz-block">
     <div class="quiz-options" role="radiogroup" aria-label="Answer choices">${config.items.map((item, index) => `
-    <div class="quiz-option" role="radio" tabindex="${index === 0 ? '0' : '-1'}" aria-checked="false" data-idx="${index}"><div class="option-check-circle" aria-hidden="true"></div><div class="option-text">${item.label ? sanitizeRichText(item.label) : richInline(item.title, 'Option Label')}</div><span class="option-correct-flag" hidden> — Correct answer</span></div>`).join('')}</div>
+    <div class="quiz-option" role="radio" tabindex="${index === 0 ? '0' : '-1'}" aria-checked="false" data-idx="${index}"><div class="option-check-circle" aria-hidden="true"></div><div class="option-text">${item.label ? sanitizeRichText(item.label) : richInline(item.title, 'Option label')}</div><span class="option-correct-flag" hidden> — Correct answer</span></div>`).join('')}</div>
     ${confidenceMode ? `
     <div class="quiz-confidence-block">
       <div class="quiz-confidence-label" id="${instanceId}-confidence-label">How confident are you in this answer?</div>
@@ -67,10 +67,10 @@ export function generateHTML(config, instanceId) {
         ${confidenceLevels.map((level, index) => `<div class="quiz-confidence-option" role="radio" tabindex="${index === 0 ? '0' : '-1'}" aria-checked="false" data-confidence="${level.value}">${escapeHTML(level.label)}</div>`).join('')}
       </div>
     </div>` : ''}
-    <button class="quiz-submit-btn" type="button">${escapeHTML(config.mcSubmitButtonText || 'Submit Answer')}</button>
+    <button class="quiz-submit-btn" type="button">${escapeHTML(config.mcSubmitButtonText || 'Submit answer')}</button>
     <div class="quiz-hint" id="${instanceId}-quiz-hint" role="status" aria-live="polite" hidden><strong>Hint:</strong> ${hintText}</div>
     <div id="${instanceId}-quiz-feedback-box" class="quiz-feedback" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" style="display:none;"></div>
-    ${config.mcAllowReset ? '<button type="button" class="quiz-reset-btn" hidden>Try Again</button>' : ''}
+    ${config.mcAllowReset ? '<button type="button" class="quiz-reset-btn" hidden>Try again</button>' : ''}
   </div>`;
 }
 
@@ -384,7 +384,7 @@ export function generateJS(config, instanceId) {
       });
     }
 
-    function concludeQuiz() {
+    function concludeQuiz(wasCorrect) {
       quizConcluded = true;
       document.querySelectorAll('.quiz-option, .quiz-confidence-option').forEach(function(el) {
         el.setAttribute('aria-disabled', 'true');
@@ -393,7 +393,7 @@ export function generateJS(config, instanceId) {
       var submitBtn = document.querySelector('.quiz-submit-btn');
       if (submitBtn) submitBtn.setAttribute('aria-disabled', 'true');
       var resetBtn = document.querySelector('.quiz-reset-btn');
-      if (resetBtn) resetBtn.hidden = false;
+      if (resetBtn && !wasCorrect) resetBtn.hidden = false;
     }
 
     function submitQuiz() {
@@ -432,7 +432,7 @@ export function generateJS(config, instanceId) {
           feedback.innerHTML += '<span class="quiz-feedback-explanation">' + finalExplanationHtml + '</span>';
         }
         if (hint) hint.hidden = true;
-        concludeQuiz();
+        concludeQuiz(true);
         updateTrackerComplete();
       } else if (attemptsUsed < maxAttempts) {
         var remaining = maxAttempts - attemptsUsed;

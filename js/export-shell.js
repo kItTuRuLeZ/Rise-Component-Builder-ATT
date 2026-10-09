@@ -61,12 +61,19 @@ export const BASE_RESET_CSS = `
       text-align: left;
     }
 
+    /* Over a background photo the label, headline and text sit on a solid card, so they stay readable on any image. */
+    .block-header.has-backing {
+      background-color: var(--bg-card);
+      border-radius: var(--att-radius-md, 12px);
+      padding: calc(16px * var(--spacing-scale)) calc(20px * var(--spacing-scale));
+      box-shadow: var(--att-shadow-1, 0 1px 2px rgba(0, 0, 0, 0.06));
+    }
+
     .block-label {
       font-size: 19px;
       font-weight: 700;
-      letter-spacing: 0.6px;
+      letter-spacing: normal;
       color: var(--accent);
-      text-transform: uppercase;
       margin-bottom: 4px;
       white-space: pre-line;
     }
@@ -98,9 +105,8 @@ export const BASE_RESET_CSS = `
     .block-header.header-editorial .block-label {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-w-bold, 700);
-      letter-spacing: var(--att-ls-eyebrow, 0.08em);
+      letter-spacing: normal;
       color: var(--att-cobalt, #00388F);
-      text-transform: uppercase;
       margin-bottom: 8px;
     }
 
@@ -132,7 +138,7 @@ export const BASE_RESET_CSS = `
     .block-context-band {
       background-color: var(--att-grey-1, #F3F4F5);
       border-top: 2px solid var(--att-blue, #009FDB);
-      border-radius: 0 0 var(--att-radius-md, 12px) var(--att-radius-md, 12px);
+      border-radius: var(--att-radius-md, 12px);
       padding: calc(14px * var(--spacing-scale)) calc(18px * var(--spacing-scale));
       margin-bottom: calc(24px * var(--spacing-scale));
       color: var(--att-text, #000000);
@@ -239,6 +245,23 @@ export const SHARED_A11Y_CSS = `
       transition: width 0.3s ease;
     }
 
+    .completion-reset-btn {
+      margin-top: 12px;
+      padding: 8px 18px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--bg-card);
+      border: 1px solid var(--primary);
+      border-radius: var(--button-radius, 999px);
+      cursor: pointer;
+    }
+
+    .completion-reset-btn:hover { background: var(--primary-tint, transparent); }
+
+    .completion-reset-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
     .completion-success-message {
       margin: 12px 0 0;
       font-size: 13px;
@@ -304,6 +327,13 @@ export function renderSharedA11yScript({ instanceId, trackCompletion, totalItems
     // exactly once per completed state — see RiseComponentCompletion.notifyComplete().
     function evaluateComponentCompletion(percent) {
       if (percent < 100) return;
+      // The shared Start over button (Completion tab, "Allow learner to reset / restart"). Reloading the
+      // block returns every component to its starting state; the host keeps any completion it already has.
+      var resetBtn = document.getElementById('${instanceId}-completion-reset');
+      if (resetBtn && resetBtn.hidden) {
+        resetBtn.hidden = false;
+        resetBtn.addEventListener('click', function() { window.location.reload(); });
+      }
       if (typeof RiseComponentCompletion === 'undefined' || RiseComponentCompletion.hasCompleted()) return;
       announce(completionMessage);
       var messageEl = document.getElementById('${instanceId}-completion-message');
@@ -383,7 +413,7 @@ export function renderShell({
   const cyanRuleHtml = (isEditorial && headerCyanRule) ? '\n      <div class="header-cyan-rule" aria-hidden="true"></div>' : '';
   const blockLabelHtml = blockLabel ? `\n      <div class="block-label">${blockLabel}</div>` : '';
   const blockDescHtml = blockDesc ? `\n      <div class="block-desc">${blockDesc}</div>` : '';
-  const headerClass = isEditorial ? 'block-header header-editorial' : 'block-header header-minimal';
+  const headerClass = `${isEditorial ? 'block-header header-editorial' : 'block-header header-minimal'}${blockBackgroundImage ? ' has-backing' : ''}`;
 
   const headerHtml = (blockLabel || blockHeadline || blockDesc) ? `
     <div class="${headerClass}">${blockLabelHtml}
@@ -437,17 +467,18 @@ ${BOOTSTRAP_JS}
 `;
 }
 
-export function renderCompletionTrackerHTML(instanceId, trackCompletion) {
+export function renderCompletionTrackerHTML(instanceId, trackCompletion, allowReset = false) {
   if (!trackCompletion) return '';
   return `
     <div class="completion-tracker" aria-labelledby="${instanceId}-completion-label">
         <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:600;">
-          <span id="${instanceId}-completion-label">Progress Completion</span>
+          <span id="${instanceId}-completion-label">Progress completion</span>
           <span id="${instanceId}-completion-text" aria-hidden="true">0%</span>
         </div>
         <div class="progress-bar-container" id="${instanceId}-progress-bar" role="progressbar" aria-labelledby="${instanceId}-completion-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 percent complete">
           <div class="progress-fill" id="${instanceId}-progress-fill"></div>
         </div>
         <p id="${instanceId}-completion-message" class="completion-success-message" hidden></p>
+        ${allowReset ? `<button type="button" class="completion-reset-btn" id="${instanceId}-completion-reset" hidden>Start over</button>` : ''}
       </div>`;
 }

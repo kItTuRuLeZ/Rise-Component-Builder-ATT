@@ -47,7 +47,7 @@ export function generateHTML(config, instanceId) {
 
     return `
       <div class="pricing-matrix-wrapper" id="${instanceId}">
-        <div class="pricing-matrix-table" role="table" aria-label="Feature Comparison Matrix">
+        <div class="pricing-matrix-table" role="table" aria-label="Feature comparison matrix">
           <div class="matrix-row matrix-header-row" role="row">
             <div class="matrix-cell matrix-feature-cell header" role="columnheader">Features</div>
             ${config.items.map(item => `
@@ -83,7 +83,7 @@ export function generateHTML(config, instanceId) {
         <div class="pricing-card-item ${item.highlighted ? 'premium-highlight' : ''}" id="${instanceId}-card-${idx}">
           ${item.highlighted ? '<div class="popular-ribbon">Recommended</div>' : ''}
           <div class="pricing-tier-header">
-            <h4>${richInline(item.title, 'Service Plan')}</h4>
+            <h4>${richInline(item.title, 'Service plan')}</h4>
           </div>
           <div class="pricing-features-list">
             ${(item.content || '').split('•').map(feat => {
@@ -101,7 +101,7 @@ export function generateHTML(config, instanceId) {
             `;
             }).join('')}
           </div>
-          <button class="pricing-action-btn" type="button" data-idx="${idx}" data-action-url="${escapeAttribute(item.actionUrl || '')}">Choose Plan</button>
+          <button class="pricing-action-btn" type="button" data-idx="${idx}" data-action-url="${escapeAttribute(item.actionUrl || '')}">Choose plan</button>
         </div>
       `).join('')}
     </div>
@@ -146,8 +146,7 @@ export function generateCSS() {
       font-weight: var(--att-fw-bold, 700);
       padding: 3px 12px;
       border-radius: var(--att-radius-pill, 999px);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+      letter-spacing: normal;
     }
     .pricing-tier-header {
       margin-bottom: var(--att-space-4, 16px);
@@ -301,7 +300,6 @@ export function generateCSS() {
       display: block;
       font-size: 10px;
       font-weight: 700;
-      text-transform: uppercase;
       color: var(--primary);
       margin-top: 2px;
     }
@@ -324,7 +322,7 @@ export function generateJS() {
             card.classList.remove('selected');
           });
           document.querySelectorAll('.pricing-action-btn').forEach(function(btn) {
-            btn.textContent = 'Choose Plan';
+            btn.textContent = 'Choose plan';
           });
           button.closest('.pricing-card-item').classList.add('selected');
           button.textContent = 'Selected';

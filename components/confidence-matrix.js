@@ -54,10 +54,10 @@ const strengthIcon = getAttIconSvg('check-circle-filled', { width: 18, height: 1
 const growthIcon = getAttIconSvg('information-circle-filled', { width: 18, height: 18, ariaHidden: true });
 
 const RATING_LEVELS = [
-  { value: 1, label: 'Novice', desc: 'Need Guidance' },
-  { value: 2, label: 'Developing', desc: 'Working Knowledge' },
+  { value: 1, label: 'Novice', desc: 'Need guidance' },
+  { value: 2, label: 'Developing', desc: 'Working knowledge' },
   { value: 3, label: 'Proficient', desc: 'Independent' },
-  { value: 4, label: 'Expert', desc: 'Can Mentor' }
+  { value: 4, label: 'Expert', desc: 'Can mentor' }
 ];
 
 export function generateHTML(config, instanceId) {
@@ -125,7 +125,7 @@ export function generateHTML(config, instanceId) {
       ${showBreakdown ? `
         <div class="confidence-diagnostic-panel" id="${instanceId}-diagnostic-panel" style="display: none;" aria-live="polite">
           <div class="confidence-diagnostic-header">
-            <h4 class="confidence-diagnostic-title">Assessment Summary & Diagnostic Guidance</h4>
+            <h4 class="confidence-diagnostic-title">Assessment summary & diagnostic guidance</h4>
             <span class="confidence-tier-badge" id="${instanceId}-tier-badge">Evaluated</span>
           </div>
           <p class="confidence-diagnostic-summary" id="${instanceId}-tier-desc"></p>
@@ -157,7 +157,7 @@ export function generateHTML(config, instanceId) {
           <span>Print / Save Action Plan</span>
         </button>
         <button type="button" class="confidence-reset-btn" id="${instanceId}-reset-btn" aria-label="Reset self-assessment">
-          <span>Reset Assessment</span>
+          <span>Reset assessment</span>
         </button>
       </div>
     </div>
@@ -228,7 +228,7 @@ export function generateCSS() {
     }
     .confidence-progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--att-blue, #009FDB), var(--primary, #00388F));
+      background: var(--att-blue, #009FDB);
       border-radius: 9999px;
       transition: width 350ms cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -278,8 +278,7 @@ export function generateCSS() {
       color: var(--primary, #00388F);
       font-size: var(--att-fs-xs, 0.8125rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: normal;
     }
     .confidence-item-num {
       font-size: var(--att-fs-xs, 0.8125rem);
@@ -406,8 +405,7 @@ export function generateCSS() {
       color: #FFFFFF;
       font-size: var(--att-fs-xs, 0.8125rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: normal;
     }
     .confidence-diagnostic-summary {
       font-size: var(--att-fs-body, 1rem);
@@ -668,20 +666,20 @@ export function generateJS(config, instanceId) {
       }
 
       function renderDiagnostic(scorePercent) {
-        var tier = 'Proficient Practitioner';
+        var tier = 'Proficient practitioner';
         var desc = 'Solid capability across the competencies you rated, with balanced independent execution.';
 
         if (scorePercent >= 85) {
-          tier = 'Advanced Subject Matter Expert';
+          tier = 'Advanced subject matter expert';
           desc = 'Exceptional confidence across the competencies you rated. You are well placed to apply these skills independently, support colleagues and guide others in complex situations.';
         } else if (scorePercent >= 65) {
-          tier = 'Proficient Practitioner';
+          tier = 'Proficient practitioner';
           desc = 'Solid capability with strong independent execution. Focus on targeted stretch areas to broaden your range across the competencies you rated.';
         } else if (scorePercent >= 45) {
-          tier = 'Developing Specialist';
+          tier = 'Developing specialist';
           desc = 'Good grasp of the core practices. Recommended next steps include guided practice on real work and peer feedback to build independent confidence.';
         } else {
-          tier = 'Foundational Explorer';
+          tier = 'Foundational explorer';
           desc = 'You are at the start of building these competencies. Prioritize foundational learning and guided practice before taking on complex work alone.';
         }
 

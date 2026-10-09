@@ -46,7 +46,7 @@ export function generateHTML(config, instanceId) {
       
       <div class="sorting-hud-bar">
         ${showMistakes ? `<span class="sorting-mistakes-counter" id="${instanceId}-mistakes-counter" role="status" aria-live="polite">Mistakes: 0</span>` : ''}
-        ${allowReset ? `<button type="button" class="sorting-reset-btn" id="${instanceId}-reset-btn">Reset Activity</button>` : ''}
+        ${allowReset ? `<button type="button" class="sorting-reset-btn" id="${instanceId}-reset-btn">Reset activity</button>` : ''}
       </div>
 
       <div class="sorting-card-pool" role="group" aria-label="Items to sort">
@@ -55,7 +55,7 @@ export function generateHTML(config, instanceId) {
             <div class="drag-handle-row">
               <div class="drag-handle" aria-hidden="true">${arrowsIcon}</div>
               <div class="drag-text-wrap">
-                <div class="drag-text" id="${instanceId}-sort-label-${idx}">${richInline(item.title, 'Sorting Card')}</div>
+                <div class="drag-text" id="${instanceId}-sort-label-${idx}">${richInline(item.title, 'Sorting card')}</div>
                 ${item.content ? `<div class="drag-sub">${escapeHTML(item.content)}</div>` : ''}
               </div>
             </div>
@@ -79,7 +79,7 @@ export function generateHTML(config, instanceId) {
         `).join('')}
       </div>
 
-      ${!instantFeedback ? `<button type="button" class="quiz-submit-btn" id="${instanceId}-verify-btn">Verify Sorting</button>` : ''}
+      ${!instantFeedback ? `<button type="button" class="quiz-submit-btn" id="${instanceId}-verify-btn">Verify sorting</button>` : ''}
       <div id="${instanceId}-sorting-feedback-box" class="quiz-feedback" role="status" aria-live="polite" aria-atomic="true" style="display:none;"></div>
     </div>
   `;
@@ -105,12 +105,12 @@ export function generateCSS() {
     }
     .sorting-reset-btn {
       background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--primary);
       border-radius: var(--att-radius-pill, 999px);
       padding: 6px 16px;
       font-size: var(--att-fs-body-sm, 13px);
       font-weight: 600;
-      color: var(--text-main);
+      color: var(--primary);
       cursor: pointer;
       min-height: 36px;
       display: inline-flex;
@@ -210,7 +210,7 @@ export function generateCSS() {
     .sort-explanation-card {
       background-color: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-left: 3px solid var(--primary);
+      border-left: 3px solid var(--accent);
       border-radius: var(--att-radius-sm, 6px);
       padding: 8px 12px;
       font-size: var(--att-fs-body-sm, 13px);
@@ -233,8 +233,7 @@ export function generateCSS() {
     .column-header {
       font-size: var(--att-fs-h3, 1.125rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--accent);
       border-bottom: 1px dashed var(--border-color);
       padding-bottom: 8px;
@@ -367,7 +366,7 @@ export function generateJS(config, instanceId) {
         } else {
           mistakeCount++;
           updateMistakeHUD();
-          setSortIndicator(indicator, sortCrossIcon, 'Incorrect Category');
+          setSortIndicator(indicator, sortCrossIcon, 'Incorrect category');
           if (expl) expl.style.display = 'none';
         }
       } else {

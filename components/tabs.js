@@ -68,7 +68,7 @@ export function generateHTML(config, instanceId) {
 
   const toolbar = (showProgress || allowReset || compareMode || autoAdvance) ? `
     <div class="tabs-toolbar">
-      ${compareMode ? '<button type="button" class="tabs-toolbar-btn tabs-compare-toggle-btn" aria-pressed="false">Compare Sections</button>' : ''}
+      ${compareMode ? '<button type="button" class="tabs-toolbar-btn tabs-compare-toggle-btn" aria-pressed="false">Compare sections</button>' : ''}
       ${autoAdvance ? `<button type="button" class="tabs-toolbar-btn tabs-autoadvance-btn" aria-label="Auto-advance tabs" aria-pressed="false">${playIcon}${pauseIcon}<span class="tabs-autoadvance-label">Auto-Play (${autoAdvanceDelay}s)</span></button>` : ''}
       ${allowReset ? '<button type="button" class="tabs-toolbar-btn tabs-reset-btn">Reset</button>' : ''}
       ${showProgress ? `<span class="tabs-progress-text" id="${instanceId}-tabs-progress" role="status" aria-live="polite">0 of ${total} explored</span>` : ''}
@@ -246,7 +246,7 @@ export function generateCSS() {
       min-height: 44px;
       transition: all 0.2s;
     }
-    .tab-btn:hover:not(.active) {
+    .tab-btn:hover:not(.active):not([aria-disabled="true"]) {
       border-color: var(--primary-hover);
       color: var(--primary-hover);
     }
@@ -288,8 +288,7 @@ export function generateCSS() {
     .tab-visited-badge {
       font-size: var(--att-fs-eyebrow, 12px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 8px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--border-color);
@@ -312,16 +311,22 @@ export function generateCSS() {
       display: block;
     }
 
+    /* A grid, not a flex row: the toolbar above and the compare section below span the full width, while the tab
+       list and the panel sit side by side between them. As a flex row, every one of those blocks became a column. */
     .tabs-container.tabs-vertical {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+    }
+    .tabs-container.tabs-vertical .tabs-toolbar,
+    .tabs-container.tabs-vertical .tabs-compare-panel {
+      grid-column: 1 / -1;
     }
     .tabs-container.tabs-vertical .tabs-nav-wrapper {
       display: flex;
       flex-direction: column;
       padding: 0;
-      width: 240px;
-      min-width: 200px;
-      max-width: 35%;
+      width: auto;
+      min-width: 0;
       border-right: var(--border-style);
     }
     .tabs-container.tabs-vertical .tabs-nav-arrow {
@@ -349,7 +354,7 @@ export function generateCSS() {
     }
     @media (max-width: 640px) {
       .tabs-container.tabs-vertical {
-        flex-direction: column;
+        grid-template-columns: minmax(0, 1fr);
       }
       .tabs-container.tabs-vertical .tabs-nav-wrapper {
         width: 100%;
@@ -378,13 +383,15 @@ export function generateCSS() {
       }
     }
 
-    .tabs-compare-section {
+    .tabs-compare-section,
+    .tabs-compare-panel {
       border-top: var(--border-style);
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
+    .tabs-compare-panel[hidden] { display: none; }
     .tabs-compare-hint {
       font-size: var(--att-fs-body-sm, 14px);
       color: var(--text-muted);

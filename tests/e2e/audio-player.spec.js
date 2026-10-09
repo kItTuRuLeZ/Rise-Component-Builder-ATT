@@ -183,7 +183,7 @@ test.describe('Audio Player: synchronized transcript', () => {
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(panel).toBeVisible();
-    await expect(toggle).toHaveText('Hide Transcript');
+    await expect(toggle).toHaveText('Hide transcript');
     await toggle.click();
     await expect(panel).toBeHidden();
   });

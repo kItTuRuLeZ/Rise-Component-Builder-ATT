@@ -23,7 +23,8 @@ import {
   downloadProjectJson, downloadZipFile, formatExportedFileSize,
   getExportedFileSize, prepareMediaExport
 } from './js/export.js';
-import { copyTextToClipboard, describeStorageUsage, escapeHTML, formatItemLabel, formatReadableDate, normalizeHeadingLevel, toRgba as colorToRgba } from './js/utilities.js';
+import { copyTextToClipboard, describeStorageUsage, escapeHTML, formatItemLabel, formatReadableDate, normalizeHeadingLevel, toRgba as colorToRgba, toSentenceCase } from './js/utilities.js';
+import { COMPLETION_MODE_WORDING, getAvailableCompletionModes, getCompletionKind, resolveCompletionMode } from './js/completion-modes.js';
 import { showToast } from './js/toast.js';
 import {
   checkCompletionExportFormatIssue, collectSyncIssues, runPreflight, summarizePreflight, summarizePreflightForAnnouncement
@@ -1369,7 +1370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const baseConfig = getDefaultConfig(registryEntry);
     const sampleConfig = preset?.config
       ? {
-          blockTitle: preset.config.blockTitle || (component.title || registryEntry.name || '').toUpperCase(),
+          blockTitle: preset.config.blockTitle || toSentenceCase(component.title || registryEntry.name || ''),
           blockHeadline: preset.config.blockHeadline || `Explore ${component.title || registryEntry.name}`,
           blockDesc: preset.config.blockDesc || component.desc || registryEntry.description || '',
           borderRadius: '12',
@@ -1381,7 +1382,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           ...preset.config
         }
       : {
-          blockTitle: (component.title || registryEntry.name || '').toUpperCase(),
+          blockTitle: toSentenceCase(component.title || registryEntry.name || ''),
           blockHeadline: `Explore details about ${component.title || registryEntry.name}`,
           blockDesc: component.desc || registryEntry.description || '',
           borderRadius: '12',
@@ -1566,7 +1567,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const baseConfig = getDefaultConfig(registryEntry);
             const sampleConfig = preset?.config
               ? {
-                  blockTitle: preset.config.blockTitle || (c.title || registryEntry.name || '').toUpperCase(),
+                  blockTitle: preset.config.blockTitle || toSentenceCase(c.title || registryEntry.name || ''),
                   blockHeadline: preset.config.blockHeadline || `Explore ${c.title || registryEntry.name}`,
                   blockDesc: preset.config.blockDesc || c.desc || registryEntry.description || '',
                   borderRadius: '12',
@@ -1578,7 +1579,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   ...preset.config
                 }
               : {
-                  blockTitle: (c.title || registryEntry.name || '').toUpperCase(),
+                  blockTitle: toSentenceCase(c.title || registryEntry.name || ''),
                   blockHeadline: `Explore details about ${c.title || registryEntry.name}`,
                   blockDesc: c.desc || registryEntry.description || '',
                   borderRadius: '12',
@@ -1626,7 +1627,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderIvMarkerTimeline();
 
     // Sync block text items with defaults/reset if needed
-    inputBlockTitle.value = title.toUpperCase();
+    inputBlockTitle.value = toSentenceCase(title);
     inputBlockHeadline.value = `Explore details about ${title}`;
     
     appState.config.blockTitle = inputBlockTitle.value;
@@ -2129,7 +2130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     previewViewport.classList.remove(...deviceModeClasses);
     previewViewport.classList.add(device);
-    previewWidthLabel.textContent = getDeviceWidthLabel(device, COMPONENT_MAX_WIDTH);
+    previewWidthLabel.textContent = getDeviceWidthLabel(device, COMPONENT_MAX_WIDTH, isLandscapeOrientation);
 
     if (btnPreviewOrientation) {
       const isMobileOrTablet = device === 'tablet' || device === 'mobile-lg' || device === 'mobile';
@@ -2147,6 +2148,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       isLandscapeOrientation = !isLandscapeOrientation;
       btnPreviewOrientation.classList.toggle('active', isLandscapeOrientation);
       previewViewport.classList.toggle('landscape', isLandscapeOrientation);
+      const activeDevice = deviceModeClasses.find(name => previewViewport.classList.contains(name)) || 'desktop';
+      previewWidthLabel.textContent = getDeviceWidthLabel(activeDevice, COMPONENT_MAX_WIDTH, isLandscapeOrientation);
       showToast(isLandscapeOrientation ? 'Orientation: Landscape' : 'Orientation: Portrait', 'info', 1500);
       updateLivePreview();
     });
@@ -2717,7 +2720,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     ivTimelineAuthoringGroup.hidden = componentId !== 'interactive-video';
   }
 
+  // Shows only the completion modes that are true for this component, worded for it (js/completion-modes.js).
+  function syncCompletionModeCards(componentId) {
+    const offeredModes = getAvailableCompletionModes(componentId);
+    const modeWording = COMPLETION_MODE_WORDING[getCompletionKind(componentId)] || {};
+    document.querySelectorAll('input[name="completion-mode"]').forEach(radio => {
+      const card = radio.closest('.completion-mode-card');
+      if (!card) return;
+      card.hidden = !offeredModes.includes(radio.value);
+      const desc = card.querySelector('.mode-card-desc');
+      if (desc) {
+        if (!desc.dataset.defaultText) desc.dataset.defaultText = desc.textContent.replace(/\s+/g, ' ').trim();
+        desc.textContent = modeWording[radio.value] || desc.dataset.defaultText;
+      }
+    });
+  }
+
   function updateComponentSpecificOptions(componentId) {
+    syncCompletionModeCards(componentId);
     updateAccordionBehaviorVisibility(componentId);
     updateFlipCardsBehaviorVisibility(componentId);
     updateMcBehaviorVisibility(componentId);
@@ -2834,8 +2854,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     inputTrackCompletion.checked = config.trackCompletion;
     inputCompletionMsg.value = config.completionMsg || '';
 
-    // Sync completion tracking mode radio cards & allow-reset checkbox
-    const currentCompletionMode = config.completionMode || (config.trackCompletion ? 'all-items' : 'none');
+    // Sync completion tracking mode radio cards & allow-reset checkbox. Only the modes that are true for this component are
+    // offered (js/completion-modes.js), and a saved mode it does not offer maps to the one it does.
+    syncCompletionModeCards(appState.selectedComponent.id);
+    const currentCompletionMode = resolveCompletionMode(appState.selectedComponent.id, config);
+    if (config.trackCompletion && config.completionMode !== currentCompletionMode) config.completionMode = currentCompletionMode;
     const targetModeRadio = document.querySelector(`input[name="completion-mode"][value="${currentCompletionMode}"]`);
     if (targetModeRadio) targetModeRadio.checked = true;
     const inputAllowReset = document.getElementById('input-allow-reset');

@@ -1,6 +1,6 @@
 # AT&T edition: UAT checklist and known limitations
 
-**Site:** https://kittu-rulz.github.io/Rise-Component-Builder-ATT/
+**Site:** https://kitturulez.github.io/Rise-Component-Builder-ATT/
 **Scope of this build:** the storyboard importer, course outline, component editing, preview, QA, export, project backup/restore, and the Post-Publish Toolkit. Full-course SCORM export and any Word add-in are **not** part of this build.
 
 ## Before you start
@@ -9,6 +9,7 @@
 2. Check the version badge at the top of the page. It should read `v3.0.0` with today's build date and time. Note it in every report.
 3. Use a desktop browser (Chrome, Edge, Firefox or Safari). Note which one you used.
 4. Work on a **test project**, not production content. Projects are stored in your browser only.
+5. **The site address changed in October 2026** (it is now on `kitturulez.github.io`). The old `kittu-rulz.github.io` links no longer open. Projects are stored per web address, so projects saved at the old address do not appear here. Re-create them, or import a `.json` or `.rise-project.zip` backup if you exported one.
 
 ## Checklist
 
@@ -63,6 +64,7 @@ Mark each line Pass / Fail. For a Fail, write what you did, what you expected, w
 ## Known limitations (not defects to report)
 
 - **Not tested by the development team, so please test and report:** embedding in a real Rise 360 course; Rise Continue-block completion; LMS behaviour; physical phones and tablets; real Safari file uploads; a full manual screen-reader pass; real Post-Publish packages other than the one used in testing.
+- **Some websites will not open from a link inside a component in Rise.** Rise runs a code block in a sandboxed frame (`allow-forms allow-popups allow-same-origin allow-scripts`) that does not let a link's new tab leave the sandbox. Most sites open normally, but a few refuse to load in that restricted tab and show "refused to connect" (for example `https://www.google.com`). The link is correct and works outside Rise. For such a site, put the link in a native Rise text or button block instead.
 - **Automated checks are not a certificate.** Preflight and QA are automated rules. They do not prove WCAG conformance or Rise compatibility.
 - **Interactive Video multiple-choice markers** import only the correct answer from a storyboard. Add the wrong options in the Builder.
 - **External audio and video links:** chapter timestamps cannot be checked against their length, and Preflight says "unverified". Upload the file to have it checked.

@@ -19,7 +19,7 @@ test('clearing a Button List title falls back to the default label instead of pr
   await title.fill('Temporary');
   await title.fill('');
   const preview = page.frameLocator('#live-preview-iframe');
-  await expect(preview.locator('.btn-title').first()).toHaveText('Launch Link');
+  await expect(preview.locator('.btn-title').first()).toHaveText('Launch link');
   await expect(preview.locator('body')).not.toContainText('<br>');
 });
 
@@ -56,4 +56,46 @@ test('the Heading Level field says it does not change how the headline looks', a
   await page.locator('.component-select-card').filter({ hasText: 'Accordion' }).click();
   await page.locator('.editor-tab[data-tab="appearance"]').click();
   await expect(page.locator('#select-heading-level').locator('xpath=following-sibling::p[contains(@class,"field-hint")]')).toContainText('does not change how the headline looks');
+});
+
+test('the link popup opens above the editors below it, not underneath their toolbars', async ({ page }) => {
+  await page.goto('/?catalog');
+  await page.locator('.nav-item[data-category="interactive"]').click();
+  await page.locator('.component-select-card').filter({ hasText: 'Accordion' }).click();
+  await expect(page.locator('#editor-state')).toBeVisible();
+  // Block Label / Main Headline / Instructional Text are three editors stacked in one panel.
+  await expect(page.locator('.rich-text-editor-container').nth(2)).toBeVisible();
+  await page.locator('.rich-text-editor-container').first().locator('.rt-btn[title*="ink" i]').first().click();
+  const popover = page.locator('.rt-link-popover');
+  await expect(popover).toBeVisible();
+  const box = await popover.boundingBox();
+  // Sample the popup's whole height: whatever is painted there must be the popup, never a neighbouring toolbar.
+  for (const fraction of [0.1, 0.35, 0.6, 0.85, 0.97]) {
+    const topmostIsPopup = await page.evaluate(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('.rt-popover')), { x: box.x + box.width / 2, y: box.y + box.height * fraction });
+    expect(topmostIsPopup, `popup is covered at ${Math.round(fraction * 100)}% of its height`).toBe(true);
+  }
+});
+
+test('the Completion tab offers only the completion mode that applies to the component', async ({ page }) => {
+  await page.goto('/?catalog');
+  await page.locator('.nav-item[data-category="interactive"]').click();
+  await page.locator('.component-select-card').filter({ hasText: 'Accordion' }).click();
+  await page.locator('.editor-tab[data-tab="completion"]').click();
+  await expect(page.locator('label[for="completion-mode-all-items"]')).toBeVisible();
+  await expect(page.locator('label[for="completion-mode-interaction-success"]')).toBeHidden();
+
+  await page.goto('/?catalog');
+  await page.locator('.nav-item[data-category="knowledge"]').click();
+  await page.locator('.component-select-card').filter({ hasText: 'Multiple Choice' }).click();
+  await page.locator('.editor-tab[data-tab="completion"]').click();
+  await expect(page.locator('label[for="completion-mode-interaction-success"]')).toBeVisible();
+  await expect(page.locator('label[for="completion-mode-all-items"]')).toBeHidden();
+  await expect(page.locator('label[for="completion-mode-interaction-success"]')).toContainText('answer correctly');
+});
+
+test('a newly chosen block starts with a sentence-case label, not an upper-case one', async ({ page }) => {
+  await page.goto('/?catalog');
+  await page.locator('.nav-item[data-category="interactive"]').click();
+  await page.locator('.component-select-card').filter({ hasText: 'Horizontal Tabs' }).click();
+  await expect(page.frameLocator('#live-preview-iframe').locator('.block-label')).toHaveText('Horizontal tabs');
 });

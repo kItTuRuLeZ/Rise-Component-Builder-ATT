@@ -221,12 +221,19 @@
       text-align: left;
     }
 
+    /* Over a background photo the label, headline and text sit on a solid card, so they stay readable on any image. */
+    .block-header.has-backing {
+      background-color: var(--bg-card);
+      border-radius: var(--att-radius-md, 12px);
+      padding: calc(16px * var(--spacing-scale)) calc(20px * var(--spacing-scale));
+      box-shadow: var(--att-shadow-1, 0 1px 2px rgba(0, 0, 0, 0.06));
+    }
+
     .block-label {
       font-size: 19px;
       font-weight: 700;
-      letter-spacing: 0.6px;
+      letter-spacing: normal;
       color: var(--accent);
-      text-transform: uppercase;
       margin-bottom: 4px;
       white-space: pre-line;
     }
@@ -258,9 +265,8 @@
     .block-header.header-editorial .block-label {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-w-bold, 700);
-      letter-spacing: var(--att-ls-eyebrow, 0.08em);
+      letter-spacing: normal;
       color: var(--att-cobalt, #00388F);
-      text-transform: uppercase;
       margin-bottom: 8px;
     }
 
@@ -292,7 +298,7 @@
     .block-context-band {
       background-color: var(--att-grey-1, #F3F4F5);
       border-top: 2px solid var(--att-blue, #009FDB);
-      border-radius: 0 0 var(--att-radius-md, 12px) var(--att-radius-md, 12px);
+      border-radius: var(--att-radius-md, 12px);
       padding: calc(14px * var(--spacing-scale)) calc(18px * var(--spacing-scale));
       margin-bottom: calc(24px * var(--spacing-scale));
       color: var(--att-text, #000000);
@@ -431,7 +437,7 @@
 
     .hotspot-progress-fill {
       height: 100%;
-      background-color: var(--primary);
+      background-color: var(--accent);
       border-radius: var(--att-radius-full, 9999px);
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -757,9 +763,8 @@
     .hotspot-callout-tag {
       font-size: var(--att-fs-caption, 0.75rem);
       font-weight: var(--att-fw-semibold, 600);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--att-blue-300, #00C9FF);
+      letter-spacing: normal;
+      color: var(--att-blue, #009FDB);
     }
 
     .hotspot-callout-title {
@@ -778,7 +783,10 @@
 
     .hotspot-callout-content p { margin: 0; }
 
-    /* Audio Narration Widget */
+    /* The drawer and modal copy a marker's text and audio out of this block; it is never shown itself. */
+    .hotspot-callout-source { display: none !important; }
+
+    /* Audio narration Widget */
     .hotspot-audio-narration {
       margin-top: var(--att-space-2, 8px);
       padding-top: var(--att-space-2, 8px);
@@ -794,7 +802,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: var(--att-blue-300, #00C9FF);
+      color: var(--att-blue, #009FDB);
     }
 
     .hotspot-audio-elem {
@@ -813,7 +821,7 @@
     .hotspot-audio-transcript summary {
       cursor: pointer;
       font-weight: var(--att-fw-semibold, 600);
-      color: var(--att-blue-300, #00C9FF);
+      color: var(--att-blue, #009FDB);
     }
 
     .hotspot-audio-transcript .transcript-body {
@@ -837,7 +845,10 @@
       box-shadow: -4px 0 16px rgba(0,0,0,0.15);
       z-index: 40;
       transform: translateX(100%);
-      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      /* Closed means gone: off to the side is not enough when the page is wider than the block (the panel showed beside it),
+         and a closed drawer's content must not be reachable by Tab or a screen reader. Visibility flips after the slide. */
+      visibility: hidden;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.28s;
       display: flex;
       flex-direction: column;
       padding: var(--att-space-5, 20px);
@@ -846,6 +857,8 @@
 
     .hotspot-drawer.is-open {
       transform: translateX(0);
+      visibility: visible;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
     }
 
     .hotspot-drawer-header {
@@ -861,8 +874,7 @@
       font-size: var(--att-fs-caption, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
       color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
     }
 
     .hotspot-drawer-title {
@@ -985,8 +997,7 @@
       font-size: var(--att-fs-caption, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
       color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       background-color: var(--bg-body);
       padding: 4px 10px;
       border-radius: var(--att-radius-full, 9999px);
@@ -1108,6 +1119,23 @@
       transition: width 0.3s ease;
     }
 
+    .completion-reset-btn {
+      margin-top: 12px;
+      padding: 8px 18px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--bg-card);
+      border: 1px solid var(--primary);
+      border-radius: var(--button-radius, 999px);
+      cursor: pointer;
+    }
+
+    .completion-reset-btn:hover { background: var(--primary-tint, transparent); }
+
+    .completion-reset-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
     .completion-success-message {
       margin: 12px 0 0;
       font-size: 13px;
@@ -1155,8 +1183,8 @@
           <div class="hotspot-progress-hud" role="status" aria-live="polite">
             <span class="hotspot-progress-icon"><svg viewBox="0 0 32 32" fill="currentColor" width="18" height="18" aria-hidden="true"><g><path d="M6.8 6.8 5.4 5.4C2.6 8.2 1 12 1 16 1 20 2.6 23.8 5.4 26.6L6.8 25.2C4.4 22.7 3 19.5 3 16 3 12.5 4.4 9.3 6.8 6.8Z"/><path d="M8.9 8.9C7 10.8 6 13.3 6 16 6 18.7 7 21.2 8.9 23.1L10.3 21.7C8.8 20.2 8 18.1 8 16 8 13.9 8.8 11.8 10.4 10.3L8.9 8.9Z"/><path d="M26.6 5.4 25.2 6.8C27.6 9.2 29 12.5 29 16 29 19.5 27.6 22.7 25.2 25.2L26.6 26.6C29.4 23.7 31 20 31 16 31 12 29.4 8.2 26.6 5.4Z"/><path d="M23 8.9 21.6 10.3C23.1 11.8 24 13.8 24 16 24 18.2 23.2 20.2 21.6 21.7L23 23.1C24.9 21.2 25.9 18.7 25.9 16 26 13.3 24.9 10.8 23 8.9Z"/><path d="M16 11C13.2 11 11 13.2 11 16 11 18.8 13.2 21 16 21 18.8 21 21 18.8 21 16 21 13.2 18.8 11 16 11ZM16 19C14.3 19 13 17.7 13 16 13 14.3 14.3 13 16 13 17.7 13 19 14.3 19 16 19 17.7 17.7 19 16 19Z"/></svg></span>
             <div class="hotspot-progress-text">
-              <span class="hotspot-progress-label">Exploration Progress:</span>
-              <span class="hotspot-progress-counter"><strong class="hotspot-visited-count">0</strong> of 3 Discovered (<span class="hotspot-visited-pct">0%</span>)</span>
+              <span class="hotspot-progress-label">Exploration progress:</span>
+              <span class="hotspot-progress-counter"><strong class="hotspot-visited-count">0</strong> of 3 discovered (<span class="hotspot-visited-pct">0%</span>)</span>
             </div>
             <div class="hotspot-progress-track" aria-hidden="true">
               <div class="hotspot-progress-fill" style="width: 0%;"></div>
@@ -1169,7 +1197,7 @@
             <button type="button" class="hotspot-zoom-btn btn-zoom-in" title="Zoom In (Ctrl++)" aria-label="Zoom in">
               <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M15 7h2v8h8v2h-8v8h-2v-8H7v-2h8z"/></svg>
             </button>
-            <span class="hotspot-zoom-level" aria-live="polite" title="Current Zoom Scale">100%</span>
+            <span class="hotspot-zoom-level" aria-live="polite" title="Current zoom scale">100%</span>
             <button type="button" class="hotspot-zoom-btn btn-zoom-out" title="Zoom Out (Ctrl+-)" aria-label="Zoom out" disabled>
               <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M7 15h18v2H7z"/></svg>
             </button>
@@ -1269,13 +1297,14 @@
     
     <div class="completion-tracker" aria-labelledby="rcb-fixture-hotspots-completion-label">
         <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:600;">
-          <span id="rcb-fixture-hotspots-completion-label">Progress Completion</span>
+          <span id="rcb-fixture-hotspots-completion-label">Progress completion</span>
           <span id="rcb-fixture-hotspots-completion-text" aria-hidden="true">0%</span>
         </div>
         <div class="progress-bar-container" id="rcb-fixture-hotspots-progress-bar" role="progressbar" aria-labelledby="rcb-fixture-hotspots-completion-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 percent complete">
           <div class="progress-fill" id="rcb-fixture-hotspots-progress-fill"></div>
         </div>
         <p id="rcb-fixture-hotspots-completion-message" class="completion-success-message" hidden></p>
+        
       </div>
     <div id="rcb-fixture-hotspots-interaction-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
   </main>
@@ -1308,6 +1337,13 @@
     // exactly once per completed state — see RiseComponentCompletion.notifyComplete().
     function evaluateComponentCompletion(percent) {
       if (percent < 100) return;
+      // The shared Start over button (Completion tab, "Allow learner to reset / restart"). Reloading the
+      // block returns every component to its starting state; the host keeps any completion it already has.
+      var resetBtn = document.getElementById('rcb-fixture-hotspots-completion-reset');
+      if (resetBtn && resetBtn.hidden) {
+        resetBtn.hidden = false;
+        resetBtn.addEventListener('click', function() { window.location.reload(); });
+      }
       if (typeof RiseComponentCompletion === 'undefined' || RiseComponentCompletion.hasCompleted()) return;
       announce(completionMessage);
       var messageEl = document.getElementById('rcb-fixture-hotspots-completion-message');
@@ -1381,6 +1417,7 @@
       if (!container) return;
 
       var calloutMode = container.getAttribute('data-callout-mode') || 'tooltip';
+      var autoplayAudio = false;
       var zoomEnabled = container.getAttribute('data-zoom-enabled') !== 'false';
       var pins = container.querySelectorAll('.hotspot-pin');
       var totalItems = pins.length;
@@ -1525,7 +1562,7 @@
       function extractCalloutData(pin) {
         var parent = pin.parentElement;
         var tt = parent ? parent.querySelector('.hotspot-tooltip') : null;
-        var title = pin.getAttribute('aria-label') || 'Marker Details';
+        var title = pin.getAttribute('aria-label') || 'Marker details';
         var titleEl = tt ? tt.querySelector('.hotspot-callout-title') : null;
         if (titleEl) title = titleEl.textContent;
         var contentEl = tt ? tt.querySelector('.hotspot-callout-content') : null;
@@ -1585,7 +1622,7 @@
 
               announce(tooltip.textContent.trim());
               var audio = tooltip.querySelector('audio');
-              if (audio) { audio.currentTime = 0; audio.play().catch(function() {}); }
+              if (audio && autoplayAudio) { audio.currentTime = 0; audio.play().catch(function() {}); }
             }
           } else if (calloutMode === 'drawer' && drawer) {
             drawer.classList.add('is-open');
@@ -1594,7 +1631,7 @@
             if (drawerBody) {
               drawerBody.innerHTML = '<div>' + data.content + '</div>' + data.audioHTML;
               var dAudio = drawerBody.querySelector('audio');
-              if (dAudio) { dAudio.currentTime = 0; dAudio.play().catch(function() {}); }
+              if (dAudio && autoplayAudio) { dAudio.currentTime = 0; dAudio.play().catch(function() {}); }
             }
             announce('Opened details for ' + data.title);
           } else if (calloutMode === 'modal' && modalBackdrop) {
@@ -1606,7 +1643,7 @@
             if (modalBody) {
               modalBody.innerHTML = '<div>' + data.content + '</div>' + data.audioHTML;
               var mAudio = modalBody.querySelector('audio');
-              if (mAudio) { mAudio.currentTime = 0; mAudio.play().catch(function() {}); }
+              if (mAudio && autoplayAudio) { mAudio.currentTime = 0; mAudio.play().catch(function() {}); }
             }
             announce('Opened dialog for ' + data.title);
             if (modalClose) modalClose.focus();

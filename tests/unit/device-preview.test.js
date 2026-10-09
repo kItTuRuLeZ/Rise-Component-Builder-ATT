@@ -66,3 +66,14 @@ describe('preview device persistence', () => {
     expect(loadPreviewDevice()).toBe('desktop');
   });
 });
+
+describe('landscape widths', () => {
+  test('the width label reports the turned device', async () => {
+    const { getDeviceWidthLabel } = await import('../../js/device-preview.js');
+    expect(getDeviceWidthLabel('tablet', 740, false)).toBe('768px');
+    expect(getDeviceWidthLabel('tablet', 740, true)).toBe('1024px');
+    expect(getDeviceWidthLabel('mobile', 740, true)).toBe('667px');
+    expect(getDeviceWidthLabel('mobile-lg', 740, true)).toBe('932px');
+    expect(getDeviceWidthLabel('desktop', 740, true)).toBe('Up to 740px');
+  });
+});

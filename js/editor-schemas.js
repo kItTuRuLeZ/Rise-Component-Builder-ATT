@@ -178,7 +178,7 @@ export const editorSchemas = {
   'multiple-choice': {
     itemLabel: 'Answer Option', minItems: 2,
     componentFields: [
-      field('mcSubmitButtonText', 'Submit Button Text', 'text', { required: false, default: 'Submit Answer', maxLength: 40 })
+      field('mcSubmitButtonText', 'Submit Button Text', 'text', { required: false, default: 'Submit answer', maxLength: 40 })
     ],
     itemFields: [
       field('label', 'Answer Option', 'richtext', { required: true, default: 'New option' }),
@@ -194,7 +194,7 @@ export const editorSchemas = {
       field('msMaxAttempts', 'Maximum Attempts', 'number', { required: false, default: 1, min: 1, max: 10, step: 1 }),
       field('msAllowReset', 'Allow Retry / Try Again Action', 'checkbox', { default: false }),
       field('msFinalExplanation', 'Final Explanation (Displayed once completed)', 'richtext', { required: false, default: '' }),
-      field('msSubmitButtonText', 'Submit Button Text', 'text', { required: false, default: 'Submit Answer', maxLength: 40 })
+      field('msSubmitButtonText', 'Submit Button Text', 'text', { required: false, default: 'Submit answer', maxLength: 40 })
     ],
     itemFields: [
       field('label', 'Answer Option', 'richtext', { required: true, default: 'New option' }),

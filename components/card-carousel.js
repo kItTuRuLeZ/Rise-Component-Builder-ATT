@@ -258,8 +258,7 @@ export function generateCSS() {
       color: var(--primary, #00388F);
       font-size: var(--att-fs-xs, 0.8125rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: normal;
     }
     .carousel-card-image-wrap {
       width: 100%;

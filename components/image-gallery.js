@@ -38,7 +38,7 @@ export function generateHTML(config, instanceId) {
             <img src="${escapeAttribute(safeSrc)}" alt="${item.decorative ? '' : escapeAttribute(item.altText || '')}" ${item.decorative ? 'aria-hidden="true"' : ''} style="object-fit:${item.imageFit === 'contain' ? 'contain' : 'cover'};">
             <div class="gallery-caption-overlay">
               ${item.category ? `<span class="gallery-cat-tag">${richInline(item.category)}</span>` : ''}
-              <span>${richInline(item.title, 'View Layout')}</span>
+              <span>${richInline(item.title, 'View layout')}</span>
             </div>
           </button>
         `;
@@ -165,8 +165,7 @@ export function generateCSS() {
     .gallery-cat-tag {
       font-size: 10px;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--accent);
     }
     .lightbox-overlay {

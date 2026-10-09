@@ -105,7 +105,7 @@ export function generateHTML(config, instanceId) {
           </div>
         `;
       }).join('')}
-      ${!instantValidation ? `<button type="button" class="quiz-submit-btn" id="${instanceId}-check-btn">Check Answers</button>` : ''}
+      ${!instantValidation ? `<button type="button" class="quiz-submit-btn" id="${instanceId}-check-btn">Check answers</button>` : ''}
       <div id="${instanceId}-blank-feedback-box" class="quiz-feedback" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" style="display:none;"></div>
     </div>
   `;
@@ -282,9 +282,12 @@ export function generateCSS() {
 export function generateJS(config, instanceId) {
   const fuzzyMatch = config.fuzzyMatch !== false;
   const instantValidation = config.instantValidation === true;
+  // The failed-attempt message only points at clues when the author wrote some.
+  const hasClues = config.items.some(item => getBlankClues(item).length > 0);
 
   return `
     var items = ${serializeForInlineScript(config.items)};
+    var hasClues = ${hasClues};
     var fbCheckIcon = ${JSON.stringify(CHECK_ICON)};
     var fbCrossIcon = ${JSON.stringify(CROSS_ICON)};
     var fuzzyEnabled = ${fuzzyMatch};
@@ -365,6 +368,9 @@ export function generateJS(config, instanceId) {
           }
         });
 
+        // A sentence counts toward progress once every blank in it is right.
+        if (correctCount === answers.length) viewedItems.add(idx); else viewedItems.delete(idx);
+
         if (badge) {
           badge.style.color = 'var(--att-cta-bg, #00388F)';
           if (correctCount === answers.length) {
@@ -377,6 +383,8 @@ export function generateJS(config, instanceId) {
         }
       });
 
+      updateProgress();
+
       var feedback = document.getElementById('${instanceId}-blank-feedback-box');
       if (feedback && !instantValidation) {
         feedback.style.display = 'block';
@@ -386,12 +394,25 @@ export function generateJS(config, instanceId) {
           updateTrackerComplete();
         } else {
           feedback.className = 'quiz-feedback wrong';
-          feedback.innerHTML = '<strong>Some answers need adjustment.</strong> Review clues or check spelling.';
+          feedback.innerHTML = '<strong>Some answers need adjustment.</strong> ' + (hasClues ? 'Review the clues or check your spelling.' : 'Check your spelling and try again.');
         }
         feedback.focus();
       }
 
-      if (allCorrect && !anyEmpty) updateTrackerComplete();
+      if (allCorrect && !anyEmpty) {
+        updateTrackerComplete();
+        lockAnswers();
+      }
+    }
+
+    // Once everything is right the answers stay as they are; a wrong attempt stays editable so it can be retried.
+    function lockAnswers() {
+      document.querySelectorAll('.blank-input').forEach(function(input) {
+        input.readOnly = true;
+        input.setAttribute('aria-readonly', 'true');
+      });
+      var checkBtn = document.getElementById('${instanceId}-check-btn');
+      if (checkBtn) checkBtn.setAttribute('aria-disabled', 'true');
     }
 
     function initComponent() {

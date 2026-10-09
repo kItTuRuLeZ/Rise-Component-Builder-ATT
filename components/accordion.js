@@ -15,7 +15,7 @@ import { wrapItemMediaContent, getItemMediaCSS, validateItemMedia } from '../js/
  * @property {boolean} [accordionShowVisitedBadge] - Shows a "Visited" badge on each panel once opened
  * @property {boolean} [accordionAllowReset] - Shows a "Reset" action clearing visited/opened/lock state
  * @property {boolean} [accordionSearch] - Shows a search input that filters panels by title/body text
- * @property {boolean} [accordionExpandCollapseAll] - Shows learner-facing Expand All/Collapse All controls (multi-open, non-sequential only)
+ * @property {boolean} [accordionExpandCollapseAll] - Shows learner-facing Expand all/Collapse all controls (multi-open, non-sequential only)
  * @property {Array<{title: string, content: string, media?: any}>} items - Array of accordion items
  */
 
@@ -75,8 +75,8 @@ export function generateHTML(config, instanceId) {
       ` : ''}
       <div class="accordion-toolbar-row">
         ${showExpandCollapseAll ? `
-          <button type="button" class="accordion-toolbar-btn accordion-expand-all-btn">Expand All</button>
-          <button type="button" class="accordion-toolbar-btn accordion-collapse-all-btn">Collapse All</button>
+          <button type="button" class="accordion-toolbar-btn accordion-expand-all-btn">Expand all</button>
+          <button type="button" class="accordion-toolbar-btn accordion-collapse-all-btn">Collapse all</button>
         ` : ''}
         ${allowReset ? '<button type="button" class="accordion-toolbar-btn accordion-reset-btn">Reset</button>' : ''}
         ${showProgress ? `<span class="accordion-progress-text" id="${instanceId}-accordion-progress" role="status" aria-live="polite">0 of ${total} explored</span>` : ''}
@@ -94,7 +94,7 @@ export function generateHTML(config, instanceId) {
       <h3><button class="accordion-trigger" id="${instanceId}-accordion-trigger-${index}" data-idx="${index}" aria-expanded="false" aria-controls="${instanceId}-accordion-panel-${index}" ${sequential ? `aria-describedby="${instanceId}-lock-note-${index}"` : ''} ${locked ? 'aria-disabled="true"' : ''}>
         <span class="accordion-trigger-text">
           ${sequential ? `<span class="accordion-lock-icon-slot" ${locked ? '' : 'hidden'}>${lockIconSvg}</span>` : ''}
-          <span>${item.title ? sanitizeRichText(item.title) : 'Item Title Header'}</span>
+          <span>${item.title ? sanitizeRichText(item.title) : 'Item title header'}</span>
           ${showVisitedBadge ? `<span class="accordion-visited-badge" hidden>${visitedCheckIconSvg} Visited</span>` : ''}
         </span>
         ${icon}
@@ -180,8 +180,7 @@ export function generateCSS() {
     .accordion-visited-badge {
       font-size: var(--att-fs-eyebrow, 12px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 10px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--att-grey-2, var(--border-color));

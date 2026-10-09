@@ -1,7 +1,7 @@
 /**
  * @file client-isolation.js
  * AT&T and PMI editions of this Builder are two separate repositories deployed to two paths
- * of the SAME origin (`kittu-rulz.github.io/Rise-Component-Builder-ATT/` and `.../-PMI/`).
+ * of the SAME origin (`kitturulez.github.io/Rise-Component-Builder-ATT/` and `.../-PMI/`).
  * `localStorage` and IndexedDB are scoped per ORIGIN, not per path, so before this file
  * existed both editions read and wrote the exact same keys — `rise-builder-projects-v1`,
  * the `rise-component-builder-media` database, and so on — and could list, open, edit or

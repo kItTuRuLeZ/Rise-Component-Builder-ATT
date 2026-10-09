@@ -64,7 +64,7 @@ export function generateHTML(config) {
             ${badgeHtml}
           </div>
           ${subtitleHtml}
-          <h4>${richInline(item.title, 'Feature Key')}</h4>
+          <h4>${richInline(item.title, 'Feature key')}</h4>
           ${metricHtml}
           <p>${sanitizeRichText(item.content || 'Description layout parameters.')}</p>
         </div>
@@ -126,8 +126,7 @@ export function generateCSS() {
     .info-grid-badge {
       font-size: var(--att-fs-eyebrow, 11px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 8px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--border-color);
@@ -137,8 +136,7 @@ export function generateCSS() {
       font-size: var(--att-fs-eyebrow, 12px);
       font-weight: 700;
       color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       margin-bottom: 2px;
     }
     .info-grid-item h4 {

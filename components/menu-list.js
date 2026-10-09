@@ -80,7 +80,7 @@ export function generateHTML(config, instanceId) {
                 <div class="menu-item-left">
                   <span class="menu-num">${numLabel}</span>
                   <div class="menu-title-wrap">
-                    <span class="menu-title">${richInline(item.title, 'Lesson Segment')}</span>
+                    <span class="menu-title">${richInline(item.title, 'Lesson segment')}</span>
                     ${badge ? `<span class="menu-badge">${escapeHTML(badge)}</span>` : ''}
                     ${cat ? `<span class="menu-category-tag">${escapeHTML(cat)}</span>` : ''}
                   </div>
@@ -153,8 +153,7 @@ export function generateCSS() {
     .quickjump-label {
       font-size: var(--att-fs-eyebrow, 12px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--text-muted);
     }
     .quickjump-chip {
@@ -247,8 +246,7 @@ export function generateCSS() {
     .menu-badge {
       font-size: var(--att-fs-eyebrow, 11px);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: normal;
       padding: 2px 8px;
       border-radius: var(--att-radius-pill, 999px);
       background-color: var(--primary);

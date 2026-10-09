@@ -147,7 +147,7 @@ export function generateHTML(config, instanceId) {
       </div>
       <div class="aud-identity-text">
         ${!isCompact && seriesLabel ? `<p class="aud-series-label">${richInline(seriesLabel)}</p>` : ''}
-        <h3 class="aud-title">${richInline(item.title, 'Instructional Audio Segment')}</h3>
+        <h3 class="aud-title">${richInline(item.title, 'Instructional audio segment')}</h3>
         ${!isCompact && description ? `<p class="aud-description">${escapeHTML(description)}</p>` : ''}
       </div>
     </div>`;
@@ -160,7 +160,7 @@ export function generateHTML(config, instanceId) {
     ? `<div class="aud-resume-prompt" id="${instanceId}-resume-prompt" hidden>
         <span class="aud-resume-text" id="${instanceId}-resume-text"></span>
         <button type="button" class="aud-resume-btn" id="${instanceId}-resume-btn">Resume</button>
-        <button type="button" class="aud-restart-choice-btn" id="${instanceId}-restart-choice-btn">Start Over</button>
+        <button type="button" class="aud-restart-choice-btn" id="${instanceId}-restart-choice-btn">Start over</button>
       </div>`
     : '';
 
@@ -215,7 +215,7 @@ export function generateHTML(config, instanceId) {
     ? (hasTranscript
       ? `<div class="aud-transcript-section">
           <button type="button" class="aud-transcript-toggle" id="${instanceId}-transcript-toggle" aria-expanded="false" aria-controls="${instanceId}-transcript-panel">
-            ${transcriptIcon}<span>Show Transcript</span>
+            ${transcriptIcon}<span>Show transcript</span>
           </button>
           <div class="aud-transcript-panel" id="${instanceId}-transcript-panel" hidden>
             ${segments.length ? `
@@ -241,7 +241,7 @@ export function generateHTML(config, instanceId) {
 
   const takeawaysBlock = !isCompact && takeaways.length
     ? `<div class="aud-takeaways-panel">
-        <h4 class="aud-section-heading aud-takeaways-heading">${takeawaysIcon}<span>Key Takeaways</span></h4>
+        <h4 class="aud-section-heading aud-takeaways-heading">${takeawaysIcon}<span>Key takeaways</span></h4>
         ${takeawaysVisibility === 'afterCompletion' ? `<p class="aud-takeaways-locked-msg" id="${instanceId}-takeaways-locked">Complete the audio to reveal key takeaways.</p>` : ''}
         <ul class="aud-takeaways-list" id="${instanceId}-takeaways-list" ${takeawaysVisibility === 'afterCompletion' ? 'hidden' : ''}>
           ${takeaways.map(takeaway => `<li>${escapeHTML(takeaway)}</li>`).join('')}
@@ -307,8 +307,7 @@ export function generateCSS() {
     .aud-series-label {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--text-muted);
       margin-bottom: 2px;
     }
@@ -510,8 +509,7 @@ export function generateCSS() {
     .aud-section-heading {
       font-size: var(--att-fs-eyebrow, 0.75rem);
       font-weight: var(--att-fw-bold, 700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       color: var(--text-muted);
       margin-bottom: 6px;
     }
@@ -808,7 +806,7 @@ export function generateJS(config, instanceId) {
       // "position: 20" with "position: 0", even though the resume prompt itself already
       // read and displayed the correct value — the *next* Resume click would then read
       // the just-clobbered 0 back out. Set true by the native 'seeking' event (covers
-      // scrub/skip/chapter-click/segment-click/Resume/Start Over — every way currentTime
+      // scrub/skip/chapter-click/segment-click/Resume/Start over — every way currentTime
       // can change) and by 'play', so a save is never written before the learner has
       // actually done something this load.
       var hasEngaged = false;
@@ -1031,7 +1029,7 @@ export function generateJS(config, instanceId) {
           transcriptToggle.setAttribute('aria-expanded', String(!expanded));
           transcriptPanel.hidden = expanded;
           var label = transcriptToggle.querySelector('span');
-          if (label) label.textContent = expanded ? 'Show Transcript' : 'Hide Transcript';
+          if (label) label.textContent = expanded ? 'Show transcript' : 'Hide transcript';
         });
       }
 

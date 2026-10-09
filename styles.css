@@ -2167,6 +2167,10 @@ a {
   transition: all var(--transition-fast);
 }
 
+.completion-mode-card[hidden] {
+  display: none;
+}
+
 .completion-mode-card:hover {
   border-color: var(--primary);
   background-color: var(--primary-light);
@@ -3001,6 +3005,22 @@ input[type="number"]:focus::-webkit-inner-spin-button {
 .preview-viewport-wrapper.mobile {
   width: 375px;
   height: 80%;
+}
+
+/* The same devices turned on their side (the Portrait / Landscape button). Widths match js/device-preview.js. */
+.preview-viewport-wrapper.tablet.landscape {
+  width: 1024px;
+  height: 75%;
+}
+
+.preview-viewport-wrapper.mobile-lg.landscape {
+  width: 932px;
+  height: 60%;
+}
+
+.preview-viewport-wrapper.mobile.landscape {
+  width: 667px;
+  height: 60%;
 }
 
 .emulated-rise-header {
@@ -5375,6 +5395,17 @@ input[type="number"]:focus::-webkit-inner-spin-button {
 .rich-text-editor-container:focus-within {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(0, 159, 219, 0.15);
+}
+
+/* Each toolbar sits at z-index 5 in its own stacking context, so the toolbars of the editors BELOW this one painted over its
+   open link / colour / alignment popup. The editor being used is lifted above its neighbours; each rule stands alone so an
+   older browser that lacks :has() still gets the :focus-within one. */
+.rich-text-editor-container:focus-within {
+  z-index: 50;
+}
+
+.rich-text-editor-container:has(.rt-popover) {
+  z-index: 50;
 }
 
 .has-error .rich-text-editor-container {

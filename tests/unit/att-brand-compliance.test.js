@@ -120,7 +120,7 @@ describe('AT&T brand: clickable elements use Cobalt (--primary), not AT&T Blue (
 
   test('hovered/selected profile card is Cobalt, not AT&T Blue (the card is a clickable control)', () => {
     const css = profileCards.generateCSS();
-    expect(css).toMatch(/\.profile-card-item:hover\s*{[^}]*border-color:\s*var\(--primary\)/);
+    expect(css).toMatch(/\.profile-card-item:not\(\.is-static\):hover\s*{[^}]*border-color:\s*var\(--primary\)/);
   });
 
   test('selected info-grid card uses a Cobalt border, not an AT&T-Blue tint fill', () => {
@@ -336,9 +336,9 @@ describe('AT&T brand: components outside the original 16-slide audit, swept for 
 });
 
 describe('AT&T brand: new authoring features (Slides 6 and 10)', () => {
-  test('multiple choice: submit button defaults to "Submit Answer" when unset (backward compatible)', () => {
+  test('multiple choice: submit button defaults to "Submit answer" when unset (backward compatible)', () => {
     const html = multipleChoice.generateHTML({ items: [{ label: 'A', content: '', correct: true }] }, INSTANCE_ID);
-    expect(new JSDOM(html).window.document.querySelector('.quiz-submit-btn').textContent).toBe('Submit Answer');
+    expect(new JSDOM(html).window.document.querySelector('.quiz-submit-btn').textContent).toBe('Submit answer');
   });
 
   test('multiple choice: a custom submit button label renders verbatim and is escaped', () => {
@@ -361,7 +361,7 @@ describe('AT&T brand: new authoring features (Slides 6 and 10)', () => {
 
   test('multiple choice: an empty/whitespace submit button label falls back to the default rather than rendering blank', () => {
     const html = multipleChoice.generateHTML({ items: [{ label: 'A', content: '', correct: true }], mcSubmitButtonText: '' }, INSTANCE_ID);
-    expect(new JSDOM(html).window.document.querySelector('.quiz-submit-btn').textContent).toBe('Submit Answer');
+    expect(new JSDOM(html).window.document.querySelector('.quiz-submit-btn').textContent).toBe('Submit answer');
   });
 
   test('horizontal timeline: a marker label renders inside the node, aria-hidden, without altering the tab\'s accessible name', () => {

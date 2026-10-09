@@ -35,7 +35,7 @@ export function generateHTML(config, instanceId) {
             </button>
           `).join('')}
           ${showSummary ? `
-            <button type="button" class="p-dot p-dot-summary" id="${instanceId}-dot-summary" data-idx="${total}" aria-label="Go to Process Summary" disabled>
+            <button type="button" class="p-dot p-dot-summary" id="${instanceId}-dot-summary" data-idx="${total}" aria-label="Go to Process summary" disabled>
               <span>&starf;</span>
             </button>
           ` : ''}
@@ -92,7 +92,7 @@ export function generateHTML(config, instanceId) {
 
           return `
           <div class="process-slide ${idx === 0 ? 'active' : ''}" id="${instanceId}-process-slide-${idx}" role="group" aria-roledescription="step" aria-label="Step ${idx + 1} of ${total}" tabindex="-1" ${idx === 0 ? '' : 'hidden'}>
-            <h3>${richInline(item.title, 'Step Headline')}</h3>
+            <h3>${richInline(item.title, 'Step headline')}</h3>
             ${durationLine}
             <div class="process-slide-body">${wrapItemMediaContent(item.media, `<p>${contentHtml}</p>`, instanceId, idx)}</div>
             ${branchControlsHtml}
@@ -101,8 +101,8 @@ export function generateHTML(config, instanceId) {
         }).join('')}
 
         ${showSummary ? `
-          <div class="process-slide process-summary-slide" id="${instanceId}-process-slide-${total}" role="group" aria-roledescription="step" aria-label="Process Summary" tabindex="-1" hidden>
-            <h3>Workflow Summary & Review</h3>
+          <div class="process-slide process-summary-slide" id="${instanceId}-process-slide-${total}" role="group" aria-roledescription="step" aria-label="Process summary" tabindex="-1" hidden>
+            <h3>Workflow summary & review</h3>
             <p class="process-summary-subtitle">Review all completed steps in this process:</p>
             <div class="process-summary-checklist">
               ${config.items.map((item, idx) => `
@@ -121,7 +121,7 @@ export function generateHTML(config, instanceId) {
 
       <div class="process-controls-row">
         <button type="button" class="btn btn-secondary btn-small" id="${instanceId}-btn-process-prev" disabled>Previous</button>
-        <button type="button" class="btn btn-primary btn-small" id="${instanceId}-btn-process-next">Next Step</button>
+        <button type="button" class="btn btn-primary btn-small" id="${instanceId}-btn-process-next">Next step</button>
       </div>
     </div>
   `;
@@ -148,8 +148,7 @@ export function generateCSS() {
       font-size: var(--att-fs-body-sm, 0.875rem);
       font-weight: var(--att-fw-bold, 700);
       color: var(--text-main);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: normal;
       background-color: var(--border-color);
       padding: 4px 12px;
       border-radius: var(--att-radius-pill, 999px);
@@ -493,7 +492,7 @@ export function generateJS(config, instanceId) {
       if (prevBtn) prevBtn.disabled = (activeProcessIndex === 0);
       if (nextBtn) {
         nextBtn.disabled = (activeProcessIndex === maxProcessIndex);
-        nextBtn.textContent = (activeProcessIndex === totalProcessSteps - 1 && showProcessSummary) ? 'Review Summary' : (activeProcessIndex >= totalProcessSteps ? 'Completed' : 'Next Step');
+        nextBtn.textContent = (activeProcessIndex === totalProcessSteps - 1 && showProcessSummary) ? 'Review summary' : (activeProcessIndex >= totalProcessSteps ? 'Completed' : 'Next step');
       }
 
       if (activeProcessIndex < totalProcessSteps) {
