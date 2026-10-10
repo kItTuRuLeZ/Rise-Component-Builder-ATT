@@ -273,3 +273,21 @@ test.describe('Hotspots drawer, landscape preview and background-image header', 
     await expect(page.locator('.block-header')).not.toHaveClass(/has-backing/);
   });
 });
+
+
+test('the width label says so when the preview panel is narrower than the chosen device', async ({ page }) => {
+  await page.setViewportSize({ width: 1500, height: 900 }); // a laptop-sized window: the panel is narrower than a tablet
+  await page.goto('/?catalog');
+  await page.locator('.nav-item[data-category="interactive"]').click();
+  await page.locator('.component-select-card').filter({ hasText: 'Hotspots' }).click();
+  await expect(page.locator('#editor-state')).toBeVisible();
+  await page.locator('[data-device="tablet"]').click();
+  const label = page.locator('#preview-width-label');
+  await expect(label).toHaveText(/^\d+px of 768px$/);
+  await expect(label).toHaveClass(/is-clamped/);
+  await expect(label).toHaveAttribute('title', /narrower than this tablet/);
+  await page.locator('#btn-preview-orientation').click();
+  await expect(label).toHaveText(/^\d+px of 1024px$/);
+  await page.locator('[data-device="desktop"]').click();
+  await expect(label).not.toHaveClass(/is-clamped/);
+});

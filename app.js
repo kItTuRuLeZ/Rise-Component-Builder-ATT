@@ -15,7 +15,7 @@ import { componentCatalog, filterCatalog, createCatalogCard, sortCatalog, render
 import { COMPONENT_REGISTRY, getCategoriesWithCounts, getComponentById, getDefaultConfig, normalizeComponentType } from './js/component-registry.js';
 import { createSchemaItemEditor, switchEditorTab as activateEditorTab, addEditorItem, validateActiveComponent, validateSchemaField, setupEditorTabKeyboardNavigation, jumpToEditorField, getFieldTabLocation } from './js/editor.js';
 import { writePreview, openPreview, generateIframeContent as compilePreview, COMPONENT_MAX_WIDTH } from './js/preview.js';
-import { getDeviceWidthLabel } from './js/device-preview.js';
+import { describeDeviceWidth } from './js/device-preview.js';
 import { measureRenderedDimensions } from './js/dom-measurement.js';
 import {
   buildCoursePackZip, buildExportPayload, buildLargePasteWarning,
@@ -2122,6 +2122,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnPreviewOrientation = document.getElementById('btn-preview-orientation');
   let isLandscapeOrientation = false;
 
+  // Shows the selected device width, or "671px of 768px" when the preview panel is too narrow to show the whole device.
+  function refreshPreviewWidthLabel() {
+    const device = deviceModeClasses.find(name => previewViewport.classList.contains(name)) || 'desktop';
+    const described = describeDeviceWidth(device, COMPONENT_MAX_WIDTH, isLandscapeOrientation, previewViewport.getBoundingClientRect().width);
+    previewWidthLabel.textContent = described.text;
+    previewWidthLabel.classList.toggle('is-clamped', described.clamped);
+    if (described.title) previewWidthLabel.title = described.title; else previewWidthLabel.removeAttribute('title');
+  }
+
   function applyDeviceMode(device) {
     deviceButtons.forEach(b => {
       const isActive = b.getAttribute('data-device') === device;
@@ -2130,7 +2139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     previewViewport.classList.remove(...deviceModeClasses);
     previewViewport.classList.add(device);
-    previewWidthLabel.textContent = getDeviceWidthLabel(device, COMPONENT_MAX_WIDTH, isLandscapeOrientation);
+    refreshPreviewWidthLabel();
 
     if (btnPreviewOrientation) {
       const isMobileOrTablet = device === 'tablet' || device === 'mobile-lg' || device === 'mobile';
@@ -2143,13 +2152,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  if (typeof ResizeObserver === 'function' && previewViewport) {
+    new ResizeObserver(() => refreshPreviewWidthLabel()).observe(previewViewport);
+  }
+
   if (btnPreviewOrientation) {
     btnPreviewOrientation.addEventListener('click', () => {
       isLandscapeOrientation = !isLandscapeOrientation;
       btnPreviewOrientation.classList.toggle('active', isLandscapeOrientation);
       previewViewport.classList.toggle('landscape', isLandscapeOrientation);
-      const activeDevice = deviceModeClasses.find(name => previewViewport.classList.contains(name)) || 'desktop';
-      previewWidthLabel.textContent = getDeviceWidthLabel(activeDevice, COMPONENT_MAX_WIDTH, isLandscapeOrientation);
+      refreshPreviewWidthLabel();
       showToast(isLandscapeOrientation ? 'Orientation: Landscape' : 'Orientation: Portrait', 'info', 1500);
       updateLivePreview();
     });
