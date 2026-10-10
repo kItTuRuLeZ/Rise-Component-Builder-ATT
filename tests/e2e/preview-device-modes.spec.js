@@ -139,7 +139,8 @@ test.describe('device switcher accessibility', () => {
     await openComponent(page, 'Accordion');
     const label = page.locator('#preview-width-label');
     await page.locator('[data-device="tablet"]').click();
-    await expect(label).toHaveText('768px');
+    // On a laptop-sized window the panel is narrower than a tablet, and the label now says so ("642px of 768px").
+    await expect(label).toHaveText(/(^| of )768px$/);
     await page.locator('[data-device="mobile-lg"]').click();
     await expect(label).toHaveText('430px');
     await page.locator('[data-device="mobile"]').click();

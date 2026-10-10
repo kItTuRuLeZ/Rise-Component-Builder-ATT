@@ -2899,6 +2899,13 @@ input[type="number"]:focus::-webkit-inner-spin-button {
   white-space: nowrap;
 }
 
+/* The panel is narrower than the chosen device, so the preview is cut to fit ("671px of 768px"). */
+.preview-width-label.is-clamped {
+  color: var(--warning-dark, #92400e);
+  font-weight: 600;
+  cursor: help;
+}
+
 .device-switcher {
   display: flex;
   background-color: var(--bg-app);

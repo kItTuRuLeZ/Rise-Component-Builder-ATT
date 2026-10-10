@@ -77,3 +77,27 @@ describe('landscape widths', () => {
     expect(getDeviceWidthLabel('desktop', 740, true)).toBe('Up to 740px');
   });
 });
+
+describe('describeDeviceWidth (the label says when the panel cuts the device)', () => {
+  test('a device that fits shows its plain width and is not flagged', async () => {
+    const { describeDeviceWidth } = await import('../../js/device-preview.js');
+    expect(describeDeviceWidth('tablet', 740, false, 768)).toEqual({ text: '768px', clamped: false, title: '' });
+    expect(describeDeviceWidth('tablet', 740, true, 1024).clamped).toBe(false);
+  });
+
+  test('a panel narrower than the device is reported as "shown of wanted"', async () => {
+    const { describeDeviceWidth } = await import('../../js/device-preview.js');
+    const portrait = describeDeviceWidth('tablet', 740, false, 671);
+    expect(portrait.text).toBe('671px of 768px');
+    expect(portrait.clamped).toBe(true);
+    expect(portrait.title).toMatch(/narrower than this tablet \(768px\)/);
+    expect(describeDeviceWidth('mobile', 740, true, 500).text).toBe('500px of 667px');
+  });
+
+  test('desktop and unknown sizes are never flagged', async () => {
+    const { describeDeviceWidth } = await import('../../js/device-preview.js');
+    expect(describeDeviceWidth('desktop', 740, false, 600).clamped).toBe(false);
+    expect(describeDeviceWidth('desktop', 740, true, 600).text).toBe('Up to 740px');
+    expect(describeDeviceWidth('tablet', 740, false, 0).clamped).toBe(false);
+  });
+});
