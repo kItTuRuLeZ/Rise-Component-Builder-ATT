@@ -58,7 +58,7 @@ jobs:
   # scales with the number of engines, and a failure names the browser that produced it.
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 52
     strategy:
       # Report every engine's result: a WebKit-only regression should not be hidden
       # because Chromium happened to fail first.
@@ -82,8 +82,9 @@ jobs:
         run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run browser and accessibility tests
-        # WebKit is the slowest engine and the suite keeps growing; 20 min cut it off mid-run.
-        timeout-minutes: 28
+        # WebKit is the slowest engine and the suite keeps growing; 20 min cut it off mid-run, and at 28 min it was
+        # cut off again at ~360 tests (Oct 2026: it finishes in 27-31 min depending on the runner). 45 leaves headroom.
+        timeout-minutes: 45
         run: npx playwright test --project=${{ matrix.browser }}
 
       - name: Upload Playwright failure artifacts
