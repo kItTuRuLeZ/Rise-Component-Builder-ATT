@@ -6,7 +6,6 @@ const initialConfig = applyThemeToConfig({
   blockTitle: 'INTERACTIVE ACCORDION',
   blockHeadline: 'Explore the Core Dimensions',
   blockDesc: 'Click on the headers below to discover detailed insights.',
-  blockHeadingLevel: 'h2',
   headerStyle: 'minimal',
   headerCyanRule: false,
   spacingDensity: 'standard',

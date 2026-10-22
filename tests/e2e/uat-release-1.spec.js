@@ -50,12 +50,13 @@ test('File Type and File Size reject values that are not a type or a size', asyn
   await expect(page.locator('.field-error').filter({ hasText: /File Size is a number followed by a unit/ })).toHaveCount(0);
 });
 
-test('the Heading Level field says it does not change how the headline looks', async ({ page }) => {
+test('there is no Heading Level field: the headline is always an h2', async ({ page }) => {
   await page.goto('/?catalog');
   await page.locator('.nav-item[data-category="interactive"]').click();
   await page.locator('.component-select-card').filter({ hasText: 'Accordion' }).click();
   await page.locator('.editor-tab[data-tab="appearance"]').click();
-  await expect(page.locator('#select-heading-level').locator('xpath=following-sibling::p[contains(@class,"field-hint")]')).toContainText('does not change how the headline looks');
+  await expect(page.locator('#select-heading-level')).toHaveCount(0);
+  await expect(page.frameLocator('#live-preview-iframe').locator('h2.block-headline')).toHaveCount(1);
 });
 
 test('the link popup opens above the editors below it, not underneath their toolbars', async ({ page }) => {

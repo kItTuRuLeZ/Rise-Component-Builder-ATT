@@ -14,7 +14,6 @@ function compileComponent(componentId, configOverrides = {}, currentProjectId = 
     blockTitle: 'TEST BLOCK',
     blockHeadline: 'Test Headline',
     blockDesc: 'Test description text.',
-    blockHeadingLevel: 'h2',
     headerStyle: 'minimal',
     headerCyanRule: false,
     spacingDensity: 'standard',
@@ -99,9 +98,9 @@ describe('Header presentation styles', () => {
     expect(html).toContain('<div class="header-cyan-rule" aria-hidden="true"></div>');
   });
 
-  test('custom heading level is preserved in both header styles', () => {
-    const html = compileComponent('accordion', { headerStyle: 'editorial', blockHeadingLevel: 'h3' });
-    expect(html).toContain('<h3 class="block-headline" id="rcb-test-proj-block-headline">Test Headline</h3>');
+  test('the headline is always an h2, in both header styles', () => {
+    const html = compileComponent('accordion', { headerStyle: 'editorial' });
+    expect(html).toContain('<h2 class="block-headline" id="rcb-test-proj-block-headline">Test Headline</h2>');
   });
 });
 

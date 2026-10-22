@@ -36,7 +36,7 @@ Inspect rich component previews, capability breakdowns, native Rise comparison a
 ### 4. 4-Section Editor Information Architecture
 - **Content**: Block titles, descriptions, and dynamic item cards with instant inline editing.
 - **Interaction**: Sequencing, shuffle, retry limits, hints, search, and branching behavior.
-- **Appearance**: Heading levels (`<h1>`–`<h6>`), AT&T Editorial headline styling with cyan rule, spacing density (`Compact`, `Standard`, `Spacious`), and context bands.
+- **Appearance**: AT&T Editorial headline styling with cyan rule, spacing density (`Compact`, `Standard`, `Spacious`), and context bands.
 - **Completion**: Plain-language exploration criteria, Rise iframe postMessage integration guidance, and host gating rules.
 
 ### 5. Standardized Item Authoring & Bounded History

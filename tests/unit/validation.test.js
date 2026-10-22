@@ -694,25 +694,6 @@ describe('P06: general-item-count-exceeded — maxItems ceiling', () => {
   });
 });
 
-describe('P06: general-heading-level-outline — h1 conflicts with Rise\'s own outline', () => {
-  test('fail: blockHeadingLevel is h1', () => {
-    const config = buildConfig('accordion', { blockHeadingLevel: 'h1' });
-    const issues = issuesFor('accordion', config);
-    const outline = issues.find(item => item.ruleId === 'general-heading-level-outline');
-    expect(outline).toBeDefined();
-    expect(outline.severity).toBe(SEVERITY.WARNING);
-    expect(outline.fieldId).toBe('blockHeadingLevel');
-  });
-
-  test('pass: the default (h2) and every other non-h1 level are not flagged', () => {
-    ['h2', 'h3', 'h4', 'h5', 'h6'].forEach(level => {
-      const config = buildConfig('accordion', { blockHeadingLevel: level });
-      const issues = issuesFor('accordion', config);
-      expect(issues.some(item => item.ruleId === 'general-heading-level-outline')).toBe(false);
-    });
-  });
-});
-
 describe('P06: general-non-descriptive-link-text — button-list only, conservative phrase list', () => {
   test('fail: a classic non-descriptive phrase', () => {
     const config = buildConfig('button-list');

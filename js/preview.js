@@ -170,7 +170,6 @@ ${ATT_TOKENS_CSS}`;
     blockLabel: sanitizeRichText(c.blockTitle || ''),
     blockHeadline: sanitizeRichText(c.blockHeadline || ''),
     blockDesc: sanitizeRichText(c.blockDesc || ''),
-    blockHeadingLevel: c.blockHeadingLevel,
     componentHTML: entry.generateHTML(c, instanceId),
     completionTrackerHTML: renderCompletionTrackerHTML(instanceId, c.trackCompletion, Boolean(c.allowReset) && !SELF_RESETTING_COMPONENTS.has(compId)),
     sharedA11yScript,
