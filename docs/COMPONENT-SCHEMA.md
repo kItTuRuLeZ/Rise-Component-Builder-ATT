@@ -10,7 +10,6 @@ Projects persist a `config` object with shared component configuration plus comp
 {
   blockTitle,
   blockHeadline,
-  blockHeadingLevel,
   blockDesc,
   colorPrimary,
   colorAccent,
@@ -37,7 +36,6 @@ Item fields are driven by `js/editor-schemas.js` (`docs/ARCHITECTURE.md` §2). A
 | --------------- | -----: | ---------------------------------------------------------------------- |
 | `blockTitle`    | string | Multiline eyebrow/category label; line breaks render in preview/export |
 | `blockHeadline` | string | Multiline generated heading; line breaks render in preview/export      |
-| `blockHeadingLevel` | string | HTML tag (`h1`–`h6`, default `h2`) used for the exported `blockHeadline` element — author-selectable so an embedded block doesn't force a second `h1` into a Rise lesson's own heading outline. Normalized by `js/utilities.js#normalizeHeadingLevel`; see `docs/ACCESSIBILITY-CONFORMANCE.md`. |
 | `blockDesc`     | string | Learner instructions or introduction                                   |
 | `items`         |  array | Ordered component-specific authoring records                           |
 

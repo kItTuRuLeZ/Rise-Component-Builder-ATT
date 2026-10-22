@@ -447,7 +447,7 @@ test.describe('Audio Player: accessibility', () => {
   // Scoped to this component's own controls, matching interactive-video.spec.js's own
   // established pattern — a full, unscoped axe.analyze() also flags document-level
   // concerns (e.g. page-has-heading-one) that are the export shell's responsibility
-  // (blockHeadingLevel defaults to h2 deliberately, to avoid a forced second h1 in a Rise
+  // (the headline is always an h2 deliberately, to avoid a forced second h1 in a Rise
   // lesson — docs/ACCESSIBILITY-CONFORMANCE.md), not this component's.
   //
   // 'target-size' is deliberately excluded, not silently dropped: chapter markers sit

@@ -59,7 +59,7 @@ Every component (regardless of row above) inherits, via `js/export-shell.js`, th
 
 ## Structural fixes in this pass
 
-- **Embedded component heading level is now author-configurable** (`blockHeadingLevel` in `config`, a "Headline Heading Level" select in the editor's Header Details group). Previously every export hardcoded `<h1 class="block-headline">` for the wrapping headline — forcing a *second* `<h1>` into a Rise lesson page that already has its own. It now defaults to `<h2>` and accepts h1–h6, normalized by `js/utilities.js#normalizeHeadingLevel`. See `docs/COMPONENT-SCHEMA.md`.
+- **Embedded component headline is always an `<h2>`.** Previously every export hardcoded `<h1 class="block-headline">` for the wrapping headline — forcing a *second* `<h1>` into a Rise lesson page that already has its own. It is now always `<h2>`. An author-selectable Heading Level (h1–h6) existed briefly and was removed after UAT (Oct 2026): it changed only the HTML tag, never the look, so authors read it as broken.
 - **Landmarks**: the editor panel and live-preview panel now have `aria-label`s ("Component editor" / "Live preview") distinct from the existing sidebar/nav/main landmarks, and the editor's `.group-title` section headers (Header Details, Interactive Items, Visual Branding, etc.) are now real `<h3>` elements under the screen's `<h2>`, instead of unstructured `<div>`s — so a screen-reader user can navigate the editor form by heading, not just by tab order.
 - **Missing label**: the sidebar search input (`#search-components`) had a placeholder only; it now has `aria-label="Search components"`.
 

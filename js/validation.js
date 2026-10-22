@@ -77,7 +77,6 @@ const RULE_TITLES = Object.freeze({
   'general-duplicate-items': 'Duplicate item content',
   'general-duplicate-titles': 'Duplicate item titles',
   'general-item-count-exceeded': 'Extra items will not be exported',
-  'general-heading-level-outline': "Heading level may conflict with Rise's own outline",
   'general-non-descriptive-link-text': 'Non-descriptive link text',
   'general-external-url-destination': 'Links to an external destination',
   'general-clipping-risk': 'May be clipped in a fixed-height Embed frame',
@@ -407,16 +406,6 @@ function checkItemCountLimits(schema, config) {
   const extra = items.length - schema.maxItems;
   return [issue('general-item-count-exceeded', SEVERITY.WARNING, CATEGORY.GENERAL,
     `This component only uses the first ${schema.maxItems} ${label}${schema.maxItems === 1 ? '' : 's'} — ${extra} extra ${extra === 1 ? 'entry is' : 'entries are'} present but will not appear in the exported output.`)];
-}
-
-// Rise 360 lesson pages already have their own h1 (js/utilities.js#HEADING_LEVELS'
-// comment) — an author-selected h1 here creates a second, competing h1 in the host page's
-// heading outline, which is confusing for a screen-reader user navigating heading-by-heading.
-function checkHeadingLevelOutline(config) {
-  if (config.blockHeadingLevel !== 'h1') return [];
-  return [issue('general-heading-level-outline', SEVERITY.WARNING, CATEGORY.GENERAL,
-    'The headline heading level is set to Heading 1 (h1). Rise 360 lesson pages already have their own h1 — an additional h1 here can create a confusing, duplicate heading outline for screen-reader users navigating by heading. Heading 2 (h2) is the recommended default.',
-    { fieldId: 'blockHeadingLevel' })];
 }
 
 // A deliberately conservative, documented heuristic (Implementation note 2, P06) — flags
@@ -813,7 +802,6 @@ registerValidationRule({ id: 'color-contrast', check: ({ theme, componentOverrid
 registerValidationRule({ id: 'duplicate-items', check: ({ schema, config }) => checkDuplicateItems(schema, config) });
 registerValidationRule({ id: 'duplicate-titles', check: ({ schema, config, componentId }) => checkDuplicateTitles(schema, config, componentId) });
 registerValidationRule({ id: 'item-count-limits', check: ({ schema, config }) => checkItemCountLimits(schema, config) });
-registerValidationRule({ id: 'heading-level-outline', check: ({ config }) => checkHeadingLevelOutline(config) });
 registerValidationRule({
   id: 'non-descriptive-link-text',
   appliesTo: ({ componentId }) => componentId === 'button-list',
