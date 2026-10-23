@@ -68,10 +68,6 @@ export class LandingView {
         <div class="landing-hero-content">
           <div class="landing-hero-inner">
             
-            <div class="landing-brand-badge">
-              <span class="landing-brand-tech">Design target: WCAG 2.2 AA</span>
-            </div>
-
             <div class="landing-title-wrap">
               <h1 class="landing-title">
                 <span class="landing-title-gradient">APTARA RISE+</span>
