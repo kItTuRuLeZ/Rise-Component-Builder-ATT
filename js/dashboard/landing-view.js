@@ -68,19 +68,13 @@ export class LandingView {
         <div class="landing-hero-content">
           <div class="landing-hero-inner">
             
-            <div class="landing-brand-badge">
-              <span class="landing-brand-tag">Aptara Learning Technologies</span>
-              <span class="landing-brand-dot"></span>
-              <span class="landing-brand-tech">Design target: WCAG 2.2 AA</span>
-            </div>
-
             <div class="landing-title-wrap">
               <h1 class="landing-title">
-                <span class="landing-title-gradient">APTARA STUDIO</span>
+                <span class="landing-title-gradient">APTARA RISE+</span>
               </h1>
               <div class="landing-subtitle-wrap">
-                <h2 class="landing-subtitle" aria-label="Rise Interaction &amp; Course Studio">
-                  ${this.getAnimatedSubtitleHtml('Rise Interaction & Course Studio')}
+                <h2 class="landing-subtitle" aria-label="Rise+ Interaction &amp; Course Builder">
+                  ${this.getAnimatedSubtitleHtml('Rise+ Interaction & Course Builder')}
                 </h2>
                 <div class="landing-subtitle-rule"></div>
               </div>
