@@ -520,7 +520,9 @@ function checkMediaRules(schema, config, settings) {
     if (isEmptyValue(value)) return;
     if (isMediaReference(value)) {
       const allowlist = MEDIA_MIME_ALLOWLIST[value.kind] || MEDIA_MIME_ALLOWLIST[field.type];
-      if (allowlist && !allowlist.includes(value.mimeType)) {
+      // A reference with no mimeType has no stored file to judge (for example a placeholder
+      // from a storyboard import) — checkBrokenMediaReferences reports it instead.
+      if (allowlist && value.mimeType && !allowlist.includes(value.mimeType)) {
         issues.push(issue('media-unsupported-file-type', SEVERITY.BLOCKING, CATEGORY.MEDIA,
           `${field.label}: "${value.mimeType}" is not a supported ${field.type} type for export.`, { fieldId: field.id, itemIndex }));
       }
@@ -572,8 +574,11 @@ async function checkBrokenMediaReferences(schema, config, mediaStore) {
     const record = await getMediaRecord(value.mediaId, mediaStore);
     if (record?.blob) return;
     const severity = field.required ? SEVERITY.BLOCKING : SEVERITY.WARNING;
+    const pending = String(value.mediaId || '').startsWith('pending-');
     issues.push(issue('media-broken-reference', severity, CATEGORY.MEDIA,
-      `${field.label}: "${value.name}" is missing from local storage and cannot be exported.`, { fieldId: field.id, itemIndex }));
+      pending
+        ? `${field.label}: "${value.name}" is a placeholder from the storyboard import. Upload the file here before exporting.`
+        : `${field.label}: "${value.name}" is missing from local storage and cannot be exported.`, { fieldId: field.id, itemIndex }));
   };
 
   const fields = mediaFields(schema);
