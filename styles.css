@@ -243,9 +243,20 @@ a {
   transform: scale(1.02);
 }
 
-.logo-icon svg {
-  width: 118px;
-  height: 22px;
+.logo-icon .logo-img {
+  display: block;
+  width: 173px;
+  height: 30px;
+}
+
+/* The reversed (white) lockup is for the dark toolbar; only one of the pair shows. */
+.logo-icon .logo-img--reversed,
+[data-theme="dark"] .logo-icon .logo-img--color {
+  display: none;
+}
+
+[data-theme="dark"] .logo-icon .logo-img--reversed {
+  display: block;
 }
 
 .logo-text {
@@ -544,9 +555,9 @@ a {
     padding: 8px 10px;
     gap: 0;
   }
-  .logo-icon svg {
-    width: 108px;
-    height: 21px;
+  .logo-icon .logo-img {
+    width: 150px;
+    height: 26px;
   }
   .header-project-name {
     max-width: 160px;

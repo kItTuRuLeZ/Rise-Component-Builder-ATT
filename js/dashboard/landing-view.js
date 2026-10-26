@@ -67,14 +67,14 @@ export class LandingView {
         <!-- Hero Content Overlay -->
         <div class="landing-hero-content">
           <div class="landing-hero-inner">
-            
+
             <div class="landing-title-wrap">
               <h1 class="landing-title">
-                <span class="landing-title-gradient">APTARA RISE+</span>
+                <img class="landing-logo" src="./assets/brand/rise-plus-horizontal-reversed.svg" alt="Aptara Rise+" width="460" height="80">
               </h1>
               <div class="landing-subtitle-wrap">
-                <h2 class="landing-subtitle" aria-label="Rise+ Interaction &amp; Course Builder">
-                  ${this.getAnimatedSubtitleHtml('Rise+ Interaction & Course Builder')}
+                <h2 class="landing-subtitle" aria-label="Interaction &amp; Course Builder">
+                  ${this.getAnimatedSubtitleHtml('Interaction & Course Builder')}
                 </h2>
                 <div class="landing-subtitle-rule"></div>
               </div>
