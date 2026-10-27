@@ -138,6 +138,14 @@ body.is-landing-mode .app-container {
   align-items: center;
 }
 
+/* The reversed (white) logo is the page heading: the h1 supplies the entrance animation. */
+.landing-logo {
+  display: block;
+  width: clamp(240px, 34vw, 460px);
+  height: auto;
+  margin: 0 auto;
+}
+
 .landing-brand-badge {
   display: inline-flex;
   align-items: center;
