@@ -38,7 +38,7 @@ async function validDocxFile(overrides = {}) {
   const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body>
-    ${table([['Field', 'Value'], ['Course title', courseTitle]])}
+    ${table([['Field', 'Value'], ['Course title', courseTitle], ['Course ID', 'WH-SAFETY-101']])}
     ${heading2('Section ID: S01     Section title: Getting Started')}
     ${table([
       ['Block ID', 'Kind', 'Component', 'Title and note'],
