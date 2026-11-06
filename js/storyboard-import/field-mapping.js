@@ -46,6 +46,11 @@ function finding(severity, code, message) {
   return { severity, code, message };
 }
 
+// Item numbers in the order their rows first appear in the document, keyed by the sorted
+// itemNumbers array splitFields() returns — lets checkSequentialItemNumbers() notice when the
+// importer's numeric ordering would differ from the order the author typed the rows in.
+const DOCUMENT_ORDER = new WeakMap();
+
 /**
  * @param {Array<{field:string,item:number|null,content:string}>} fields
  * @returns {{ shared: Record<string,string>, itemRows: Map<number, Record<string,string>>, itemNumbers: number[] }}
@@ -65,6 +70,7 @@ function splitFields(fields) {
     }
   }
   const itemNumbers = [...itemRows.keys()].sort((a, b) => a - b);
+  DOCUMENT_ORDER.set(itemNumbers, [...itemRows.keys()]);
   return { shared, itemRows, itemNumbers };
 }
 
@@ -82,6 +88,10 @@ function requireField(row, templateField, blockId, itemLabel, findings) {
 
 /** @param {number[]} itemNumbers @param {string} blockId @param {ReturnType<typeof finding>[]} findings */
 function checkSequentialItemNumbers(itemNumbers, blockId, findings) {
+  const typedOrder = DOCUMENT_ORDER.get(itemNumbers);
+  if (typedOrder && typedOrder.some((n, i) => n !== itemNumbers[i])) {
+    findings.push(finding('warning', 'items-out-of-document-order', `Block "${blockId}": the rows are typed in the order ${typedOrder.join(', ')}, but items are imported in Item-number order (${itemNumbers.join(', ')}). Check the Item numbers if the order looks wrong.`));
+  }
   for (let i = 0; i < itemNumbers.length; i++) {
     if (itemNumbers[i] !== i + 1) {
       findings.push(finding('warning', 'non-sequential-item-numbering', `Block "${blockId}": item numbers are ${itemNumbers.join(', ')} — expected 1..${itemNumbers.length} with no gaps or repeats.`));
