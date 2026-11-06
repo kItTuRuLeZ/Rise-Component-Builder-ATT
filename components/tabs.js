@@ -246,7 +246,7 @@ export function generateCSS() {
       min-height: 44px;
       transition: all 0.2s;
     }
-    .tab-btn:hover:not(.active):not([aria-disabled="true"]) {
+    .tab-btn:hover:not(.active):not([aria-disabled="true"]):not(:disabled) {
       border-color: var(--primary-hover);
       color: var(--primary-hover);
     }
@@ -255,15 +255,17 @@ export function generateCSS() {
       border-color: var(--primary);
       color: var(--on-primary);
     }
-    .tab-btn:active:not([aria-disabled="true"]) {
+    .tab-btn:active:not([aria-disabled="true"]):not(:disabled) {
       transform: scale(0.98);
     }
     .tab-btn:focus-visible {
       outline: 3px solid var(--att-cobalt, var(--primary));
       outline-offset: 2px;
     }
-    .tab-btn[aria-disabled="true"] {
+    .tab-btn[aria-disabled="true"],
+    .tab-btn:disabled {
       cursor: not-allowed;
+      pointer-events: none;
       background: var(--att-grey-2, #DCDFE3);
       border-color: var(--att-grey-2, #DCDFE3);
       color: var(--att-grey-3, #BDC2C7);
@@ -422,6 +424,9 @@ export function generateCSS() {
       font-size: var(--att-fs-body, 16px);
       line-height: var(--att-lh-body, 1.5);
       color: var(--text-main);
+      min-width: 0;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     .tabs-compare-column h4 {
       font-size: var(--att-fs-body-lg, 18px);
@@ -429,6 +434,8 @@ export function generateCSS() {
       color: var(--text-main);
       margin-bottom: 6px;
       text-wrap: pretty;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     @media (max-width: 600px) {
       .tabs-compare-columns {

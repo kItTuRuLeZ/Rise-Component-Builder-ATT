@@ -249,6 +249,7 @@ describe('buildCoursePackZip', () => {
     });
     expect(size).toBe(blob.size);
     const entries = await readZip(blob);
+    expect(entries.some(e => e.path === 'index.html')).toBe(true);
     expect(entries.some(e => e.path === 'course-index.html')).toBe(true);
     expect(entries.some(e => e.path === 'course-manifest.json')).toBe(true);
     expect(entries.some(e => e.path === 'components/network-ops-hierarchy/index.html')).toBe(true);

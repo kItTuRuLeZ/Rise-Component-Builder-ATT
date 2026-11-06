@@ -28,6 +28,11 @@ function sanitizeSlug(str) {
 function padZero(num) {
   return String(num).padStart(2, '0');
 }
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 
 /**
  * Thrown when a course cannot be exported as a portable package (missing local media,
@@ -196,8 +201,129 @@ export async function buildCourseProjectZip(projectId, options = {}) {
   entries.push({ path: 'manifest.json', data: JSON.stringify(manifest, null, 2) });
   entries.push({ path: 'project-backup.json', data: JSON.stringify(project, null, 2) });
   entries.push({ path: 'README.md', data: buildCourseReadme(project, manifest) });
+  entries.push({ path: 'index.html', data: buildCourseLauncherHtml(project, manifest) });
 
   return createZip(entries);
+}
+
+
+function buildCourseLauncherHtml(project, manifest) {
+  const client = escapeHtml(project.clientLabel || 'ATT');
+  const title = escapeHtml(project.name || 'Course Interactions Package');
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} — Interactive Component Package</title>
+  <style>
+    :root {
+      --primary: #009FDB;
+      --bg: #F7F4EF;
+      --card-bg: #FFFFFF;
+      --text: #200F3B;
+      --text-muted: #574E69;
+      --border: #E7E4DC;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 32px 20px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .header {
+      background: var(--card-bg);
+      padding: 28px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(0, 159, 219, 0.12);
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    h1 { font-size: 1.6rem; color: var(--text); margin-bottom: 6px; }
+    .meta { font-size: 0.875rem; color: var(--text-muted); }
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+    .component-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .component-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.15s ease;
+    }
+    .component-item:hover {
+      background: #EAE6DF;
+    }
+    .comp-name { font-weight: 600; font-size: 0.95rem; }
+    .comp-type { font-size: 0.8rem; color: var(--text-muted); margin-left: 8px; font-weight: 400; }
+    .launch-link { font-size: 0.875rem; font-weight: 600; color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <span class="badge">${client} Component Pack</span>
+      <h1>${title}</h1>
+      <p class="meta">${manifest.totalComponents} interactive component(s) across ${manifest.totalSections} section(s)</p>
+    </header>
+    ${manifest.sections.map(s => `
+      <section class="section-card">
+        <h2 class="section-title">${escapeHtml(s.sectionName)}</h2>
+        <div class="component-list">
+          ${s.components.map(c => `
+            <a class="component-item" href="${escapeHtml(c.path)}" target="_blank" rel="noopener">
+              <div>
+                <span class="comp-name">${escapeHtml(c.name)}</span>
+                <span class="comp-type">(${escapeHtml(c.type)})</span>
+              </div>
+              <span class="launch-link">Launch &rarr;</span>
+            </a>
+          `).join('')}
+        </div>
+      </section>
+    `).join('')}
+  </div>
+</body>
+</html>`;
 }
 
 function buildCourseReadme(project, manifest) {

@@ -372,6 +372,7 @@ export async function buildCoursePackZip({ courseTitle = 'AT&T Course Interactio
 </body>
 </html>`;
 
+  entries.push({ path: 'index.html', data: catalogHtml });
   entries.push({ path: 'course-index.html', data: catalogHtml });
   entries.push({
     path: 'course-manifest.json',
